@@ -1,10 +1,104 @@
-import { ListingData } from '@/lib/types';
-import { getDefaultCompliance } from '@/lib/compliance';
+import { ListingData, MLSComplianceConfig, ViolationCategory } from '@/lib/types';
+import { getDefaultCompliance } from '@/lib/compliance/engine';
+import { loadComplianceDocs } from '@/lib/compliance/docs';
 
-export function buildGenerationPrompt(listing: ListingData): string {
+const categoryLabels: Record<ViolationCategory, string> = {
+  'steering': 'Steering',
+  'familial-status': 'Familial Status',
+  'disability': 'Disability',
+  'race-color-national-origin': 'Race, Color & National Origin',
+  'religion': 'Religion',
+  'sex-gender': 'Sex & Gender',
+  'age': 'Age',
+  'marital-status': 'Marital Status',
+  'political-beliefs': 'Political Beliefs',
+  'economic-exclusion': 'Economic Exclusion',
+  'misleading-claims': 'Misleading Claims',
+};
+
+/**
+ * Build the cheat sheet section from the compliance config.
+ * Organized by category with term, explanation, and alternative.
+ */
+function buildCheatSheet(config: MLSComplianceConfig): string {
+  const byCategory = new Map<ViolationCategory, typeof config.prohibitedTerms>();
+
+  for (const term of config.prohibitedTerms) {
+    if (!byCategory.has(term.category)) {
+      byCategory.set(term.category, []);
+    }
+    byCategory.get(term.category)!.push(term);
+  }
+
+  let sheet = '## Fair Housing Compliance Cheat Sheet\n\n';
+  sheet += 'The following terms and phrases MUST NEVER appear in any generated copy.\n\n';
+
+  for (const [category, terms] of byCategory) {
+    const label = categoryLabels[category] || category;
+    const hardTerms = terms.filter(t => t.severity === 'hard');
+    const softTerms = terms.filter(t => t.severity === 'soft');
+
+    sheet += `### ${label}\n`;
+
+    if (hardTerms.length > 0) {
+      sheet += '**PROHIBITED (hard violations - illegal):**\n';
+      for (const t of hardTerms) {
+        sheet += `- "${t.term}" -- ${t.shortExplanation}. Say instead: "${t.suggestedAlternative}"\n`;
+      }
+    }
+
+    if (softTerms.length > 0) {
+      sheet += '**AVOID (soft warnings - risky):**\n';
+      for (const t of softTerms) {
+        sheet += `- "${t.term}" -- ${t.shortExplanation}. Say instead: "${t.suggestedAlternative}"\n`;
+      }
+    }
+
+    sheet += '\n';
+  }
+
+  return sheet;
+}
+
+/**
+ * Build the generation prompt with dual-layer compliance.
+ * Layer 1: Cheat sheet from config (quick reference)
+ * Layer 2: Textbook from markdown docs (deep understanding)
+ */
+export async function buildGenerationPrompt(listing: ListingData, complianceDocs?: string): Promise<string> {
   const compliance = getDefaultCompliance();
   const addr = listing.address;
   const fullAddress = [addr.street, addr.city, addr.state, addr.zip].filter(Boolean).join(', ');
+
+  const cheatSheet = buildCheatSheet(compliance);
+
+  // Load docs if not already provided (allows caller to pre-load)
+  let textbook = complianceDocs ?? '';
+  if (!textbook && compliance.docPaths) {
+    textbook = await loadComplianceDocs(compliance);
+  }
+
+  let complianceSection = `## Fair Housing Compliance
+
+You have been trained on fair housing law. The following sections explain WHY certain language is prohibited, not just WHAT is prohibited. Use your understanding of these principles to avoid violations even for terms not explicitly listed. Apply these rules to ALL output -- every platform, every tone variant.
+
+${cheatSheet}`;
+
+  if (textbook) {
+    complianceSection += `## Fair Housing Legal Reference (Textbook)
+
+The following is comprehensive legal context for fair housing compliance. Use this to understand the principles behind the rules, edge cases, and the real-world harm that discriminatory advertising causes.
+
+${textbook}
+
+--- End of Legal Reference ---
+`;
+  } else {
+    const stateNote = compliance.docPaths?.state?.length
+      ? ''
+      : `\nNote: State-specific compliance documentation is not yet available for ${compliance.state}. Apply federal and industry guidelines.`;
+    complianceSection += `Note: Detailed compliance documentation is being loaded separately. Apply the cheat sheet rules strictly.${stateNote}\n`;
+  }
 
   return `You are an expert real estate marketing copywriter. Generate a complete campaign kit for the following property listing.
 
@@ -23,12 +117,16 @@ ${listing.broker ? `- **Broker:** ${listing.broker}` : ''}
 
 ## Listing Description
 ${listing.description || 'No description available — generate based on property details above.'}
+${listing.sellingPoints && listing.sellingPoints.length > 0 ? `
+## Agent-Provided Selling Points (emphasize these)
+${listing.sellingPoints.map((point) => `- ${point}`).join('\n')}
+` : ''}
+${complianceSection}
 
-## MLS Compliance Rules (${compliance.state})
+## MLS Rules (${compliance.state})
 - MLS: ${compliance.mlsName}
 - Rules: ${compliance.rules.join('; ')}
 - Required disclosures: ${compliance.requiredDisclosures.join('; ')}
-- PROHIBITED TERMS (never use): ${compliance.prohibitedTerms.join(', ')}
 ${compliance.maxDescriptionLength ? `- Max MLS description length: ${compliance.maxDescriptionLength} characters` : ''}
 
 ## Output Requirements
@@ -82,7 +180,8 @@ Return a JSON object with EXACTLY this structure. Do not include any text outsid
 IMPORTANT RULES:
 - Respect ALL character limits exactly
 - Use MLS compliance rules for the mlsDescription
-- Never use prohibited terms in ANY output
+- Never use prohibited terms in ANY output — refer to the cheat sheet above
+- Apply fair housing principles from the legal reference to avoid even unlisted violations
 - Make each platform's copy feel native to that platform
 - Hashtags should be a mix of broad reach + local + niche (15-20 total)
 - Selling points ranked by marketing impact (best first)
