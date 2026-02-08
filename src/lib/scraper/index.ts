@@ -12,13 +12,35 @@ export async function scrapeListing(url: string): Promise<ScrapeResult> {
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Sec-Ch-Ua': '"Not A(Brand";v="8", "Chromium";v="131", "Google Chrome";v="131"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
       },
+      redirect: 'follow',
       signal: AbortSignal.timeout(15000),
     });
 
     if (!response.ok) {
-      return { success: false, error: `Failed to fetch listing page: ${response.status} ${response.statusText}` };
+      if (response.status === 403) {
+        return {
+          success: false,
+          error: 'This site blocked automated access (403 Forbidden). Try a different listing source like Realtor.com, Redfin, or your local MLS site.',
+        };
+      }
+      return {
+        success: false,
+        error: `Failed to fetch listing page: ${response.status} ${response.statusText}`,
+      };
     }
 
     const html = await response.text();
