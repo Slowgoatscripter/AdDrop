@@ -18,28 +18,24 @@ export function Lightbox({
   onNavigate,
   alt = 'Property image',
 }: LightboxProps) {
-  // Lock body scroll when mounted, restore on unmount
-  React.useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
-
-  // Keyboard navigation
+  // Keyboard navigation and body scroll lock
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose()
       } else if (e.key === 'ArrowRight') {
-        handleNext()
+        onNavigate((currentIndex + 1) % images.length)
       } else if (e.key === 'ArrowLeft') {
-        handlePrevious()
+        onNavigate((currentIndex - 1 + images.length) % images.length)
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+    }
   }, [currentIndex, images.length, onClose, onNavigate])
 
   const handleNext = () => {
@@ -58,6 +54,8 @@ export function Lightbox({
     <div
       className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       {/* Photo counter */}
       {showNavigation && (
@@ -68,7 +66,7 @@ export function Lightbox({
 
       {/* Close button */}
       <button
-        onClick={onClose}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
         className="absolute top-4 right-4 z-10 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors"
         aria-label="Close lightbox"
       >
