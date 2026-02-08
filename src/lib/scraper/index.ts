@@ -59,6 +59,12 @@ export async function scrapeListing(url: string): Promise<ScrapeResult> {
     if (!merged.sqft) missingFields.push('sqft');
     if (!merged.description) missingFields.push('description');
 
+    if (merged.photos) {
+      merged.photos = Array.from(new Set(merged.photos))
+        .filter(url => url && url.startsWith('http'))
+        .slice(0, 25);
+    }
+
     const listing: ListingData = {
       url,
       address: merged.address || { street: '', city: '', state: '', zip: '' },

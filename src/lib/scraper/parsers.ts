@@ -111,12 +111,18 @@ export function parseOpenGraph($: cheerio.CheerioAPI): Partial<ListingData> {
   const result: Partial<ListingData> = {};
   const title = $('meta[property="og:title"]').attr('content');
   const desc = $('meta[property="og:description"]').attr('content');
-  const image = $('meta[property="og:image"]').attr('content');
   const price = $('meta[property="product:price:amount"]').attr('content');
 
   if (title) result.address = parseAddressFromString(title);
   if (desc) result.description = desc;
-  if (image) result.photos = [image];
+
+  const ogImages: string[] = [];
+  $('meta[property="og:image"], meta[property="og:image:url"]').each((_, el) => {
+    const content = $(el).attr('content');
+    if (content) ogImages.push(content);
+  });
+  if (ogImages.length > 0) result.photos = ogImages;
+
   if (price) result.price = Number(price.replace(/[^0-9.]/g, ''));
 
   return result;
@@ -149,11 +155,11 @@ export function parseHtmlMeta($: cheerio.CheerioAPI): Partial<ListingData> {
   if (sqftMatch) result.sqft = Number(sqftMatch[1].replace(/,/g, ''));
 
   const photos: string[] = [];
-  $('img[src*="photo"], img[src*="image"], img[data-src]').each((_, el) => {
-    const src = $(el).attr('src') || $(el).attr('data-src');
+  $('img[src*="photo"], img[src*="image"], img[data-src], img[data-lazy], img[data-original], img[data-lazy-src], picture > img, [class*="photo"] img, [class*="gallery"] img, [class*="carousel"] img, [class*="slider"] img').each((_, el) => {
+    const src = $(el).attr('src') || $(el).attr('data-src') || $(el).attr('data-lazy') || $(el).attr('data-original') || $(el).attr('data-lazy-src');
     if (src && src.startsWith('http')) photos.push(src);
   });
-  if (photos.length > 0) result.photos = photos.slice(0, 10);
+  if (photos.length > 0) result.photos = photos.slice(0, 25);
 
   return result;
 }
@@ -176,7 +182,13 @@ export function mergeListingData(...sources: Partial<ListingData>[]): Partial<Li
         if (addr.zip && !result.address.zip) result.address.zip = addr.zip;
         if (addr.neighborhood) result.address.neighborhood = addr.neighborhood;
       } else if (key === 'photos') {
-        result.photos = result.photos?.length ? result.photos : (value as string[]);
+        const incoming = value as string[];
+        if (!result.photos || result.photos.length === 0) {
+          result.photos = incoming;
+        } else if (incoming && incoming.length > 0) {
+          const combined = [...result.photos, ...incoming];
+          result.photos = Array.from(new Set(combined));
+        }
       } else if (key === 'features') {
         result.features = result.features?.length ? result.features : (value as string[]);
       } else if (!(key in result) || (result as Record<string, unknown>)[key] === undefined) {
