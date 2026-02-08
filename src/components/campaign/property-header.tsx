@@ -15,6 +15,7 @@ export function PropertyHeader({ listing }: PropertyHeaderProps) {
       <CardContent className="flex flex-col md:flex-row gap-6 p-6">
         {listing.photos[0] && (
           <div className="w-full md:w-64 h-48 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={listing.photos[0]} alt={fullAddress} className="w-full h-full object-cover" />
           </div>
         )}

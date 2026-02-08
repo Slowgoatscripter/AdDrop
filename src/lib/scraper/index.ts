@@ -24,9 +24,9 @@ export async function scrapeListing(url: string): Promise<ScrapeResult> {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    const jsonLdData = parseJsonLd($) || {};
-    const ogData = parseOpenGraph($);
-    const htmlData = parseHtmlMeta($);
+    const jsonLdData = parseJsonLd($ as cheerio.CheerioAPI) || {};
+    const ogData = parseOpenGraph($ as cheerio.CheerioAPI);
+    const htmlData = parseHtmlMeta($ as cheerio.CheerioAPI);
     const merged = mergeListingData(jsonLdData, ogData, htmlData);
 
     const missingFields: string[] = [];

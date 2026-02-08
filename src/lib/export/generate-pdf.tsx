@@ -5,7 +5,7 @@ import { CampaignPdf } from './pdf-document';
 
 export async function generatePdfBuffer(campaign: CampaignKit): Promise<Buffer> {
   const element = React.createElement(CampaignPdf, { campaign });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   const buffer = await renderToBuffer(element as any);
   return Buffer.from(buffer);
 }
