@@ -107,6 +107,11 @@ export function Lightbox({
         alt={`${alt} ${currentIndex + 1}`}
         className="max-h-[90vh] max-w-[90vw] object-contain"
         onClick={(e) => e.stopPropagation()}
+        onError={(e) => {
+          e.currentTarget.src = '';
+          e.currentTarget.alt = 'Image unavailable';
+          e.currentTarget.className = 'max-h-[90vh] max-w-[90vw] bg-slate-800 flex items-center justify-center text-white p-8';
+        }}
       />
     </div>
   )

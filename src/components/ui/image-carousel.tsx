@@ -64,6 +64,11 @@ export function ImageCarousel({
                 alt={`${alt} ${index + 1}`}
                 className="w-full h-full object-cover cursor-pointer"
                 onClick={() => setLightboxOpen(true)}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  target.parentElement?.classList.add('bg-slate-200');
+                }}
               />
             </div>
           ))}
@@ -74,14 +79,14 @@ export function ImageCarousel({
           <>
             <button
               onClick={goPrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-all opacity-0 group-hover:opacity-100"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label="Previous image"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={goNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-all opacity-0 group-hover:opacity-100"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label="Next image"
             >
               <ChevronRight className="w-5 h-5" />
@@ -94,9 +99,9 @@ export function ImageCarousel({
           {currentIndex + 1} / {images.length}
         </div>
 
-        {/* Dot indicators - only show when multiple images */}
-        {images.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+        {/* Dot indicators - only show when multiple images (max 8) */}
+        {images.length > 1 && images.length <= 8 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10 max-w-[200px] overflow-hidden">
             {images.map((_, index) => (
               <button
                 key={index}
