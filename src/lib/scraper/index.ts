@@ -62,6 +62,32 @@ export async function scrapeListing(url: string): Promise<ScrapeResult> {
     if (merged.photos) {
       merged.photos = Array.from(new Set(merged.photos))
         .filter(url => url && url.startsWith('http'))
+        // Filter out non-property images
+        .filter(url => {
+          const lower = url.toLowerCase();
+
+          // Exclude common non-property image URL patterns
+          const excludePatterns = [
+            '/logo', '/agent', '/headshot', '/avatar', '/icon', '/brand',
+            '/badge', '/banner', '/sprite', '/social', '/profile',
+            '/favicon', '/widget', '/btn', '/button', '/arrow',
+            '/placeholder', '/default', '/generic', '/watermark',
+            'gravatar.com', 'facebook.com/tr', 'doubleclick.net',
+            'google-analytics', 'googleadservices', 'linkedin.com/media',
+            '.svg', '.gif', '.ico',
+          ];
+          if (excludePatterns.some(p => lower.includes(p))) return false;
+
+          // Exclude tiny images (likely icons/buttons) based on URL dimension hints
+          const dimensionMatch = lower.match(/[\/_-](\d+)x(\d+)/);
+          if (dimensionMatch) {
+            const w = parseInt(dimensionMatch[1]);
+            const h = parseInt(dimensionMatch[2]);
+            if (w < 200 || h < 150) return false;
+          }
+
+          return true;
+        })
         .slice(0, 25);
     }
 
