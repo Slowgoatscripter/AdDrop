@@ -21,6 +21,8 @@ export interface ListingData {
   photos: string[];
   listingAgent?: string;
   broker?: string;
+  mlsNumber?: string;
+  sellingPoints?: string[];
 }
 
 export interface ScrapeResult {
