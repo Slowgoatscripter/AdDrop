@@ -1,4 +1,4 @@
-import { UrlInputForm } from '@/components/url-input-form';
+import { MlsInputForm } from '@/components/mls-input-form';
 
 export default function HomePage() {
   return (
@@ -12,7 +12,7 @@ export default function HomePage() {
         </p>
       </div>
 
-      <UrlInputForm />
+      <MlsInputForm />
 
       <footer className="mt-12 text-center text-xs text-slate-400 space-y-1">
         <p>Generates ads for Instagram, Facebook, Google, Twitter/X, Zillow, print &amp; more.</p>
