@@ -29,7 +29,7 @@ export function HowItWorks() {
           How It Works
         </h2>
         <p className="text-center text-muted-foreground mb-16 max-w-lg mx-auto">
-          Three steps. That's it.
+          Three steps. That&apos;s it.
         </p>
 
         <div className="grid md:grid-cols-3 gap-8">

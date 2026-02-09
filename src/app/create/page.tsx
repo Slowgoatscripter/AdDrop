@@ -19,7 +19,7 @@ export default function CreatePage() {
             Create Your Campaign
           </h1>
           <p className="text-muted-foreground">
-            Enter your property details and we'll generate ads for every platform.
+            Enter your property details and we&apos;ll generate ads for every platform.
           </p>
         </div>
 
