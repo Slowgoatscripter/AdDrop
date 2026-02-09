@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'RealEstate Ad Gen — AI-Powered Property Marketing',
-  description: 'Generate ready-to-post ads for Instagram, Facebook, Google, Zillow, print, and more from any property listing URL.',
+  title: 'AdDrop — AI-Powered Real Estate Marketing',
+  description: 'Turn any property listing into a complete ad campaign across 12+ platforms in seconds. Instagram, Facebook, Google, print, and more.',
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} bg-background text-foreground`}>{children}</body>
     </html>
   );
 }
