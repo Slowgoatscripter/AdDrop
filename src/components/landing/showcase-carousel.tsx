@@ -1,7 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Instagram, Facebook, Search, Mail, Newspaper } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Facebook,
+  Instagram,
+  Mail,
+  Newspaper,
+  Search,
+} from 'lucide-react';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 interface ShowcaseSlide {
   platform: string;
@@ -17,110 +27,166 @@ const slides: ShowcaseSlide[] = [
     platform: 'Instagram',
     icon: Instagram,
     accentColor: 'from-purple-500 to-pink-500',
-    headline: '@premierhomes',
-    body: '✨ Just Listed — 4 bed, 3 bath stunner in Whitefish, MT. Vaulted ceilings, chef\'s kitchen, and mountain views from every window. This one won\'t last.\n\n📍 123 Glacier View Dr\n💰 $875,000\n🏡 2,450 sq ft on 0.5 acres\n\n#MontanaRealEstate #WhitefishMT #JustListed #LuxuryLiving #MountainViews',
-    meta: '2,200 characters · Professional tone',
+    headline: '@metroluxrealty',
+    body: `NEW LISTING | Downtown Chicago penthouse living at its finest.\n\nFloor-to-ceiling windows. Private terrace. 40th-floor skyline views.\n\n📍 401 N Wabash Ave, Unit PH-4\n💰 $2,150,000\n🏙️ 3 bed · 3.5 bath · 2,800 sq ft\n\nThis is the one you've been scrolling for.\n\n#ChicagoRealEstate #PenthouseLiving #JustListed #LuxuryRealEstate`,
+    meta: '2,100 characters · Luxury tone',
   },
   {
     platform: 'Facebook',
     icon: Facebook,
     accentColor: 'from-blue-500 to-blue-600',
-    headline: 'Premier Homes Montana',
-    body: '🏠 NEW LISTING ALERT!\n\nNestled in the heart of Whitefish, this beautifully updated 4-bedroom home offers the perfect blend of mountain charm and modern comfort. Open-concept living, a gourmet kitchen, and a wraparound deck with panoramic views.\n\nSchedule your private showing today!',
-    meta: 'Friendly tone · Ready to post',
+    headline: 'Sunrise Realty Group',
+    body: `🏡 FIRST-TIME BUYERS — This one's for you!\n\nCharming 3-bedroom ranch in a quiet cul-de-sac. Updated kitchen, fenced backyard, and just minutes from top-rated schools.\n\nMove-in ready at $285,000. Yes, really.\n\n👉 DM us or comment 'INFO' for details!`,
+    meta: 'Friendly tone · Engagement-optimized',
   },
   {
     platform: 'Google Ads',
     icon: Search,
     accentColor: 'from-green-500 to-emerald-500',
-    headline: 'Whitefish MT Home — 4 Bed $875K',
-    body: 'Mountain views, chef\'s kitchen, 2,450 sqft. Schedule your showing today. Premier Homes Montana — Your Trusted Local Agent.',
-    meta: 'Headline: 28/30 chars · Description: 87/90 chars',
+    headline: 'Waterfront Home — Lake Tahoe | $1.4M',
+    body: 'Private dock, 5 bed/4 bath, 180° lake views. Open house this Saturday. Sierra Lakeshore Properties — Trusted Since 1998.',
+    meta: 'Headline: 29/30 chars · Description: 89/90 chars',
   },
   {
     platform: 'Postcard',
     icon: Mail,
     accentColor: 'from-emerald-500 to-teal-500',
-    headline: 'Your Dream Home Awaits',
-    body: 'Stunning 4-bedroom home in Whitefish with mountain views, gourmet kitchen, and luxury finishes throughout. 2,450 sq ft of refined living on half an acre.',
-    meta: 'Front + Back · Professional tone',
+    headline: '40 Acres of Montana Freedom',
+    body: 'Year-round creek, mature timber, and mountain views in every direction. 20 minutes to Kalispell, fully off-grid ready. Build your legacy at $425,000.',
+    meta: 'Front + Back · Aspirational tone',
   },
   {
     platform: 'Magazine Ad',
     icon: Newspaper,
     accentColor: 'from-amber-500 to-orange-500',
-    headline: 'Where Elegance Meets the Mountains',
-    body: 'An exceptional 4-bedroom residence offering panoramic mountain views, artisan finishes, and unparalleled Whitefish living. This is Montana luxury, redefined.',
-    meta: 'Full page · Luxury tone',
+    headline: 'Prime Retail Space — Downtown Bozeman',
+    body: '4,200 sq ft corner unit on Main Street. High foot traffic, modern build-out, anchor tenants on either side. NNN lease available. Ideal for restaurant, boutique, or professional office.',
+    meta: 'Half page · Professional tone',
   },
 ];
 
 export function ShowcaseCarousel() {
   const [current, setCurrent] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const prefersReduced = useReducedMotion();
 
-  const goNext = () => setCurrent((prev) => (prev + 1) % slides.length);
-  const goPrev = () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+  const goNext = useCallback(
+    () => setCurrent((prev) => (prev + 1) % slides.length),
+    []
+  );
+  const goPrev = useCallback(
+    () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length),
+    []
+  );
+
+  // Auto-play
+  useEffect(() => {
+    if (isPaused || prefersReduced) return;
+    const timer = setInterval(goNext, 5000);
+    return () => clearInterval(timer);
+  }, [isPaused, prefersReduced, goNext]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'ArrowRight') goNext();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goNext, goPrev]);
 
   const slide = slides[current];
-  const Icon = slide.icon;
 
   return (
     <section className="py-24 px-6">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-          See What AdDrop Creates
-        </h2>
-        <p className="text-center text-muted-foreground mb-16 max-w-lg mx-auto">
-          Real examples from a single property listing.
-        </p>
+        <ScrollReveal>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+            See What AdDrop Creates
+          </h2>
+          <p className="text-muted-foreground text-center mb-12">
+            Real examples. Different properties. Every platform.
+          </p>
+        </ScrollReveal>
 
-        <div className="relative">
-          <div className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
-            <div className={`px-6 py-4 bg-gradient-to-r ${slide.accentColor} flex items-center gap-3`}>
-              <Icon className="w-5 h-5 text-white" />
-              <span className="font-semibold text-white">{slide.platform}</span>
-            </div>
-
-            <div className="p-8">
-              <h3 className="text-lg font-semibold mb-3 text-foreground">
-                {slide.headline}
-              </h3>
-              <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed mb-4">
-                {slide.body}
-              </p>
-              {slide.meta && (
-                <p className="text-xs text-muted-foreground/60 border-t border-border/50 pt-4">
-                  {slide.meta}
-                </p>
-              )}
-            </div>
+        <ScrollReveal delay={0.2}>
+          {/* Platform tab selector */}
+          <div className="flex items-center justify-center gap-1 mb-6 overflow-x-auto pb-2">
+            {slides.map((s, index) => (
+              <button
+                key={s.platform}
+                onClick={() => { setCurrent(index); setIsPaused(true); }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                  index === current
+                    ? 'bg-card border border-gold/30 text-foreground shadow-sm shadow-gold/10'
+                    : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-card/50'
+                }`}
+              >
+                <s.icon className="w-4 h-4" />
+                <span className="hidden sm:inline">{s.platform}</span>
+              </button>
+            ))}
           </div>
 
-          <button
-            onClick={goPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-card border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          {/* Carousel card */}
+          <div
+            className="relative"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            role="region"
+            aria-label="Ad showcase carousel"
           >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={goNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-card border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
+            <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+              {/* Platform header */}
+              <div
+                className={`px-6 py-4 bg-gradient-to-r ${slide.accentColor} flex items-center gap-3`}
+              >
+                <slide.icon className="w-5 h-5 text-white" />
+                <span className="text-white font-medium">{slide.platform}</span>
+              </div>
 
-        <div className="flex items-center justify-center gap-2 mt-6">
-          {slides.map((_, index) => (
+              {/* Slide content with AnimatePresence */}
+              <div className="p-8 min-h-[280px]">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={current}
+                    initial={prefersReduced ? {} : { opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={prefersReduced ? {} : { opacity: 0, x: -20 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  >
+                    <h3 className="text-lg font-semibold mb-4">{slide.headline}</h3>
+                    <p className="text-muted-foreground whitespace-pre-wrap text-sm leading-relaxed">
+                      {slide.body}
+                    </p>
+                    {slide.meta && (
+                      <p className="mt-6 text-xs text-muted-foreground/50">
+                        {slide.meta}
+                      </p>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Navigation arrows */}
             <button
-              key={index}
-              onClick={() => setCurrent(index)}
-              className={`h-2 rounded-full transition-all ${
-                index === current ? 'w-8 bg-gold' : 'w-2 bg-muted-foreground/30'
-              }`}
-            />
-          ))}
-        </div>
+              onClick={() => { goPrev(); setIsPaused(true); }}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 rounded-full bg-card border border-border/50 flex items-center justify-center hover:border-gold/30 hover:scale-110 transition-all duration-200"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => { goNext(); setIsPaused(true); }}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 rounded-full bg-card border border-border/50 flex items-center justify-center hover:border-gold/30 hover:scale-110 transition-all duration-200"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );
