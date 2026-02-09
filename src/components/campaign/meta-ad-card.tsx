@@ -40,7 +40,7 @@ export function MetaAdCard({ ad, photos, complianceResult, onReplace }: MetaAdCa
         </div>
       </div>
 
-      <CardContent className="p-4 space-y-4">
+      <CardContent className="p-4 space-y-4 overflow-visible">
         {/* Facebook Ad Mockup */}
         <div className="bg-white rounded border">
           {/* Sponsored Label */}
@@ -96,7 +96,7 @@ export function MetaAdCard({ ad, photos, complianceResult, onReplace }: MetaAdCa
         {/* Copy Button */}
         <button
           onClick={handleCopy}
-          className="flex items-center gap-2 px-3 py-2 text-sm border rounded hover:bg-slate-50 transition-colors w-full justify-center"
+          className="flex items-center gap-2 px-3 py-2 text-sm border border-border rounded hover:bg-secondary transition-colors w-full justify-center"
         >
           {copied ? (
             <>

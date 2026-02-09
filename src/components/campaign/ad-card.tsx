@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/copy-button';
-import { AdTone } from '@/lib/types';
+import { ComplianceBadge } from './compliance-badge';
+import { ViolationDetails } from './violation-details';
+import { AdTone, PlatformComplianceResult } from '@/lib/types';
 
 interface AdCardProps {
   title: string;
@@ -12,9 +14,11 @@ interface AdCardProps {
   tones?: AdTone[];
   characterLimit?: number;
   subtitle?: string;
+  complianceResult?: PlatformComplianceResult;
+  onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
-export function AdCard({ title, content, tones, characterLimit, subtitle }: AdCardProps) {
+export function AdCard({ title, content, tones, characterLimit, subtitle, complianceResult, onReplace }: AdCardProps) {
   const [activeTone, setActiveTone] = useState<string>(tones?.[0] || 'default');
 
   const text = typeof content === 'string' ? content : content[activeTone] || '';
@@ -26,7 +30,10 @@ export function AdCard({ title, content, tones, characterLimit, subtitle }: AdCa
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg">{title}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg">{title}</CardTitle>
+              {complianceResult && <ComplianceBadge result={complianceResult} />}
+            </div>
             {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
           </div>
           <CopyButton text={text} />
@@ -40,8 +47,8 @@ export function AdCard({ title, content, tones, characterLimit, subtitle }: AdCa
                 onClick={() => setActiveTone(tone)}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   activeTone === tone
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-foreground text-background'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
                 {tone.charAt(0).toUpperCase() + tone.slice(1)}
@@ -52,7 +59,7 @@ export function AdCard({ title, content, tones, characterLimit, subtitle }: AdCa
       </CardHeader>
 
       <CardContent>
-        <div className="bg-slate-50 rounded-lg p-4 text-sm whitespace-pre-wrap leading-relaxed">
+        <div className="bg-secondary rounded-lg p-4 text-sm whitespace-pre-wrap leading-relaxed">
           {text}
         </div>
 
@@ -61,6 +68,10 @@ export function AdCard({ title, content, tones, characterLimit, subtitle }: AdCa
             {charCount}{characterLimit ? ` / ${characterLimit}` : ''} chars
           </Badge>
         </div>
+
+        {complianceResult && complianceResult.violations.length > 0 && onReplace && (
+          <ViolationDetails violations={complianceResult.violations} onReplace={onReplace} />
+        )}
       </CardContent>
     </Card>
   );

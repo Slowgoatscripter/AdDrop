@@ -37,7 +37,7 @@ export function PostcardCard({ content, photos, complianceResult, onReplace }: P
   return (
     <Card className="border-l-4 border-emerald-400/50">
       {/* Header */}
-      <CardContent className="p-4">
+      <CardContent className="p-4 overflow-visible">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-emerald-500" />
@@ -48,7 +48,7 @@ export function PostcardCard({ content, photos, complianceResult, onReplace }: P
 
         {/* Front Mockup */}
         <div className="mb-4">
-          <p className="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Front</p>
+          <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">Front</p>
           <div className="relative rounded-lg overflow-hidden border shadow-sm aspect-[3/2] bg-slate-100">
             {photos.length > 0 ? (
               <>
@@ -97,7 +97,7 @@ export function PostcardCard({ content, photos, complianceResult, onReplace }: P
 
         {/* Back Mockup */}
         <div>
-          <p className="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Back</p>
+          <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">Back</p>
           <div className="rounded-lg border p-4 bg-white shadow-sm">
             <div className="flex gap-4">
               {/* Left: Back text content */}
@@ -132,8 +132,8 @@ export function PostcardCard({ content, photos, complianceResult, onReplace }: P
                   onClick={() => setSelectedTone(tone)}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                     selectedTone === tone
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-foreground text-background'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 >
                   {tone.charAt(0).toUpperCase() + tone.slice(1)}
@@ -144,7 +144,7 @@ export function PostcardCard({ content, photos, complianceResult, onReplace }: P
 
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-100 hover:bg-slate-200 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium bg-secondary hover:bg-secondary/80 transition-colors"
           >
             {copied ? (
               <>

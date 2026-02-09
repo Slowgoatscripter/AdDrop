@@ -59,7 +59,7 @@ export function InstagramCard({
 
   return (
     <Card className="border-l-4 border-pink-400/50">
-      <CardContent className="p-0">
+      <CardContent className="p-0 overflow-visible">
         {/* Header */}
         <div className="flex items-center justify-between p-4 pb-3">
           <div className="flex items-center gap-2">
@@ -144,8 +144,8 @@ export function InstagramCard({
                 onClick={() => setSelectedTone(tone)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                   selectedTone === tone
-                    ? 'bg-slate-900 text-white hover:bg-slate-900 hover:text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? 'bg-foreground text-background hover:bg-foreground hover:text-background'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
                 {tone.charAt(0).toUpperCase() + tone.slice(1)}

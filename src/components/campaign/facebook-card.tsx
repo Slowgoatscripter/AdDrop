@@ -53,7 +53,7 @@ export function FacebookCard({
 
   return (
     <Card className="border-l-4 border-blue-400/50">
-      <CardContent className="p-4">
+      <CardContent className="p-4 overflow-visible">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">Facebook</h3>
@@ -136,8 +136,8 @@ export function FacebookCard({
               onClick={() => setSelectedTone(tone)}
               className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
                 selectedTone === tone
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
             >
               {toneLabels[tone]}
@@ -152,7 +152,7 @@ export function FacebookCard({
           </Badge>
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
           >
             {copied ? (
               <>

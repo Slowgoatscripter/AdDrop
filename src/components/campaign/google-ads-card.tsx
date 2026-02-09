@@ -3,24 +3,31 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/copy-button';
-import { GoogleAd } from '@/lib/types';
+import { ComplianceBadge } from './compliance-badge';
+import { ViolationDetails } from './violation-details';
+import { GoogleAd, PlatformComplianceResult } from '@/lib/types';
 
 interface GoogleAdsCardProps {
   ads: GoogleAd[];
+  complianceResult?: PlatformComplianceResult;
+  onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
-export function GoogleAdsCard({ ads }: GoogleAdsCardProps) {
+export function GoogleAdsCard({ ads, complianceResult, onReplace }: GoogleAdsCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Google Ads</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle className="text-lg">Google Ads</CardTitle>
+          {complianceResult && <ComplianceBadge result={complianceResult} />}
+        </div>
         <p className="text-sm text-muted-foreground">3 headline + description combinations</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {ads.map((ad, i) => (
-          <div key={i} className="bg-slate-50 rounded-lg p-4 space-y-2">
+          <div key={i} className="bg-secondary rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-slate-400">Variation {i + 1}</p>
+              <p className="text-xs font-medium text-muted-foreground">Variation {i + 1}</p>
               <CopyButton text={`${ad.headline}\n${ad.description}`} />
             </div>
             <div>
@@ -31,7 +38,7 @@ export function GoogleAdsCard({ ads }: GoogleAdsCardProps) {
                 </Badge>
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <p className="text-sm text-slate-600">{ad.description}</p>
+                <p className="text-sm text-muted-foreground">{ad.description}</p>
                 <Badge variant={ad.description.length > 90 ? 'destructive' : 'secondary'} className="text-xs flex-shrink-0">
                   {ad.description.length}/90
                 </Badge>
@@ -39,6 +46,10 @@ export function GoogleAdsCard({ ads }: GoogleAdsCardProps) {
             </div>
           </div>
         ))}
+
+        {complianceResult && complianceResult.violations.length > 0 && onReplace && (
+          <ViolationDetails violations={complianceResult.violations} onReplace={onReplace} />
+        )}
       </CardContent>
     </Card>
   );

@@ -105,7 +105,7 @@ export function PrintAdCard({
       </div>
 
       {/* Controls & Details */}
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-4 space-y-3 overflow-visible">
         {/* Tone Switcher */}
         {tones.length > 1 && (
           <div className="flex gap-1">
@@ -115,8 +115,8 @@ export function PrintAdCard({
                 onClick={() => setSelectedTone(tone)}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   selectedTone === tone
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-foreground text-background'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
                 {tone.charAt(0).toUpperCase() + tone.slice(1)}
@@ -128,7 +128,7 @@ export function PrintAdCard({
         {/* Copy Button */}
         <button
           onClick={handleCopy}
-          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-secondary-foreground bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
         >
           {copied ? (
             <>
