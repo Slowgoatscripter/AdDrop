@@ -5,18 +5,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ImagePicker } from '@/components/ui/image-picker';
 import { ComplianceBadge } from './compliance-badge';
+import { QualityBadge } from './quality-badge';
 import { ViolationDetails } from './violation-details';
 import { MetaAd, PlatformComplianceResult } from '@/lib/types';
+import { PlatformQualityResult } from '@/lib/types/quality';
 import { Copy, Check, ExternalLink } from 'lucide-react';
 
 interface MetaAdCardProps {
   ad: MetaAd;
   photos: string[];
   complianceResult?: PlatformComplianceResult;
+  qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
-export function MetaAdCard({ ad, photos, complianceResult, onReplace }: MetaAdCardProps) {
+export function MetaAdCard({ ad, photos, complianceResult, qualityResult, onReplace }: MetaAdCardProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [copied, setCopied] = useState(false);
 
@@ -36,16 +39,17 @@ export function MetaAdCard({ ad, photos, complianceResult, onReplace }: MetaAdCa
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold">Meta Ad</h3>
             {complianceResult && <ComplianceBadge result={complianceResult} />}
+            {qualityResult && <QualityBadge result={qualityResult} />}
           </div>
         </div>
       </div>
 
       <CardContent className="p-4 space-y-4 overflow-visible">
         {/* Facebook Ad Mockup */}
-        <div className="bg-white rounded border">
+        <div className="bg-white text-slate-900 rounded border">
           {/* Sponsored Label */}
           <div className="px-4 pt-3">
-            <p className="text-xs text-slate-400">Sponsored</p>
+            <p className="text-xs text-slate-500">Sponsored</p>
           </div>
 
           {/* Primary Text */}
@@ -72,10 +76,10 @@ export function MetaAdCard({ ad, photos, complianceResult, onReplace }: MetaAdCa
           </div>
 
           {/* Below Image Bar */}
-          <div className="bg-slate-50 px-4 py-3 flex justify-between items-center">
+          <div className="bg-slate-50 text-slate-900 px-4 py-3 flex justify-between items-center">
             <div className="flex-1">
               <p className="font-semibold text-sm">{ad.headline}</p>
-              <p className="text-xs text-slate-500">{ad.description}</p>
+              <p className="text-xs text-slate-600">{ad.description}</p>
             </div>
             <button className="text-blue-600 text-sm font-semibold border border-blue-600 rounded px-3 py-1 hover:bg-blue-50 transition-colors">
               Learn More

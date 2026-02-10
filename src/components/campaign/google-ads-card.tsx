@@ -4,22 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/copy-button';
 import { ComplianceBadge } from './compliance-badge';
+import { QualityBadge } from './quality-badge';
 import { ViolationDetails } from './violation-details';
 import { GoogleAd, PlatformComplianceResult } from '@/lib/types';
+import { PlatformQualityResult } from '@/lib/types/quality';
 
 interface GoogleAdsCardProps {
   ads: GoogleAd[];
   complianceResult?: PlatformComplianceResult;
+  qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
-export function GoogleAdsCard({ ads, complianceResult, onReplace }: GoogleAdsCardProps) {
+export function GoogleAdsCard({ ads, complianceResult, qualityResult, onReplace }: GoogleAdsCardProps) {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <CardTitle className="text-lg">Google Ads</CardTitle>
           {complianceResult && <ComplianceBadge result={complianceResult} />}
+          {qualityResult && <QualityBadge result={qualityResult} />}
         </div>
         <p className="text-sm text-muted-foreground">3 headline + description combinations</p>
       </CardHeader>
@@ -32,7 +36,7 @@ export function GoogleAdsCard({ ads, complianceResult, onReplace }: GoogleAdsCar
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-semibold text-blue-700">{ad.headline}</p>
+                <p className="font-semibold text-blue-400">{ad.headline}</p>
                 <Badge variant={ad.headline.length > 30 ? 'destructive' : 'secondary'} className="text-xs">
                   {ad.headline.length}/30
                 </Badge>

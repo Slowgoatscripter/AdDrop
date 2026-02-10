@@ -5,18 +5,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ImagePicker } from '@/components/ui/image-picker';
 import { ComplianceBadge } from './compliance-badge';
+import { QualityBadge } from './quality-badge';
 import { ViolationDetails } from './violation-details';
 import { PrintAd, PlatformComplianceResult } from '@/lib/types';
+import { PlatformQualityResult } from '@/lib/types/quality';
 import { Copy, Check, Mail } from 'lucide-react';
 
 interface PostcardCardProps {
   content: Record<string, { front: PrintAd; back: string }>;
   photos: string[];
   complianceResult?: PlatformComplianceResult;
+  qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
-export function PostcardCard({ content, photos, complianceResult, onReplace }: PostcardCardProps) {
+export function PostcardCard({ content, photos, complianceResult, qualityResult, onReplace }: PostcardCardProps) {
   const tones = Object.keys(content);
   const [selectedTone, setSelectedTone] = useState(tones[0]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -43,6 +46,7 @@ export function PostcardCard({ content, photos, complianceResult, onReplace }: P
             <Mail className="w-5 h-5 text-emerald-500" />
             <h3 className="text-lg font-semibold">Postcard</h3>
             {complianceResult && <ComplianceBadge result={complianceResult} />}
+            {qualityResult && <QualityBadge result={qualityResult} />}
           </div>
         </div>
 
@@ -98,7 +102,7 @@ export function PostcardCard({ content, photos, complianceResult, onReplace }: P
         {/* Back Mockup */}
         <div>
           <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">Back</p>
-          <div className="rounded-lg border p-4 bg-white shadow-sm">
+          <div className="rounded-lg border p-4 bg-white text-slate-900 shadow-sm">
             <div className="flex gap-4">
               {/* Left: Back text content */}
               <div className="flex-1">
@@ -110,7 +114,7 @@ export function PostcardCard({ content, photos, complianceResult, onReplace }: P
               {/* Right: Stamp area */}
               <div className="w-24 flex-shrink-0">
                 <div className="border-2 border-dashed border-slate-300 rounded h-16 w-16 ml-auto flex items-center justify-center">
-                  <p className="text-[8px] text-slate-300 uppercase text-center leading-tight px-1">
+                  <p className="text-[8px] text-slate-400 uppercase text-center leading-tight px-1">
                     PLACE<br />STAMP<br />HERE
                   </p>
                 </div>

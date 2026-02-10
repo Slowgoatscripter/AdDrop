@@ -5,8 +5,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ImagePicker } from '@/components/ui/image-picker';
 import { ComplianceBadge } from './compliance-badge';
+import { QualityBadge } from './quality-badge';
 import { ViolationDetails } from './violation-details';
 import { PlatformComplianceResult } from '@/lib/types';
+import { PlatformQualityResult } from '@/lib/types/quality';
 import {
   ThumbsUp,
   MessageCircle,
@@ -21,6 +23,7 @@ interface FacebookCardProps {
   content: Record<string, string>;
   photos: string[];
   complianceResult?: PlatformComplianceResult;
+  qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
@@ -36,6 +39,7 @@ export function FacebookCard({
   content,
   photos,
   complianceResult,
+  qualityResult,
   onReplace
 }: FacebookCardProps) {
   const [selectedTone, setSelectedTone] = useState<string>('professional');
@@ -57,13 +61,14 @@ export function FacebookCard({
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">Facebook</h3>
-          {complianceResult && (
-            <ComplianceBadge result={complianceResult} />
-          )}
+          <div className="flex items-center gap-1.5">
+            {complianceResult && <ComplianceBadge result={complianceResult} />}
+            {qualityResult && <QualityBadge result={qualityResult} />}
+          </div>
         </div>
 
         {/* Facebook Mockup */}
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4">
+        <div className="bg-white text-slate-900 rounded-lg border border-slate-200 overflow-hidden mb-4">
           {/* FB Post Header */}
           <div className="flex items-center gap-3 p-4">
             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
@@ -71,9 +76,9 @@ export function FacebookCard({
             </div>
             <div className="flex-1">
               <div className="font-semibold text-sm">Your Brand</div>
-              <div className="text-xs text-slate-400">Just now · 🌐</div>
+              <div className="text-xs text-slate-500">Just now · 🌐</div>
             </div>
-            <MoreHorizontal className="w-5 h-5 text-slate-400" />
+            <MoreHorizontal className="w-5 h-5 text-slate-500" />
           </div>
 
           {/* Post Text */}
@@ -90,7 +95,7 @@ export function FacebookCard({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-400">
+              <div className="w-full h-full flex items-center justify-center text-slate-500">
                 <ImageIcon className="w-16 h-16" />
               </div>
             )}
@@ -106,22 +111,22 @@ export function FacebookCard({
           </div>
 
           {/* Engagement Row */}
-          <div className="px-4 py-1.5 flex justify-between text-xs text-slate-500 border-b border-slate-200">
+          <div className="px-4 py-1.5 flex justify-between text-xs text-slate-600 border-b border-slate-200">
             <span>👍😍 24</span>
             <span>5 Comments · 2 Shares</span>
           </div>
 
           {/* Action Buttons */}
           <div className="px-4 py-1 flex justify-around border-b border-slate-200">
-            <button className="flex items-center gap-1.5 text-sm text-slate-500 py-1.5 hover:bg-slate-50 px-3 rounded">
+            <button className="flex items-center gap-1.5 text-sm text-slate-600 py-1.5 hover:bg-slate-50 px-3 rounded">
               <ThumbsUp className="w-4 h-4" />
               <span>Like</span>
             </button>
-            <button className="flex items-center gap-1.5 text-sm text-slate-500 py-1.5 hover:bg-slate-50 px-3 rounded">
+            <button className="flex items-center gap-1.5 text-sm text-slate-600 py-1.5 hover:bg-slate-50 px-3 rounded">
               <MessageCircle className="w-4 h-4" />
               <span>Comment</span>
             </button>
-            <button className="flex items-center gap-1.5 text-sm text-slate-500 py-1.5 hover:bg-slate-50 px-3 rounded">
+            <button className="flex items-center gap-1.5 text-sm text-slate-600 py-1.5 hover:bg-slate-50 px-3 rounded">
               <Share2 className="w-4 h-4" />
               <span>Share</span>
             </button>

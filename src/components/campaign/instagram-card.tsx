@@ -6,8 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ImagePicker } from '@/components/ui/image-picker';
 import { ComplianceBadge } from './compliance-badge';
+import { QualityBadge } from './quality-badge';
 import { ViolationDetails } from './violation-details';
 import { AdTone, PlatformComplianceResult } from '@/lib/types';
+import { PlatformQualityResult } from '@/lib/types/quality';
 import {
   Heart,
   MessageCircle,
@@ -23,6 +25,7 @@ interface InstagramCardProps {
   content: Record<string, string>;
   photos: string[];
   complianceResult?: PlatformComplianceResult;
+  qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
@@ -30,6 +33,7 @@ export function InstagramCard({
   content,
   photos,
   complianceResult,
+  qualityResult,
   onReplace,
 }: InstagramCardProps) {
   const tones = Object.keys(content) as AdTone[];
@@ -52,7 +56,7 @@ export function InstagramCard({
     return (
       <>
         {text.slice(0, limit)}
-        <span className="text-slate-400">... more</span>
+        <span className="text-slate-500">... more</span>
       </>
     );
   };
@@ -66,20 +70,21 @@ export function InstagramCard({
             <h3 className="font-semibold text-lg">Instagram</h3>
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400" />
           </div>
-          {complianceResult && (
-            <ComplianceBadge result={complianceResult} />
-          )}
+          <div className="flex items-center gap-1.5">
+            {complianceResult && <ComplianceBadge result={complianceResult} />}
+            {qualityResult && <QualityBadge result={qualityResult} />}
+          </div>
         </div>
 
         {/* Phone mockup */}
-        <div className="mx-4 mb-4 bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div className="mx-4 mb-4 bg-white text-slate-900 border border-slate-200 rounded-lg overflow-hidden">
           {/* IG Header bar */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
               <span className="font-semibold text-sm">yourbrand</span>
             </div>
-            <MoreHorizontal className="h-5 w-5 text-slate-400" />
+            <MoreHorizontal className="h-5 w-5 text-slate-500" />
           </div>
 
           {/* Image area */}
