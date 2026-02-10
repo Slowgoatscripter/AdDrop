@@ -1,3 +1,6 @@
+import { CampaignComplianceResult } from './compliance';
+import { CampaignQualityResult } from './quality';
+
 export type AdTone = 'professional' | 'casual' | 'luxury';
 
 export interface AdVariation {
@@ -26,12 +29,6 @@ export interface PrintAd {
   cta: string;
 }
 
-export interface ComplianceCheckItem {
-  rule: string;
-  passed: boolean;
-  detail?: string;
-}
-
 export interface CampaignKit {
   id: string;
   listing: import('./listing').ListingData;
@@ -48,7 +45,8 @@ export interface CampaignKit {
   realtorCom: string;
   homesComTrulia: string;
   mlsDescription: string;
-  mlsComplianceChecklist: ComplianceCheckItem[];
+  complianceResult: CampaignComplianceResult;
+  qualityResult?: CampaignQualityResult;
   hashtags: string[];
   callsToAction: string[];
   targetingNotes: string;

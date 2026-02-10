@@ -1,6 +1,7 @@
 import { ListingData, MLSComplianceConfig, ViolationCategory } from '@/lib/types';
 import { getDefaultCompliance } from '@/lib/compliance/engine';
 import { loadComplianceDocs } from '@/lib/compliance/docs';
+import { buildQualityCheatSheet, loadQualityDocs } from '@/lib/quality/docs';
 
 const categoryLabels: Record<ViolationCategory, string> = {
   'steering': 'Steering',
@@ -61,21 +62,37 @@ function buildCheatSheet(config: MLSComplianceConfig): string {
 }
 
 /**
- * Build the generation prompt with dual-layer compliance.
- * Layer 1: Cheat sheet from config (quick reference)
- * Layer 2: Textbook from markdown docs (deep understanding)
+ * Build the generation prompt with dual-layer compliance + quality.
+ * Compliance: cheat sheet + textbook (legal gatekeeper)
+ * Quality: cheat sheet + textbook (creative enhancer)
  */
-export async function buildGenerationPrompt(listing: ListingData, complianceDocs?: string): Promise<string> {
+export async function buildGenerationPrompt(
+  listing: ListingData,
+  complianceDocs?: string,
+  qualityDocs?: string,
+  options?: { demographic?: string; propertyType?: string }
+): Promise<string> {
   const compliance = getDefaultCompliance();
   const addr = listing.address;
   const fullAddress = [addr.street, addr.city, addr.state, addr.zip].filter(Boolean).join(', ');
 
   const cheatSheet = buildCheatSheet(compliance);
 
-  // Load docs if not already provided (allows caller to pre-load)
+  // Load compliance docs if not already provided
   let textbook = complianceDocs ?? '';
   if (!textbook && compliance.docPaths) {
     textbook = await loadComplianceDocs(compliance);
+  }
+
+  // Build quality sections
+  const qualityCheatSheet = buildQualityCheatSheet({
+    demographic: options?.demographic,
+    propertyType: options?.propertyType || listing.propertyType,
+  });
+
+  let qualityTextbook = qualityDocs ?? '';
+  if (!qualityTextbook) {
+    qualityTextbook = await loadQualityDocs();
   }
 
   let complianceSection = `## Fair Housing Compliance
@@ -123,6 +140,19 @@ ${listing.sellingPoints.map((point) => `- ${point}`).join('\n')}
 ` : ''}
 ${complianceSection}
 
+## Ad Quality Standards
+
+The following quality rules ensure your copy is specific, platform-optimized, and compelling. Avoid the anti-patterns listed below and follow the quality guidance.
+
+${qualityCheatSheet}
+${qualityTextbook ? `## Ad Quality Reference (Textbook)
+
+The following is comprehensive guidance on platform best practices, copywriting craft, tone definitions, and demographic/property-type tailoring.
+
+${qualityTextbook}
+
+--- End of Quality Reference ---
+` : ''}
 ## MLS Rules (${compliance.state})
 - MLS: ${compliance.mlsName}
 - Rules: ${compliance.rules.join('; ')}
@@ -185,5 +215,10 @@ IMPORTANT RULES:
 - Make each platform's copy feel native to that platform
 - Hashtags should be a mix of broad reach + local + niche (15-20 total)
 - Selling points ranked by marketing impact (best first)
-- All copy must be Fair Housing compliant`;
+- All copy must be Fair Housing compliant
+- NEVER use vague praise, euphemisms, pressure tactics, or AI filler words — refer to the quality cheat sheet
+- Every feature must be paired with a lifestyle benefit (the "So what?" test)
+- Start each ad with a specific, attention-grabbing hook — not a generic opener
+- Each tone variation (professional/casual/luxury) must be genuinely different in structure and angle
+- Use verb-first calls to action ("Schedule your showing") not generic CTAs ("Click here")`;
 }
