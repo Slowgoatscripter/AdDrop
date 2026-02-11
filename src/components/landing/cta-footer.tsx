@@ -1,64 +1,79 @@
-import { ArrowRight, Check } from 'lucide-react';
-import Link from 'next/link';
-import { ScrollReveal } from '@/components/ui/scroll-reveal';
+import Image from 'next/image';
+import { Check } from 'lucide-react';
 
 const valuePoints = [
-  '12+ platform ads',
-  'Compliance checked',
-  'Multiple tones',
-  'Ready in seconds',
+  'No credit card required',
+  'Generate in 60 seconds',
+  '100% compliant',
 ];
 
-export function CTAFooter() {
+interface CTAFooterProps {
+  headline?: string;
+  description?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  // Legacy prop for backwards compatibility
+  betaNotice?: string;
+}
+
+export function CTAFooter({
+  headline = 'Your Next Listing Deserves Better Marketing',
+  description: descriptionProp,
+  betaNotice,
+  ctaText = 'Create Your First Campaign',
+  ctaHref = '/create',
+}: CTAFooterProps) {
+  // Support both description (new) and betaNotice (legacy) props
+  const description =
+    descriptionProp ||
+    betaNotice ||
+    'In the time it took to read this page, AdDrop could have built your entire campaign.';
   return (
-    <section className="py-24 px-6 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[500px] h-[300px] bg-gold/5 rounded-full blur-[100px]" />
-      </div>
+    <section className="relative py-32 overflow-hidden">
+      {/* Background image */}
+      <Image
+        src="/images/cta-bg.jpg"
+        fill
+        className="object-cover"
+        sizes="100vw"
+        loading="lazy"
+        alt=""
+      />
 
-      <div className="relative z-10 max-w-2xl mx-auto text-center">
-        {/* Gold gradient divider */}
-        <ScrollReveal>
-          <div className="w-24 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent mx-auto mb-12" />
-        </ScrollReveal>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-background/85" />
 
-        <ScrollReveal delay={0.1}>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Your Next Listing Deserves Better Marketing
-          </h2>
-          <p className="text-muted-foreground mb-8">
-            In the time it took to read this page, AdDrop could have built your
-            entire campaign.
-          </p>
-        </ScrollReveal>
+      {/* Gold gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-gold/[0.04] via-transparent to-gold/[0.06]" />
 
-        <ScrollReveal delay={0.2}>
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-10">
-            {valuePoints.map((point) => (
-              <div
-                key={point}
-                className="flex items-center gap-2 text-sm text-muted-foreground"
-              >
-                <Check className="w-4 h-4 text-gold" />
-                {point}
+      {/* Content */}
+      <div className="relative z-10 max-w-4xl mx-auto text-center px-6">
+        <h2 className="font-serif text-5xl md:text-7xl italic text-cream mb-6">
+          {headline}
+        </h2>
+        <p className="text-muted-foreground text-lg md:text-xl mb-10 max-w-2xl mx-auto">
+          {description}
+        </p>
+
+        {/* Value points with gold checkmarks */}
+        <div className="flex flex-wrap justify-center gap-6 mb-12">
+          {valuePoints.map((point) => (
+            <div key={point} className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full border border-gold/40 flex items-center justify-center">
+                <Check className="w-3 h-3 text-gold" />
               </div>
-            ))}
-          </div>
-        </ScrollReveal>
+              <span className="text-cream/80 text-sm">{point}</span>
+            </div>
+          ))}
+        </div>
 
-        <ScrollReveal delay={0.3}>
-          <Link
-            href="/create"
-            className="group inline-flex items-center gap-2 bg-gold text-background font-semibold px-10 py-5 rounded-lg text-lg hover:bg-gold-muted hover:scale-[1.02] hover:shadow-lg hover:shadow-gold/20 transition-all duration-300"
-          >
-            Create Your First Campaign
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-          </Link>
-          <p className="mt-6 text-sm text-muted-foreground/50">
-            Free during beta. No account needed. Seriously.
-          </p>
-        </ScrollReveal>
+        {/* CTA button */}
+        <a
+          href={ctaHref}
+          className="inline-block border-2 border-gold bg-transparent text-gold hover:bg-gold hover:text-background px-14 py-6 text-xl uppercase tracking-wider font-bold transition-all duration-300"
+        >
+          {ctaText}
+        </a>
       </div>
     </section>
   );

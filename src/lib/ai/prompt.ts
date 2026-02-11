@@ -1,7 +1,84 @@
-import { ListingData, MLSComplianceConfig, ViolationCategory } from '@/lib/types';
-import { getDefaultCompliance } from '@/lib/compliance/engine';
+import { ListingData, MLSComplianceConfig, ViolationCategory, PlatformId, ALL_PLATFORMS } from '@/lib/types';
+import { getComplianceSettings } from '@/lib/compliance/compliance-settings';
 import { loadComplianceDocs } from '@/lib/compliance/docs';
 import { buildQualityCheatSheet, loadQualityDocs } from '@/lib/quality/docs';
+
+// --- Platform JSON Templates ---
+// Each template defines the JSON output structure for one platform.
+// MLS uses a factory function for runtime compliance config interpolation (Review Fix #6).
+
+type TemplateEntry = string | ((config: { maxDescriptionLength?: number }) => string);
+
+const PLATFORM_TEMPLATES: Record<PlatformId, TemplateEntry> = {
+  instagram: `"instagram": {
+    "professional": "Instagram caption, professional tone, emoji-friendly, max 2200 chars",
+    "casual": "Instagram caption, casual/fun tone, emoji-friendly, max 2200 chars",
+    "luxury": "Instagram caption, luxury/aspirational tone, emoji-friendly, max 2200 chars"
+  }`,
+  facebook: `"facebook": {
+    "professional": "Facebook post, professional tone, lifestyle-focused, 500-800 words",
+    "casual": "Facebook post, casual conversational tone, 500-800 words",
+    "luxury": "Facebook post, luxury/aspirational tone, 500-800 words"
+  }`,
+  twitter: `"twitter": "Ultra-short tweet, max 280 chars, include key stats and link placeholder [LINK]"`,
+  googleAds: `"googleAds": [
+    { "headline": "Max 30 chars", "description": "Max 90 chars" },
+    { "headline": "Max 30 chars", "description": "Max 90 chars" },
+    { "headline": "Max 30 chars", "description": "Max 90 chars" }
+  ]`,
+  metaAd: `"metaAd": {
+    "primaryText": "Engaging ad copy for Meta/Facebook paid ad, 125 chars ideal",
+    "headline": "Attention-grabbing headline, max 40 chars",
+    "description": "Supporting description, max 30 chars"
+  }`,
+  magazineFullPage: `"magazineFullPage": {
+    "professional": { "headline": "Print headline", "body": "Full page ad body copy", "cta": "Call to action" },
+    "luxury": { "headline": "Print headline", "body": "Full page ad body copy", "cta": "Call to action" }
+  }`,
+  magazineHalfPage: `"magazineHalfPage": {
+    "professional": { "headline": "Print headline", "body": "Condensed half page body", "cta": "Call to action" },
+    "luxury": { "headline": "Print headline", "body": "Condensed half page body", "cta": "Call to action" }
+  }`,
+  postcard: `"postcard": {
+    "professional": { "front": { "headline": "Postcard front headline", "body": "Brief teaser", "cta": "Call to action" }, "back": "Back details text" },
+    "casual": { "front": { "headline": "Postcard front headline", "body": "Brief teaser", "cta": "Call to action" }, "back": "Back details text" }
+  }`,
+  zillow: `"zillow": "Zillow-optimized listing description, SEO-focused, professional tone"`,
+  realtorCom: `"realtorCom": "Realtor.com-optimized description, warm and informative tone"`,
+  homesComTrulia: `"homesComTrulia": "Homes.com/Trulia description, detail-oriented, professional tone"`,
+  mlsDescription: (config) =>
+    `"mlsDescription": "MLS-compliant description, max ${config.maxDescriptionLength || 1000} chars, professional tone. MUST include required disclosures. MUST NOT use prohibited terms."`,
+};
+
+const STRATEGY_TEMPLATE = `"hashtags": ["15-20 hashtags mixing broad (#realestate), local, and niche"],
+  "callsToAction": ["CTA 1", "CTA 2", "CTA 3"],
+  "targetingNotes": "Audience/geo targeting recommendations with suggested radius",
+  "sellingPoints": ["Top selling point 1", "Point 2", "Point 3", "Point 4", "Point 5"]`;
+
+/**
+ * Build the JSON output template dynamically based on selected platforms.
+ * Strategy fields are always included.
+ */
+export function buildOutputTemplate(
+  platforms: PlatformId[],
+  config: { maxDescriptionLength?: number; cityName?: string }
+): string {
+  const platformEntries = platforms.map((p) => {
+    const template = PLATFORM_TEMPLATES[p];
+    if (typeof template === 'function') {
+      return `  ${template(config)}`;
+    }
+    return `  ${template}`;
+  });
+
+  // Interpolate city name into hashtags template
+  const strategyWithCity = STRATEGY_TEMPLATE.replace(
+    ', local, and niche',
+    `, local (#${config.cityName?.replace(/\s/g, '') || 'Montana'}homes), and niche`
+  );
+
+  return `{\n${platformEntries.join(',\n')},\n  ${strategyWithCity}\n}`;
+}
 
 const categoryLabels: Record<ViolationCategory, string> = {
   'steering': 'Steering',
@@ -70,9 +147,9 @@ export async function buildGenerationPrompt(
   listing: ListingData,
   complianceDocs?: string,
   qualityDocs?: string,
-  options?: { demographic?: string; propertyType?: string }
+  options?: { demographic?: string; propertyType?: string; platforms?: PlatformId[] }
 ): Promise<string> {
-  const compliance = getDefaultCompliance();
+  const { config: compliance } = await getComplianceSettings();
   const addr = listing.address;
   const fullAddress = [addr.street, addr.city, addr.state, addr.zip].filter(Boolean).join(', ');
 
@@ -162,50 +239,9 @@ ${compliance.maxDescriptionLength ? `- Max MLS description length: ${compliance.
 ## Output Requirements
 
 Return a JSON object with EXACTLY this structure. Do not include any text outside the JSON.
+Only include the platform fields listed below — do NOT add any extra platforms.
 
-{
-  "instagram": {
-    "professional": "Instagram caption, professional tone, emoji-friendly, max 2200 chars",
-    "casual": "Instagram caption, casual/fun tone, emoji-friendly, max 2200 chars",
-    "luxury": "Instagram caption, luxury/aspirational tone, emoji-friendly, max 2200 chars"
-  },
-  "facebook": {
-    "professional": "Facebook post, professional tone, lifestyle-focused, 500-800 words",
-    "casual": "Facebook post, casual conversational tone, 500-800 words",
-    "luxury": "Facebook post, luxury/aspirational tone, 500-800 words"
-  },
-  "twitter": "Ultra-short tweet, max 280 chars, include key stats and link placeholder [LINK]",
-  "googleAds": [
-    { "headline": "Max 30 chars", "description": "Max 90 chars" },
-    { "headline": "Max 30 chars", "description": "Max 90 chars" },
-    { "headline": "Max 30 chars", "description": "Max 90 chars" }
-  ],
-  "metaAd": {
-    "primaryText": "Engaging ad copy for Meta/Facebook paid ad, 125 chars ideal",
-    "headline": "Attention-grabbing headline, max 40 chars",
-    "description": "Supporting description, max 30 chars"
-  },
-  "magazineFullPage": {
-    "professional": { "headline": "Print headline", "body": "Full page ad body copy", "cta": "Call to action" },
-    "luxury": { "headline": "Print headline", "body": "Full page ad body copy", "cta": "Call to action" }
-  },
-  "magazineHalfPage": {
-    "professional": { "headline": "Print headline", "body": "Condensed half page body", "cta": "Call to action" },
-    "luxury": { "headline": "Print headline", "body": "Condensed half page body", "cta": "Call to action" }
-  },
-  "postcard": {
-    "professional": { "front": { "headline": "Postcard front headline", "body": "Brief teaser", "cta": "Call to action" }, "back": "Back details text" },
-    "casual": { "front": { "headline": "Postcard front headline", "body": "Brief teaser", "cta": "Call to action" }, "back": "Back details text" }
-  },
-  "zillow": "Zillow-optimized listing description, SEO-focused, professional tone",
-  "realtorCom": "Realtor.com-optimized description, warm and informative tone",
-  "homesComTrulia": "Homes.com/Trulia description, detail-oriented, professional tone",
-  "mlsDescription": "MLS-compliant description, max ${compliance.maxDescriptionLength || 1000} chars, professional tone. MUST include required disclosures. MUST NOT use prohibited terms.",
-  "hashtags": ["15-20 hashtags mixing broad (#realestate), local (#${addr.city?.replace(/\s/g, '') || 'Montana'}homes), and niche"],
-  "callsToAction": ["CTA 1", "CTA 2", "CTA 3"],
-  "targetingNotes": "Audience/geo targeting recommendations with suggested radius",
-  "sellingPoints": ["Top selling point 1", "Point 2", "Point 3", "Point 4", "Point 5"]
-}
+${buildOutputTemplate(options?.platforms ?? ALL_PLATFORMS, { maxDescriptionLength: compliance.maxDescriptionLength, cityName: addr.city })}
 
 IMPORTANT RULES:
 - Respect ALL character limits exactly

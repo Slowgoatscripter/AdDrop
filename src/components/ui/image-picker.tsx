@@ -38,7 +38,7 @@ export function ImagePicker({ images, selectedIndex, onSelect }: ImagePickerProp
       </button>
 
       {open && (
-        <div className="absolute bottom-full right-0 mb-2 z-20 rounded-lg bg-white shadow-xl border p-2 grid grid-cols-4 gap-1.5 w-[200px]">
+        <div className="absolute bottom-full right-0 mb-2 z-50 rounded-lg bg-white shadow-xl border p-2 grid grid-cols-4 gap-1.5 w-[200px]">
           <button
             onClick={() => setOpen(false)}
             className="absolute -top-2 -right-2 rounded-full bg-slate-900 p-0.5 text-white hover:bg-slate-700 z-10"

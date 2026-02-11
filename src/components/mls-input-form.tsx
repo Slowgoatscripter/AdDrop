@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ListingData } from '@/lib/types/listing';
+import { PlatformId, ALL_PLATFORMS } from '@/lib/types/campaign';
 import { PropertyForm } from '@/components/campaign/property-form';
 
 export function MlsInputForm() {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([...ALL_PLATFORMS]);
   const router = useRouter();
 
   const handleGenerate = async (listing: ListingData) => {
@@ -15,10 +17,15 @@ export function MlsInputForm() {
     setError('');
 
     try {
+      // When all platforms selected, send undefined to avoid staleness (Review Fix #5)
+      const platforms = selectedPlatforms.length === ALL_PLATFORMS.length
+        ? undefined
+        : selectedPlatforms;
+
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listing }),
+        body: JSON.stringify({ listing, platforms }),
       });
 
       const json = await res.json();
@@ -42,6 +49,8 @@ export function MlsInputForm() {
       <PropertyForm
         onSubmit={handleGenerate}
         loading={generateLoading}
+        selectedPlatforms={selectedPlatforms}
+        onPlatformsChange={setSelectedPlatforms}
       />
 
       {/* Error */}

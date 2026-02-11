@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { ListingData, ListingAddress } from '@/lib/types/listing';
+import { PlatformId, ALL_PLATFORMS } from '@/lib/types/campaign';
+import { PlatformSelector } from '@/components/campaign/platform-selector';
 import { Button } from '@/components/ui/button';
 import { X, Plus, Upload, Loader2 } from 'lucide-react';
 
@@ -9,6 +11,8 @@ interface PropertyFormProps {
   initialData?: Partial<ListingData>;
   onSubmit: (data: ListingData) => void;
   loading?: boolean;
+  selectedPlatforms?: PlatformId[];
+  onPlatformsChange?: (platforms: PlatformId[]) => void;
 }
 
 const PROPERTY_TYPES = [
@@ -21,7 +25,7 @@ const PROPERTY_TYPES = [
   'Other',
 ];
 
-export function PropertyForm({ initialData, onSubmit, loading }: PropertyFormProps) {
+export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms, onPlatformsChange }: PropertyFormProps) {
   // Property details
   const [street, setStreet] = useState(initialData?.address?.street || '');
   const [city, setCity] = useState(initialData?.address?.city || '');
@@ -302,7 +306,7 @@ export function PropertyForm({ initialData, onSubmit, loading }: PropertyFormPro
         <div className="mt-6">
           <h3 className="text-sm font-medium text-slate-700 mb-2">
             Selling Points
-            <span className="text-slate-400 font-normal ml-2">
+            <span className="text-slate-500 font-normal ml-2">
               Highlights for the AI to emphasize
             </span>
           </h3>
@@ -320,7 +324,7 @@ export function PropertyForm({ initialData, onSubmit, loading }: PropertyFormPro
                   <button
                     type="button"
                     onClick={() => handleRemoveSellingPoint(i)}
-                    className="p-2 text-slate-400 hover:text-red-500"
+                    className="p-2 text-slate-500 hover:text-red-500"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -343,7 +347,7 @@ export function PropertyForm({ initialData, onSubmit, loading }: PropertyFormPro
         <h2 className="text-lg font-semibold text-slate-900 mb-4">
           Photos
           {photos.length > 0 && (
-            <span className="text-slate-400 font-normal text-sm ml-2">
+            <span className="text-slate-500 font-normal text-sm ml-2">
               {photos.length} photo{photos.length !== 1 ? 's' : ''} — first photo is the hero
             </span>
           )}
@@ -378,8 +382,8 @@ export function PropertyForm({ initialData, onSubmit, loading }: PropertyFormPro
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-slate-400">
-            No photos yet — upload some or look up an MLS# to pull them automatically
+          <div className="text-center py-8 text-slate-500">
+            No photos yet — upload some to get started
           </div>
         )}
         <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-md cursor-pointer text-sm text-slate-700 transition-colors">
@@ -395,14 +399,30 @@ export function PropertyForm({ initialData, onSubmit, loading }: PropertyFormPro
         </label>
       </div>
 
+      {/* Section 5: Platform Selection */}
+      {selectedPlatforms && onPlatformsChange && (
+        <div className="bg-white rounded-lg border border-slate-200 p-6">
+          <PlatformSelector
+            selected={selectedPlatforms}
+            onChange={onPlatformsChange}
+          />
+        </div>
+      )}
+
       {/* Submit */}
       <div className="flex justify-end">
-        <Button type="submit" disabled={loading} className="px-8 py-3 text-base">
+        <Button
+          type="submit"
+          disabled={loading || (selectedPlatforms !== undefined && selectedPlatforms.length === 0)}
+          className="px-8 py-3 text-base"
+        >
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
               Generating...
             </>
+          ) : selectedPlatforms && selectedPlatforms.length < ALL_PLATFORMS.length ? (
+            `Generate ${selectedPlatforms.length} Ad${selectedPlatforms.length !== 1 ? 's' : ''}`
           ) : (
             'Generate Campaign'
           )}

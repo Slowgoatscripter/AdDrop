@@ -40,20 +40,26 @@ export function CampaignPdf({ campaign }: CampaignPdfProps) {
 
         <View style={styles.divider} />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Instagram Caption (Professional)</Text>
-          <Text style={styles.body}>{campaign.instagram.professional}</Text>
-        </View>
+        {campaign.instagram && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Instagram Caption (Professional)</Text>
+            <Text style={styles.body}>{campaign.instagram.professional}</Text>
+          </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Facebook Post (Professional)</Text>
-          <Text style={styles.body}>{campaign.facebook.professional}</Text>
-        </View>
+        {campaign.facebook && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Facebook Post (Professional)</Text>
+            <Text style={styles.body}>{campaign.facebook.professional}</Text>
+          </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Twitter / X</Text>
-          <Text style={styles.body}>{campaign.twitter}</Text>
-        </View>
+        {campaign.twitter && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Twitter / X</Text>
+            <Text style={styles.body}>{campaign.twitter}</Text>
+          </View>
+        )}
 
         <Text style={styles.footer}>RealEstate Ad Gen — Campaign Kit</Text>
       </Page>
@@ -63,43 +69,53 @@ export function CampaignPdf({ campaign }: CampaignPdfProps) {
         <Text style={styles.title}>Paid Ads &amp; Online Listings</Text>
         <View style={styles.divider} />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Google Ads</Text>
-          {campaign.googleAds.map((ad, i) => (
-            <View key={i} style={{ marginBottom: 8 }}>
-              <Text style={styles.label}>Variation {i + 1}</Text>
-              <Text style={{ fontSize: 11, fontWeight: 'bold' }}>{ad.headline}</Text>
-              <Text style={styles.body}>{ad.description}</Text>
-            </View>
-          ))}
-        </View>
+        {campaign.googleAds && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Google Ads</Text>
+            {campaign.googleAds.map((ad, i) => (
+              <View key={i} style={{ marginBottom: 8 }}>
+                <Text style={styles.label}>Variation {i + 1}</Text>
+                <Text style={{ fontSize: 11, fontWeight: 'bold' }}>{ad.headline}</Text>
+                <Text style={styles.body}>{ad.description}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Meta / Facebook Ad</Text>
-          <Text style={styles.label}>Primary Text</Text>
-          <Text style={styles.body}>{campaign.metaAd.primaryText}</Text>
-          <Text style={styles.label}>Headline</Text>
-          <Text style={styles.body}>{campaign.metaAd.headline}</Text>
-          <Text style={styles.label}>Description</Text>
-          <Text style={styles.body}>{campaign.metaAd.description}</Text>
-        </View>
+        {campaign.metaAd && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Meta / Facebook Ad</Text>
+            <Text style={styles.label}>Primary Text</Text>
+            <Text style={styles.body}>{campaign.metaAd.primaryText}</Text>
+            <Text style={styles.label}>Headline</Text>
+            <Text style={styles.body}>{campaign.metaAd.headline}</Text>
+            <Text style={styles.label}>Description</Text>
+            <Text style={styles.body}>{campaign.metaAd.description}</Text>
+          </View>
+        )}
 
         <View style={styles.divider} />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Zillow</Text>
-          <Text style={styles.body}>{campaign.zillow}</Text>
-        </View>
+        {campaign.zillow && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Zillow</Text>
+            <Text style={styles.body}>{campaign.zillow}</Text>
+          </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Realtor.com</Text>
-          <Text style={styles.body}>{campaign.realtorCom}</Text>
-        </View>
+        {campaign.realtorCom && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Realtor.com</Text>
+            <Text style={styles.body}>{campaign.realtorCom}</Text>
+          </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Homes.com / Trulia</Text>
-          <Text style={styles.body}>{campaign.homesComTrulia}</Text>
-        </View>
+        {campaign.homesComTrulia && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Homes.com / Trulia</Text>
+            <Text style={styles.body}>{campaign.homesComTrulia}</Text>
+          </View>
+        )}
 
         <Text style={styles.footer}>RealEstate Ad Gen — Campaign Kit</Text>
       </Page>
@@ -109,27 +125,33 @@ export function CampaignPdf({ campaign }: CampaignPdfProps) {
         <Text style={styles.title}>Print Ads &amp; MLS</Text>
         <View style={styles.divider} />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Magazine — Full Page (Professional)</Text>
-          <Text style={styles.label}>Headline</Text>
-          <Text style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 4 }}>{campaign.magazineFullPage.professional.headline}</Text>
-          <Text style={styles.body}>{campaign.magazineFullPage.professional.body}</Text>
-          <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#2563eb' }}>{campaign.magazineFullPage.professional.cta}</Text>
-        </View>
+        {campaign.magazineFullPage && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Magazine — Full Page (Professional)</Text>
+            <Text style={styles.label}>Headline</Text>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', marginBottom: 4 }}>{campaign.magazineFullPage.professional.headline}</Text>
+            <Text style={styles.body}>{campaign.magazineFullPage.professional.body}</Text>
+            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#2563eb' }}>{campaign.magazineFullPage.professional.cta}</Text>
+          </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Magazine — Half Page (Professional)</Text>
-          <Text style={styles.label}>Headline</Text>
-          <Text style={{ fontSize: 12, fontWeight: 'bold', marginBottom: 4 }}>{campaign.magazineHalfPage.professional.headline}</Text>
-          <Text style={styles.body}>{campaign.magazineHalfPage.professional.body}</Text>
-        </View>
+        {campaign.magazineHalfPage && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Magazine — Half Page (Professional)</Text>
+            <Text style={styles.label}>Headline</Text>
+            <Text style={{ fontSize: 12, fontWeight: 'bold', marginBottom: 4 }}>{campaign.magazineHalfPage.professional.headline}</Text>
+            <Text style={styles.body}>{campaign.magazineHalfPage.professional.body}</Text>
+          </View>
+        )}
 
         <View style={styles.divider} />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>MLS Description (Montana)</Text>
-          <Text style={styles.body}>{campaign.mlsDescription}</Text>
-        </View>
+        {campaign.mlsDescription && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>MLS Description (Montana)</Text>
+            <Text style={styles.body}>{campaign.mlsDescription}</Text>
+          </View>
+        )}
 
         <Text style={styles.footer}>RealEstate Ad Gen — Campaign Kit</Text>
       </Page>

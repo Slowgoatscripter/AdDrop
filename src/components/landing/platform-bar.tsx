@@ -8,37 +8,52 @@ import {
   Search,
   Twitter,
 } from 'lucide-react';
-import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 const platforms = [
-  { name: 'Instagram', icon: Instagram, hoverColor: 'hover:text-pink-500' },
-  { name: 'Facebook', icon: Facebook, hoverColor: 'hover:text-blue-500' },
-  { name: 'Google Ads', icon: Search, hoverColor: 'hover:text-green-500' },
-  { name: 'Twitter/X', icon: Twitter, hoverColor: 'hover:text-sky-500' },
-  { name: 'Zillow', icon: Home, hoverColor: 'hover:text-blue-400' },
-  { name: 'Realtor.com', icon: LayoutGrid, hoverColor: 'hover:text-red-500' },
-  { name: 'Print', icon: Newspaper, hoverColor: 'hover:text-amber-500' },
-  { name: 'Direct Mail', icon: Mail, hoverColor: 'hover:text-emerald-500' },
+  { name: 'Instagram', icon: Instagram },
+  { name: 'Facebook', icon: Facebook },
+  { name: 'Google Ads', icon: Search },
+  { name: 'Twitter/X', icon: Twitter },
+  { name: 'Zillow', icon: Home },
+  { name: 'Realtor.com', icon: LayoutGrid },
+  { name: 'Print', icon: Newspaper },
+  { name: 'Direct Mail', icon: Mail },
 ];
 
 export function PlatformBar() {
+  // Duplicate platforms for seamless loop
+  const duplicatedPlatforms = [...platforms, ...platforms];
+
   return (
-    <section className="py-12 border-y border-border/50">
-      <div className="max-w-5xl mx-auto px-6">
-        <p className="text-xs text-muted-foreground/50 uppercase tracking-widest text-center mb-8">
+    <section className="relative py-16 border-y border-border/50 overflow-hidden bg-gradient-to-r from-transparent via-surface/50 to-transparent">
+      <div className="max-w-7xl mx-auto px-6">
+        <p className="font-serif tracking-[0.25em] text-gold-light/60 text-xs uppercase text-center mb-12">
           Generate ads for
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
-          {platforms.map((platform, index) => (
-            <ScrollReveal key={platform.name} delay={index * 0.06} direction="up">
-              <div
-                className={`flex flex-col items-center gap-2 text-muted-foreground/50 ${platform.hoverColor} hover:scale-110 transition-all duration-200 cursor-default`}
-              >
-                <platform.icon className="w-6 h-6" />
-                <span className="text-xs">{platform.name}</span>
-              </div>
-            </ScrollReveal>
-          ))}
+
+        {/* Fade edges */}
+        <div className="relative">
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+          {/* Marquee container */}
+          <div className="flex overflow-hidden">
+            <div className="flex gap-12 animate-marquee hover:[animation-play-state:paused]">
+              {duplicatedPlatforms.map((platform, index) => (
+                <div
+                  key={`${platform.name}-${index}`}
+                  className="flex flex-col items-center gap-3 flex-shrink-0 transition-all duration-300"
+                >
+                  <div className="w-12 h-12 rounded-full border border-border/30 hover:border-gold flex items-center justify-center text-muted-foreground hover:text-gold transition-colors duration-300">
+                    <platform.icon className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {platform.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

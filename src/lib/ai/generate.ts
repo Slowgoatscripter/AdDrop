@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { ListingData, CampaignKit } from '@/lib/types';
+import { ListingData, CampaignKit, PlatformId, ALL_PLATFORMS } from '@/lib/types';
 import { checkAllPlatforms, getDefaultCompliance } from '@/lib/compliance/engine';
 import { buildGenerationPrompt } from './prompt';
 import {
@@ -13,8 +13,55 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function generateCampaign(listing: ListingData): Promise<CampaignKit> {
-  const prompt = await buildGenerationPrompt(listing);
+/**
+ * Compute max_completion_tokens based on platform count with 1.3x safety margin (Review Fix #7).
+ */
+function getMaxCompletionTokens(platformCount: number): number {
+  let base: number;
+  if (platformCount >= 10) {
+    base = 16000;
+  } else if (platformCount >= 6) {
+    base = 12000;
+  } else if (platformCount >= 3) {
+    base = 8000;
+  } else {
+    base = 4000;
+  }
+  return Math.round(base * 1.3);
+}
+
+/**
+ * Strip hallucinated platforms from parsed output (Review Fix #4).
+ * Only keeps platform fields that were requested, plus strategy fields.
+ */
+function stripToRequestedPlatforms(
+  generated: Record<string, unknown>,
+  platforms: PlatformId[]
+): Record<string, unknown> {
+  const allowed = new Set<string>(platforms);
+  const strategyKeys = ['hashtags', 'callsToAction', 'targetingNotes', 'sellingPoints'];
+
+  const stripped: Record<string, unknown> = {};
+  for (const key of Object.keys(generated)) {
+    if (allowed.has(key as PlatformId) || strategyKeys.includes(key)) {
+      stripped[key] = generated[key];
+    }
+  }
+  return stripped;
+}
+
+export async function generateCampaign(
+  listing: ListingData,
+  platforms?: PlatformId[]
+): Promise<CampaignKit> {
+  // undefined platforms = generate all (backward compatible, Review Fix #5)
+  const targetPlatforms = platforms ?? ALL_PLATFORMS;
+
+  const prompt = await buildGenerationPrompt(listing, undefined, undefined, {
+    platforms: targetPlatforms,
+  });
+
+  const maxTokens = getMaxCompletionTokens(targetPlatforms.length);
 
   const response = await openai.chat.completions.create({
     model: 'gpt-5.2',
@@ -26,7 +73,7 @@ export async function generateCampaign(listing: ListingData): Promise<CampaignKi
       { role: 'user', content: prompt },
     ],
     temperature: 0.7,
-    max_completion_tokens: 16000,
+    max_completion_tokens: maxTokens,
     response_format: { type: 'json_object' },
   });
 
@@ -35,33 +82,42 @@ export async function generateCampaign(listing: ListingData): Promise<CampaignKi
     throw new Error('No response from AI model');
   }
 
-  const generated = JSON.parse(content);
+  const rawGenerated = JSON.parse(content);
+
+  // Strip hallucinated platforms — only keep requested + strategy (Review Fix #4)
+  const generated = stripToRequestedPlatforms(rawGenerated, targetPlatforms);
 
   const compliance = getDefaultCompliance();
   const campaignId = crypto.randomUUID();
 
-  // Build a preliminary campaign to run compliance against
+  // Build campaign with only requested platform fields
+  // eslint-disable-next-line
+  const gen = generated as any;
   let campaign: CampaignKit = {
     id: campaignId,
     listing,
     createdAt: new Date().toISOString(),
-    instagram: generated.instagram,
-    facebook: generated.facebook,
-    twitter: generated.twitter,
-    googleAds: generated.googleAds,
-    metaAd: generated.metaAd,
-    magazineFullPage: generated.magazineFullPage,
-    magazineHalfPage: generated.magazineHalfPage,
-    postcard: generated.postcard,
-    zillow: generated.zillow,
-    realtorCom: generated.realtorCom,
-    homesComTrulia: generated.homesComTrulia,
-    mlsDescription: generated.mlsDescription,
+    // Platform fields — only populated if requested
+    ...(gen.instagram ? { instagram: gen.instagram } : {}),
+    ...(gen.facebook ? { facebook: gen.facebook } : {}),
+    ...(gen.twitter ? { twitter: gen.twitter } : {}),
+    ...(gen.googleAds ? { googleAds: gen.googleAds } : {}),
+    ...(gen.metaAd ? { metaAd: gen.metaAd } : {}),
+    ...(gen.magazineFullPage ? { magazineFullPage: gen.magazineFullPage } : {}),
+    ...(gen.magazineHalfPage ? { magazineHalfPage: gen.magazineHalfPage } : {}),
+    ...(gen.postcard ? { postcard: gen.postcard } : {}),
+    ...(gen.zillow ? { zillow: gen.zillow } : {}),
+    ...(gen.realtorCom ? { realtorCom: gen.realtorCom } : {}),
+    ...(gen.homesComTrulia ? { homesComTrulia: gen.homesComTrulia } : {}),
+    ...(gen.mlsDescription ? { mlsDescription: gen.mlsDescription } : {}),
+    // Metadata
     complianceResult: { platforms: [], totalChecks: 0, totalPassed: 0, hardViolations: 0, softWarnings: 0, allPassed: true },
-    hashtags: generated.hashtags,
-    callsToAction: generated.callsToAction,
-    targetingNotes: generated.targetingNotes,
-    sellingPoints: generated.sellingPoints,
+    selectedPlatforms: targetPlatforms,
+    // Strategy fields — always present
+    hashtags: (generated.hashtags as string[]) ?? [],
+    callsToAction: (generated.callsToAction as string[]) ?? [],
+    targetingNotes: (generated.targetingNotes as string) ?? '',
+    sellingPoints: (generated.sellingPoints as string[]) ?? [],
   };
 
   // Run full compliance check across all platforms

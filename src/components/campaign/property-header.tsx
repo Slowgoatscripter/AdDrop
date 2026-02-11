@@ -26,7 +26,7 @@ export function PropertyHeader({ listing }: PropertyHeaderProps) {
   );
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden max-w-4xl mx-auto">
       <ImageCarousel
         images={listing.photos}
         alt={fullAddress}

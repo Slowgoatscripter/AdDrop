@@ -1,13 +1,16 @@
+'use client';
+
 import { Download, Search, Sparkles } from 'lucide-react';
-import { ScrollReveal } from '@/components/ui/scroll-reveal';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 
 const steps = [
   {
     number: '01',
     icon: Search,
-    title: 'Enter your MLS#',
+    title: 'Enter Property Details',
     description:
-      'Paste any MLS number or enter property details manually. We pull everything we need automatically.',
+      'Add your property address, photos, and key details. It only takes a minute to get started.',
   },
   {
     number: '02',
@@ -26,36 +29,78 @@ const steps = [
 ];
 
 export function HowItWorks() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start center', 'end center'],
+  });
+
+  const lineScaleY = useTransform(scrollYProgress, [0, 1], [0, 1]);
+
   return (
-    <section className="py-24 px-6">
+    <section className="py-24 px-6" ref={containerRef}>
       <div className="max-w-5xl mx-auto">
-        <ScrollReveal>
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            How It Works
-          </h2>
-          <p className="text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
-            Three steps. That&apos;s it.
-          </p>
-        </ScrollReveal>
+        <h2 className="font-serif text-4xl md:text-5xl text-center mb-4 text-cream">
+          How It Works
+        </h2>
+        <p className="text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
+          Three steps. That&apos;s it.
+        </p>
 
-        <div className="relative grid md:grid-cols-3 gap-8">
-          {/* Connector line (desktop only) */}
-          <div className="hidden md:block absolute top-10 left-[20%] right-[20%] h-px bg-gradient-to-r from-gold/0 via-gold/20 to-gold/0" />
+        <div className="relative">
+          {/* Vertical gold line (desktop only) */}
+          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2">
+            <motion.div
+              className="w-full bg-gold origin-top"
+              style={{ scaleY: lineScaleY, height: '100%' }}
+            />
+          </div>
 
-          {steps.map((step, index) => (
-            <ScrollReveal key={step.number} delay={index * 0.2}>
-              <div className="relative p-6 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
-                <span className="text-5xl font-bold text-gold/15 absolute top-4 right-4 select-none">
-                  {step.number}
-                </span>
-                <div className="w-12 h-12 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
-                  <step.icon className="w-6 h-6 text-gold" />
+          {/* Steps */}
+          <div className="space-y-16 md:space-y-24">
+            {steps.map((step, index) => {
+              const isEven = index % 2 === 0;
+
+              return (
+                <div
+                  key={step.number}
+                  className={`relative flex ${
+                    isEven ? 'md:justify-end' : 'md:justify-start'
+                  }`}
+                >
+                  {/* Gold dot at junction (desktop only) */}
+                  <div className="hidden md:block absolute left-1/2 top-8 -translate-x-1/2 w-3 h-3 rounded-full bg-gold z-10" />
+
+                  {/* Card */}
+                  <div
+                    className={`w-full md:w-[45%] ${
+                      isEven ? '' : 'md:mr-[52%]'
+                    } ${!isEven ? '' : 'md:ml-[52%]'}`}
+                  >
+                    <div className="relative bg-surface border-t-2 border-t-gold/20 p-6 rounded-lg">
+                      {/* Watermark step number */}
+                      <span className="font-serif text-6xl text-gold/10 absolute top-4 right-4 select-none">
+                        {step.number}
+                      </span>
+
+                      {/* Icon */}
+                      <div className="w-12 h-12 rounded-lg bg-gold/10 flex items-center justify-center mb-4 relative z-10">
+                        <step.icon className="w-6 h-6 text-gold" />
+                      </div>
+
+                      {/* Content */}
+                      <h3 className="font-serif text-xl text-cream mb-2 relative z-10">
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground relative z-10">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
-              </div>
-            </ScrollReveal>
-          ))}
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

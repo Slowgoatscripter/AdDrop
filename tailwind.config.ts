@@ -10,6 +10,10 @@ export default {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			sans: ['var(--font-body)', 'system-ui', 'sans-serif'],
+  			serif: ['var(--font-fraunces)', 'Georgia', 'serif'],
+  		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -46,8 +50,16 @@ export default {
   			ring: 'hsl(var(--ring))',
   			gold: {
   				DEFAULT: 'hsl(var(--gold))',
-  				muted: 'hsl(var(--gold-muted))'
+  				muted: 'hsl(var(--gold-muted))',
+  				light: 'hsl(var(--gold-light))',
+  				bright: 'hsl(var(--gold-bright))',
   			},
+  			sage: 'hsl(var(--sage))',
+  			surface: {
+  				DEFAULT: 'hsl(var(--surface))',
+  				hover: 'hsl(var(--surface-hover))',
+  			},
+  			cream: 'hsl(var(--cream))',
   			chart: {
   				'1': 'hsl(var(--chart-1))',
   				'2': 'hsl(var(--chart-2))',
@@ -60,7 +72,10 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		animation: {
+  			marquee: 'marquee 30s linear infinite',
+  		},
   	}
   },
   plugins: [tailwindcssAnimate],

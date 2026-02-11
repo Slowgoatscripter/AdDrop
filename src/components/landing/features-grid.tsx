@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import {
   Download,
   LayoutGrid,
@@ -6,7 +7,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
-import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 const features = [
   {
@@ -15,6 +15,7 @@ const features = [
     description:
       'Instagram, Facebook, Google Ads, Twitter/X, Zillow, Realtor.com, print, direct mail — all from one listing.',
     spotlight: true,
+    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80',
   },
   {
     icon: ShieldCheck,
@@ -22,6 +23,7 @@ const features = [
     description:
       'Automatic fair housing compliance checking. Montana MLS rules enforced. More states coming soon.',
     spotlight: true,
+    image: 'https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&q=80',
   },
   {
     icon: Sparkles,
@@ -54,52 +56,137 @@ const features = [
 ];
 
 export function FeaturesGrid() {
+  const spotlightFeatures = features.filter((f) => f.spotlight);
+  const standardFeatures = features.filter((f) => !f.spotlight);
+
+  // Destructure spotlight features for easier access in JSX
+  const [spotlight1, spotlight2] = spotlightFeatures;
+  const [standard1, standard2, standard3, standard4] = standardFeatures;
+
+  const Spotlight1Icon = spotlight1.icon;
+  const Spotlight2Icon = spotlight2.icon;
+  const Standard1Icon = standard1.icon;
+  const Standard2Icon = standard2.icon;
+  const Standard3Icon = standard3.icon;
+  const Standard4Icon = standard4.icon;
+
+  // Extract image URLs with non-null assertion (we know spotlights have images)
+  const spotlight1Image = spotlight1.image!;
+  const spotlight2Image = spotlight2.image!;
+
   return (
-    <section className="py-24 px-6 border-t border-border/50">
-      <div className="max-w-5xl mx-auto">
-        <ScrollReveal>
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Everything You Need
-          </h2>
-          <p className="text-muted-foreground text-center mb-16">
-            Built for agents who&apos;d rather sell homes than write ads.
-          </p>
-        </ScrollReveal>
+    <section
+      className="relative py-24 px-6 border-t border-border/50 overflow-hidden"
+      style={{
+        backgroundImage:
+          'radial-gradient(circle, hsl(38 40% 30% / 0.07) 1px, transparent 1px)',
+        backgroundSize: '24px 24px',
+      }}
+    >
+      <div className="max-w-7xl mx-auto">
+        <h2 className="font-serif text-4xl md:text-5xl text-center mb-12">
+          Everything You Need
+        </h2>
 
-        {/* Spotlight row — top 2 features */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          {features
-            .filter((f) => f.spotlight)
-            .map((feature, index) => (
-              <ScrollReveal key={feature.title} delay={index * 0.15}>
-                <div className="group p-8 rounded-xl border border-border/50 bg-card/30 hover:bg-card/60 hover:-translate-y-1 hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300">
-                  <div className="w-12 h-12 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
-                    <feature.icon className="w-6 h-6 text-gold group-hover:scale-110 transition-transform duration-300" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              </ScrollReveal>
-            ))}
-        </div>
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Spotlight 1: Small spotlight with background image */}
+          <div className="relative md:col-span-1 md:row-span-1 rounded-xl overflow-hidden min-h-[280px] group">
+            <Image
+              src={spotlight1Image}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              alt=""
+            />
+            <div className="absolute inset-0 bg-background/75" />
+            <div className="relative z-10 p-8 h-full flex flex-col justify-end">
+              <div className="w-12 h-12 rounded-lg bg-gold/20 flex items-center justify-center mb-4">
+                <Spotlight1Icon className="w-6 h-6 text-gold" />
+              </div>
+              <h3 className="text-xl font-semibold text-cream mb-2">
+                {spotlight1.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {spotlight1.description}
+              </p>
+            </div>
+          </div>
 
-        {/* Standard grid — remaining 4 features */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features
-            .filter((f) => !f.spotlight)
-            .map((feature, index) => (
-              <ScrollReveal key={feature.title} delay={0.3 + index * 0.1}>
-                <div className="group p-6 rounded-xl border border-border/50 bg-card/30 hover:bg-card/60 hover:-translate-y-1 hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300">
-                  <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
-                    <feature.icon className="w-5 h-5 text-gold group-hover:scale-110 transition-transform duration-300" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </div>
-              </ScrollReveal>
-            ))}
+          {/* Spotlight 2: Wide spotlight with background image */}
+          <div className="relative md:col-span-2 md:row-span-1 rounded-xl overflow-hidden min-h-[280px] group">
+            <Image
+              src={spotlight2Image}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 66vw"
+              alt=""
+            />
+            <div className="absolute inset-0 bg-background/75" />
+            <div className="relative z-10 p-8 h-full flex flex-col justify-end">
+              <div className="w-12 h-12 rounded-lg bg-gold/20 flex items-center justify-center mb-4">
+                <Spotlight2Icon className="w-6 h-6 text-gold" />
+              </div>
+              <h3 className="text-xl font-semibold text-cream mb-2">
+                {spotlight2.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                {spotlight2.description}
+              </p>
+            </div>
+          </div>
+
+          {/* Tall Card 1 */}
+          <div className="md:col-span-1 md:row-span-2 bg-surface rounded-xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-colors duration-300">
+            <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
+              <Standard1Icon className="w-5 h-5 text-gold" />
+            </div>
+            <h3 className="text-lg font-semibold text-cream mb-2">
+              {standard1.title}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {standard1.description}
+            </p>
+          </div>
+
+          {/* Card 2 */}
+          <div className="md:col-span-1 md:row-span-1 bg-surface rounded-xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-colors duration-300">
+            <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
+              <Standard2Icon className="w-5 h-5 text-gold" />
+            </div>
+            <h3 className="text-lg font-semibold text-cream mb-2">
+              {standard2.title}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {standard2.description}
+            </p>
+          </div>
+
+          {/* Card 3 */}
+          <div className="md:col-span-1 md:row-span-1 bg-surface rounded-xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-colors duration-300">
+            <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
+              <Standard3Icon className="w-5 h-5 text-gold" />
+            </div>
+            <h3 className="text-lg font-semibold text-cream mb-2">
+              {standard3.title}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {standard3.description}
+            </p>
+          </div>
+
+          {/* Wide Card 4 */}
+          <div className="md:col-span-2 md:row-span-1 bg-surface rounded-xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-colors duration-300">
+            <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
+              <Standard4Icon className="w-5 h-5 text-gold" />
+            </div>
+            <h3 className="text-lg font-semibold text-cream mb-2">
+              {standard4.title}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {standard4.description}
+            </p>
+          </div>
         </div>
       </div>
     </section>

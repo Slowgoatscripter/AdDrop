@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveMlsNumber } from '@/lib/scraper/mls-resolver';
 import { scrapeListing } from '@/lib/scraper';
+import { requireAuth } from '@/lib/supabase/auth-helpers';
 
 export async function POST(request: NextRequest) {
   try {
+    const { user, error: authError } = await requireAuth()
+    if (authError) return authError
+
     const body = await request.json();
     const { mlsNumber } = body;
 

@@ -31,8 +31,8 @@ export function ImageCarousel({
   // Empty state
   if (images.length === 0) {
     return (
-      <div className="relative w-full h-[400px] rounded-t-xl bg-slate-100 flex items-center justify-center">
-        <p className="text-slate-400 text-sm">No photos available</p>
+      <div className="relative w-full h-[250px] md:h-[300px] lg:h-[350px] rounded-t-xl bg-slate-100 flex items-center justify-center">
+        <p className="text-slate-500 text-sm">No photos available</p>
       </div>
     )
   }
@@ -43,7 +43,7 @@ export function ImageCarousel({
 
   return (
     <>
-      <div className="relative w-full h-[400px] overflow-hidden rounded-t-xl bg-slate-100 group">
+      <div className="relative w-full h-[250px] md:h-[300px] lg:h-[350px] overflow-hidden rounded-t-xl bg-gray-100 dark:bg-gray-900 group">
         {/* Carousel track */}
         <div
           className="carousel-track h-full"
@@ -62,7 +62,7 @@ export function ImageCarousel({
               <img
                 src={image}
                 alt={`${alt} ${index + 1}`}
-                className="w-full h-full object-cover cursor-pointer"
+                className="w-full h-full object-contain cursor-pointer"
                 onClick={() => setLightboxOpen(true)}
                 onError={(e) => {
                   const target = e.currentTarget;

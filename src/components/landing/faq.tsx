@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
-import { ScrollReveal } from '@/components/ui/scroll-reveal';
+import type { FAQItem as FAQItemType } from '@/lib/types/settings';
 
-const faqs = [
+const defaultFaqs: FAQItemType[] = [
   {
     question: 'Is AdDrop really free?',
     answer:
@@ -13,7 +14,7 @@ const faqs = [
   {
     question: 'What information do I need to get started?',
     answer:
-      'Just your MLS number. AdDrop pulls the property details automatically. You can also enter property details manually if you prefer.',
+      'Just your property address, a few photos, and basic details like beds, baths, and price. It takes about a minute to fill out — then AdDrop handles the rest.',
   },
   {
     question: 'How does the AI know what to write?',
@@ -37,21 +38,27 @@ const faqs = [
   },
 ];
 
+const propertyImages = [
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80',
+  'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=400&q=80',
+  'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=400&q=80',
+];
+
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-border/50">
+    <div className="border-b border-gold/10">
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center justify-between w-full py-5 text-left group"
       >
-        <span className="text-base font-medium group-hover:text-gold transition-colors duration-200">
+        <span className="text-cream font-medium text-lg group-hover:text-gold transition-colors duration-200">
           {question}
         </span>
         <ChevronDown
-          className={`w-5 h-5 text-muted-foreground shrink-0 ml-4 transition-transform duration-200 ${
-            open ? 'rotate-180' : ''
+          className={`w-5 h-5 shrink-0 ml-4 transition-all duration-200 ${
+            open ? 'rotate-180 text-gold' : 'text-muted-foreground'
           }`}
         />
       </button>
@@ -66,26 +73,51 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-export function FAQ() {
+interface FAQProps {
+  faqs?: FAQItemType[];
+}
+
+export function FAQ({ faqs = defaultFaqs }: FAQProps) {
   return (
     <section className="py-24 px-6">
-      <div className="max-w-3xl mx-auto">
-        <ScrollReveal>
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Questions? We&apos;ve Got Answers.
-          </h2>
-          <p className="text-muted-foreground text-center mb-12">
-            Everything you need to know about AdDrop.
-          </p>
-        </ScrollReveal>
+      <div className="max-w-6xl mx-auto">
+        <h2 className="font-serif text-4xl md:text-5xl text-center mb-16">
+          Questions? We&apos;ve Got Answers.
+        </h2>
 
-        <ScrollReveal delay={0.2}>
-          <div className="border-t border-border/50">
-            {faqs.map((faq) => (
-              <FAQItem key={faq.question} question={faq.question} answer={faq.answer} />
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-12">
+          {/* Left: Property images (desktop only) */}
+          <div className="hidden lg:flex flex-col gap-4">
+            {propertyImages.map((image, index) => (
+              <div
+                key={index}
+                className="relative aspect-[4/3] rounded-lg overflow-hidden border-2 border-gold/15"
+              >
+                <Image
+                  src={image}
+                  fill
+                  className="object-cover"
+                  sizes="40vw"
+                  alt=""
+                />
+              </div>
             ))}
           </div>
-        </ScrollReveal>
+
+          {/* Right: FAQ accordion */}
+          <div>
+            <div className="border-t border-gold/10">
+              {faqs.map((faq) => (
+                <FAQItem
+                  key={faq.question}
+                  question={faq.question}
+                  answer={faq.answer}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

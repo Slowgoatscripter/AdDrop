@@ -62,53 +62,66 @@ export function CampaignShell() {
       const root = parts[0];
 
       if (root === 'instagram' || root === 'facebook') {
-        const tone = parts[1] as keyof typeof updated.instagram;
-        if (root === 'instagram') updated.instagram[tone] = replaceInText(updated.instagram[tone]);
-        else updated.facebook[tone] = replaceInText(updated.facebook[tone]);
+        const tone = parts[1];
+        if (root === 'instagram' && updated.instagram) {
+          updated.instagram[tone as keyof typeof updated.instagram] = replaceInText(updated.instagram[tone as keyof typeof updated.instagram]);
+        } else if (root === 'facebook' && updated.facebook) {
+          updated.facebook[tone as keyof typeof updated.facebook] = replaceInText(updated.facebook[tone as keyof typeof updated.facebook]);
+        }
       } else if (root === 'twitter') {
-        updated.twitter = replaceInText(updated.twitter);
+        if (updated.twitter) updated.twitter = replaceInText(updated.twitter);
       } else if (root.startsWith('googleAds')) {
-        const match = root.match(/googleAds\[(\d+)\]/);
-        if (match) {
-          const idx = parseInt(match[1]);
-          const field = parts[1] as 'headline' | 'description';
-          updated.googleAds[idx][field] = replaceInText(updated.googleAds[idx][field]);
+        if (updated.googleAds) {
+          const match = root.match(/googleAds\[(\d+)\]/);
+          if (match) {
+            const idx = parseInt(match[1]);
+            const field = parts[1] as 'headline' | 'description';
+            updated.googleAds[idx][field] = replaceInText(updated.googleAds[idx][field]);
+          }
         }
       } else if (root === 'metaAd') {
-        const field = parts[1] as keyof typeof updated.metaAd;
-        updated.metaAd[field] = replaceInText(updated.metaAd[field]);
+        if (updated.metaAd) {
+          const field = parts[1] as keyof typeof updated.metaAd;
+          updated.metaAd[field] = replaceInText(updated.metaAd[field]);
+        }
       } else if (root === 'magazineFullPage') {
-        const style = parts[1];
-        const field = parts[2] as 'headline' | 'body' | 'cta';
-        (updated.magazineFullPage as Record<string, { headline: string; body: string; cta: string }>)[style][field] = replaceInText(
-          (updated.magazineFullPage as Record<string, { headline: string; body: string; cta: string }>)[style][field]
-        );
-      } else if (root === 'magazineHalfPage') {
-        const style = parts[1];
-        const field = parts[2] as 'headline' | 'body' | 'cta';
-        (updated.magazineHalfPage as Record<string, { headline: string; body: string; cta: string }>)[style][field] = replaceInText(
-          (updated.magazineHalfPage as Record<string, { headline: string; body: string; cta: string }>)[style][field]
-        );
-      } else if (root === 'postcard') {
-        const style = parts[1];
-        if (parts[2] === 'front') {
-          const field = parts[3] as 'headline' | 'body' | 'cta';
-          (updated.postcard as Record<string, { front: { headline: string; body: string; cta: string }; back: string }>)[style].front[field] = replaceInText(
-            (updated.postcard as Record<string, { front: { headline: string; body: string; cta: string }; back: string }>)[style].front[field]
-          );
-        } else if (parts[2] === 'back') {
-          (updated.postcard as Record<string, { front: any; back: string }>)[style].back = replaceInText(
-            (updated.postcard as Record<string, { front: any; back: string }>)[style].back
+        if (updated.magazineFullPage) {
+          const style = parts[1];
+          const field = parts[2] as 'headline' | 'body' | 'cta';
+          (updated.magazineFullPage as Record<string, { headline: string; body: string; cta: string }>)[style][field] = replaceInText(
+            (updated.magazineFullPage as Record<string, { headline: string; body: string; cta: string }>)[style][field]
           );
         }
+      } else if (root === 'magazineHalfPage') {
+        if (updated.magazineHalfPage) {
+          const style = parts[1];
+          const field = parts[2] as 'headline' | 'body' | 'cta';
+          (updated.magazineHalfPage as Record<string, { headline: string; body: string; cta: string }>)[style][field] = replaceInText(
+            (updated.magazineHalfPage as Record<string, { headline: string; body: string; cta: string }>)[style][field]
+          );
+        }
+      } else if (root === 'postcard') {
+        if (updated.postcard) {
+          const style = parts[1];
+          if (parts[2] === 'front') {
+            const field = parts[3] as 'headline' | 'body' | 'cta';
+            (updated.postcard as Record<string, { front: { headline: string; body: string; cta: string }; back: string }>)[style].front[field] = replaceInText(
+              (updated.postcard as Record<string, { front: { headline: string; body: string; cta: string }; back: string }>)[style].front[field]
+            );
+          } else if (parts[2] === 'back') {
+            (updated.postcard as Record<string, { front: any; back: string }>)[style].back = replaceInText(
+              (updated.postcard as Record<string, { front: any; back: string }>)[style].back
+            );
+          }
+        }
       } else if (root === 'zillow') {
-        updated.zillow = replaceInText(updated.zillow);
+        if (updated.zillow) updated.zillow = replaceInText(updated.zillow);
       } else if (root === 'realtorCom') {
-        updated.realtorCom = replaceInText(updated.realtorCom);
+        if (updated.realtorCom) updated.realtorCom = replaceInText(updated.realtorCom);
       } else if (root === 'homesComTrulia') {
-        updated.homesComTrulia = replaceInText(updated.homesComTrulia);
+        if (updated.homesComTrulia) updated.homesComTrulia = replaceInText(updated.homesComTrulia);
       } else if (root === 'mlsDescription') {
-        updated.mlsDescription = replaceInText(updated.mlsDescription);
+        if (updated.mlsDescription) updated.mlsDescription = replaceInText(updated.mlsDescription);
       } else if (root === 'hashtags') {
         updated.hashtags = updated.hashtags.map((h) => replaceInText(h));
       } else if (root === 'callsToAction') {

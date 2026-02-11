@@ -1,43 +1,17 @@
-import { MLSComplianceConfig } from '@/lib/types';
-import { montanaCompliance } from './montana';
+// Re-export all client-safe engine functions
+export {
+  getComplianceConfig,
+  getDefaultCompliance,
+  findViolations,
+  checkAllPlatforms,
+  autoFixText,
+  autoFixCampaign,
+  checkCompliance,
+  buildTermRegex,
+} from './engine';
 
-const complianceConfigs: Record<string, MLSComplianceConfig> = {
-  MT: montanaCompliance,
-};
+// Server-only: import getComplianceSettings directly from '@/lib/compliance/compliance-settings'
+// (uses next/headers — cannot be barrel-exported without contaminating client bundles)
 
-export function getComplianceConfig(stateCode: string): MLSComplianceConfig | null {
-  return complianceConfigs[stateCode.toUpperCase()] ?? null;
-}
-
-export function getDefaultCompliance(): MLSComplianceConfig {
-  return montanaCompliance;
-}
-
-export function checkCompliance(
-  text: string,
-  config: MLSComplianceConfig
-): { passed: boolean; rule: string; detail?: string }[] {
-  const results: { passed: boolean; rule: string; detail?: string }[] = [];
-
-  for (const term of config.prohibitedTerms) {
-    const found = text.toLowerCase().includes(term.toLowerCase());
-    results.push({
-      passed: !found,
-      rule: `No prohibited term: "${term}"`,
-      detail: found ? `Found "${term}" in description` : undefined,
-    });
-  }
-
-  if (config.maxDescriptionLength) {
-    const withinLimit = text.length <= config.maxDescriptionLength;
-    results.push({
-      passed: withinLimit,
-      rule: `Max ${config.maxDescriptionLength} characters`,
-      detail: withinLimit
-        ? undefined
-        : `Description is ${text.length} characters (${text.length - config.maxDescriptionLength} over limit)`,
-    });
-  }
-
-  return results;
-}
+// Re-export server-only doc loader (uses fs, safe for Node/test but not client bundles)
+export { loadComplianceDocs } from './docs';

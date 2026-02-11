@@ -155,13 +155,115 @@ export function parseHtmlMeta($: cheerio.CheerioAPI): Partial<ListingData> {
   if (sqftMatch) result.sqft = Number(sqftMatch[1].replace(/,/g, ''));
 
   const photos: string[] = [];
-  $('img[src*="photo"], img[src*="image"], img[data-src], img[data-lazy], img[data-original], img[data-lazy-src], picture > img, [class*="photo"] img, [class*="gallery"] img, [class*="carousel"] img, [class*="slider"] img').each((_, el) => {
+  // Tighter selectors targeting property/listing images
+  $('[class*="listing"] img, [class*="property"] img, [class*="gallery"] img, [class*="carousel"] img, [class*="slider"] img, [class*="hero"] img, [data-testid*="photo"] img, [data-testid*="image"] img, [id*="gallery"] img, [id*="carousel"] img, [id*="photo"] img, [class*="widenPhoto"] img, img.widenPhoto').each((_, el) => {
+    // Skip images with non-property alt text
+    const alt = ($(el).attr('alt') || '').toLowerCase();
+    const excludeAlt = ['logo', 'agent', 'headshot', 'avatar', 'icon', 'profile', 'advertisement', 'banner', 'badge'];
+    if (excludeAlt.some(term => alt.includes(term))) return;
+
     const src = $(el).attr('src') || $(el).attr('data-src') || $(el).attr('data-lazy') || $(el).attr('data-original') || $(el).attr('data-lazy-src');
     if (src && src.startsWith('http')) photos.push(src);
   });
   if (photos.length > 0) result.photos = photos.slice(0, 25);
 
   return result;
+}
+
+/**
+ * Extract images from a fully-rendered DOM (browser fallback).
+ * Uses broad selectors since JavaScript content is now present in the HTML.
+ * Applies the same URL filtering used by the main scraper to exclude
+ * non-property images (logos, icons, small images, etc.).
+ */
+export function parseHtmlImages($: cheerio.CheerioAPI): string[] {
+  const photos: string[] = [];
+
+  // Broad selectors for rendered pages — JS content is now present
+  $(
+    [
+      'img[src*="photo"]',
+      'img[src*="cdn"]',
+      'img[data-src]',
+      '[class*="gallery"] img',
+      '[class*="carousel"] img',
+      '[class*="listing"] img',
+      '[class*="property"] img',
+      '[class*="slider"] img',
+      '[class*="hero"] img',
+      '[data-testid*="photo"] img',
+      '[data-testid*="image"] img',
+      '[id*="gallery"] img',
+      '[id*="carousel"] img',
+      '[id*="photo"] img',
+      'picture source[srcset]',
+    ].join(', ')
+  ).each((_, el) => {
+    const tagName = ('tagName' in el ? (el as { tagName: string }).tagName : '').toLowerCase();
+
+    // For <source> elements, use srcset
+    if (tagName === 'source') {
+      const srcset = $(el).attr('srcset');
+      if (srcset) {
+        // Take the first URL from the srcset
+        const firstUrl = srcset.split(',')[0]?.trim().split(/\s+/)[0];
+        if (firstUrl && firstUrl.startsWith('http')) {
+          photos.push(firstUrl);
+        }
+      }
+      return;
+    }
+
+    // Skip images with non-property alt text
+    const alt = ($(el).attr('alt') || '').toLowerCase();
+    const excludeAlt = [
+      'logo', 'agent', 'headshot', 'avatar', 'icon',
+      'profile', 'advertisement', 'banner', 'badge',
+    ];
+    if (excludeAlt.some((term) => alt.includes(term))) return;
+
+    const src =
+      $(el).attr('src') ||
+      $(el).attr('data-src') ||
+      $(el).attr('data-lazy') ||
+      $(el).attr('data-original') ||
+      $(el).attr('data-lazy-src');
+
+    if (src && src.startsWith('http')) {
+      photos.push(src);
+    }
+  });
+
+  // Deduplicate
+  const unique = Array.from(new Set(photos));
+
+  // Apply the same URL filtering as the main scraper
+  return unique
+    .filter((url) => {
+      const lower = url.toLowerCase();
+
+      const excludePatterns = [
+        '/logo', '/agent', '/headshot', '/avatar', '/icon', '/brand',
+        '/badge', '/banner', '/sprite', '/social', '/profile',
+        '/favicon', '/widget', '/btn', '/button', '/arrow',
+        '/placeholder', '/default', '/generic', '/watermark',
+        'gravatar.com', 'facebook.com/tr', 'doubleclick.net',
+        'google-analytics', 'googleadservices', 'linkedin.com/media',
+        '.svg', '.gif', '.ico',
+      ];
+      if (excludePatterns.some((p) => lower.includes(p))) return false;
+
+      // Exclude tiny images based on URL dimension hints
+      const dimensionMatch = lower.match(/[\/_-](\d+)x(\d+)/);
+      if (dimensionMatch) {
+        const w = parseInt(dimensionMatch[1]);
+        const h = parseInt(dimensionMatch[2]);
+        if (w < 200 || h < 150) return false;
+      }
+
+      return true;
+    })
+    .slice(0, 25);
 }
 
 /**

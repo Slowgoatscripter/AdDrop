@@ -21,10 +21,10 @@ export function MobileCTABar() {
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
-      <div className="bg-background/95 backdrop-blur-sm border-t border-border/50 px-4 py-3">
+      <div className="bg-background/98 backdrop-blur-md border-t border-gold/20 px-4 py-3">
         <Link
           href="/create"
-          className="flex items-center justify-center gap-2 w-full bg-gold text-background font-semibold py-3 rounded-lg text-base hover:bg-gold-muted transition-colors"
+          className="flex items-center justify-center gap-2 w-full border-2 border-gold bg-transparent text-gold uppercase tracking-wider text-xs font-bold py-3 rounded-lg hover:bg-gold hover:text-background transition-all duration-300"
         >
           Get Started
           <ArrowRight className="w-4 h-4" />
