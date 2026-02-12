@@ -30,34 +30,34 @@ const slides: ShowcaseSlide[] = [
     platform: 'Instagram',
     icon: Instagram,
     accentColor: 'from-purple-500 to-pink-500',
-    headline: '@metroluxrealty',
-    body: `NEW LISTING | Downtown Chicago penthouse living at its finest.\n\nFloor-to-ceiling windows. Private terrace. 40th-floor skyline views.\n\n📍 401 N Wabash Ave, Unit PH-4\n💰 $2,150,000\n🏙️ 3 bed · 3.5 bath · 2,800 sq ft\n\nThis is the one you've been scrolling for.\n\n#ChicagoRealEstate #PenthouseLiving #JustListed #LuxuryRealEstate`,
+    headline: '@flatheadluxury',
+    body: `NEW LISTING | Flathead Lake living at its finest.\n\nPrivate dock, panoramic lake views, and 200 ft of pristine shoreline.\n\n📍 1847 East Shore Route, Bigfork, MT\n💰 $2,350,000\n🏔️ 4 bed · 3.5 bath · 3,200 sq ft\n\nThis is the one you've been scrolling for.\n\n#MontanaRealEstate #FlatheadLake #JustListed #LuxuryLakefront #BigforkMT`,
     meta: '2,100 characters · Luxury tone',
-    propertyImage: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80',
-    propertyAddress: '401 N Wabash Ave, Unit PH-4',
-    propertyPrice: '$2,150,000',
+    propertyImage: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&q=80',
+    propertyAddress: '1847 East Shore Route, Bigfork',
+    propertyPrice: '$2,350,000',
   },
   {
     platform: 'Facebook',
     icon: Facebook,
     accentColor: 'from-blue-500 to-blue-600',
-    headline: 'Sunrise Realty Group',
-    body: `🏡 FIRST-TIME BUYERS — This one's for you!\n\nCharming 3-bedroom ranch in a quiet cul-de-sac. Updated kitchen, fenced backyard, and just minutes from top-rated schools.\n\nMove-in ready at $285,000. Yes, really.\n\n👉 DM us or comment 'INFO' for details!`,
+    headline: 'Big Sky Country Realty',
+    body: `🏡 FIRST-TIME BUYERS — This one's for you!\n\nCharming 3-bedroom craftsman in the heart of Whitefish. Updated kitchen, fenced yard, and just minutes from the ski resort and Glacier National Park.\n\nMove-in ready at $385,000. Yes, really.\n\n👉 DM us or comment 'INFO' for details!`,
     meta: 'Friendly tone · Engagement-optimized',
-    propertyImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80',
-    propertyAddress: '742 Maple Grove Lane',
-    propertyPrice: '$285,000',
+    propertyImage: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&q=80',
+    propertyAddress: '214 Lupine Lane, Whitefish',
+    propertyPrice: '$385,000',
   },
   {
     platform: 'Google Ads',
     icon: Search,
     accentColor: 'from-green-500 to-emerald-500',
-    headline: 'Waterfront Home — Lake Tahoe | $1.4M',
-    body: 'Private dock, 5 bed/4 bath, 180° lake views. Open house this Saturday. Sierra Lakeshore Properties — Trusted Since 1998.',
-    meta: 'Headline: 29/30 chars · Description: 89/90 chars',
-    propertyImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-    propertyAddress: '88 Lakeshore Drive, South Lake Tahoe',
-    propertyPrice: '$1,400,000',
+    headline: 'Lakefront Home — Flathead Lake | $1.8M',
+    body: 'Private dock, 5 bed/4 bath, 180° lake & mountain views. Open house this Saturday. Glacier Realty Group — Montana\'s Trusted Name Since 1992.',
+    meta: 'Headline: 30/30 chars · Description: 89/90 chars',
+    propertyImage: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800&q=80',
+    propertyAddress: '320 Lakeside Blvd, Polson',
+    propertyPrice: '$1,800,000',
   },
   {
     platform: 'Direct Mail',
@@ -66,7 +66,7 @@ const slides: ShowcaseSlide[] = [
     headline: '40 Acres of Montana Freedom',
     body: 'Year-round creek, mature timber, and mountain views in every direction. 20 minutes to Kalispell, fully off-grid ready. Build your legacy at $425,000.',
     meta: 'Front + Back · Aspirational tone',
-    propertyImage: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80',
+    propertyImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
     propertyAddress: 'Whitefish Mountain Ranch',
     propertyPrice: '$425,000',
   },
@@ -74,10 +74,10 @@ const slides: ShowcaseSlide[] = [
     platform: 'Magazine',
     icon: Newspaper,
     accentColor: 'from-amber-500 to-orange-500',
-    headline: 'Prime Retail Space — Downtown Bozeman',
-    body: '4,200 sq ft corner unit on Main Street. High foot traffic, modern build-out, anchor tenants on either side. NNN lease available. Ideal for restaurant, boutique, or professional office.',
+    headline: 'Historic Downtown Bozeman Storefront',
+    body: '3,800 sq ft corner unit on Main Street. Original brick, high ceilings, modern systems. Anchor tenants on either side, high foot traffic. NNN lease available. Ideal for restaurant, boutique, or gallery.',
     meta: 'Half page · Professional tone',
-    propertyImage: 'https://images.unsplash.com/photo-1600566753376-12c8ab7a5a0c?w=800&q=80',
+    propertyImage: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80',
     propertyAddress: '125 E Main Street, Bozeman',
     propertyPrice: '$1,250,000',
   },
@@ -92,7 +92,7 @@ function InstagramFrame({ children }: { children: React.ReactNode }) {
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-10" />
         {/* Screen */}
-        <div className="relative bg-white rounded-[2rem] overflow-hidden">
+        <div className="relative bg-[#1a1a1a] rounded-[2rem] overflow-hidden">
           {children}
         </div>
       </div>
@@ -125,13 +125,13 @@ function FacebookFrame({ children }: { children: React.ReactNode }) {
 
 function GoogleAdsFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full border border-gray-700 rounded-md overflow-hidden bg-white">
+    <div className="w-full border border-gray-700 rounded-md overflow-hidden bg-surface">
       {/* Minimal browser bar */}
-      <div className="h-6 bg-gray-100 border-b border-gray-300 flex items-center px-2">
-        <div className="text-xs text-gray-500">Ad</div>
+      <div className="h-6 bg-gray-800 border-b border-gray-700 flex items-center px-2">
+        <div className="text-xs text-gray-400">Ad</div>
       </div>
       {/* Content */}
-      <div className="bg-white text-gray-900 p-4">
+      <div className="bg-surface p-4">
         {children}
       </div>
     </div>
@@ -142,10 +142,15 @@ function DirectMailFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative w-full max-w-[400px] mx-auto">
       {/* Postcard with stamp */}
-      <div className="relative bg-white border-2 border-gray-300 rounded-sm shadow-lg">
+      <div className="relative bg-surface border-2 border-gray-700 rounded-sm shadow-lg">
         {/* Stamp corner */}
-        <div className="absolute top-3 right-3 w-10 h-10 border-2 border-dashed border-gray-400 flex items-center justify-center text-xs text-gray-500">
-          STAMP
+        <div className="absolute top-3 right-3 w-12 h-14 border border-gray-600 bg-gray-800/80 flex flex-col items-center justify-center rotate-2 shadow-sm">
+          <div className="border border-dashed border-gold/30 w-10 h-12 flex flex-col items-center justify-center gap-0.5">
+            <span className="text-[6px] font-serif tracking-widest text-gold/60 uppercase">USA</span>
+            <span className="text-[8px] font-bold font-serif text-gold/80">FIRST</span>
+            <span className="text-[8px] font-bold font-serif text-gold/80">CLASS</span>
+            <span className="text-[5px] text-gold/40 tracking-wider">POSTAGE</span>
+          </div>
         </div>
         {children}
       </div>
@@ -155,7 +160,7 @@ function DirectMailFrame({ children }: { children: React.ReactNode }) {
 
 function MagazineFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full max-w-[450px] mx-auto border-4 border-gray-800 bg-white shadow-2xl">
+    <div className="w-full max-w-[450px] mx-auto border-4 border-gray-700 bg-surface shadow-2xl">
       {children}
     </div>
   );
@@ -284,7 +289,7 @@ export function ShowcaseCarousel() {
                     <h3 className="text-lg font-semibold mb-4 text-foreground">
                       {slide.headline}
                     </h3>
-                    <p className="text-muted-foreground whitespace-pre-wrap text-sm leading-relaxed">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
                       {slide.body}
                     </p>
                     {slide.meta && (

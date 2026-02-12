@@ -15,7 +15,7 @@ const features = [
     description:
       'Instagram, Facebook, Google Ads, Twitter/X, Zillow, Realtor.com, print, direct mail — all from one listing.',
     spotlight: true,
-    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80',
   },
   {
     icon: ShieldCheck,
@@ -23,7 +23,7 @@ const features = [
     description:
       'Automatic fair housing compliance checking. Montana MLS rules enforced. More states coming soon.',
     spotlight: true,
-    image: 'https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
   },
   {
     icon: Sparkles,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import Image from 'next/image';
 
 interface AdCardMockupProps {
   className?: string;
@@ -12,10 +13,10 @@ interface AdCardMockupProps {
 }
 
 const defaultCopy =
-  'NEW LISTING | Stunning 4BR craftsman in Pacific Heights. Soaring ceilings, chef\'s kitchen, private garden. This is the one you\'ve been waiting for.';
+  'NEW LISTING | Flathead Lake luxury at its finest. Private dock, panoramic views, 200 ft of pristine shoreline. This is the one you\'ve been scrolling for.';
 
 const defaultHashtags =
-  '#SanFranciscoRealEstate #PacificHeights #JustListed #LuxuryHome #AdDrop';
+  '#MontanaRealEstate #FlatheadLake #JustListed #LuxuryLakefront #AdDrop';
 
 /* ── Typewriter hook ── */
 function useTypewriter(text: string, enabled: boolean, startDelay: number) {
@@ -79,7 +80,7 @@ function ShareIcon() {
 export function AdCardMockup({
   className = '',
   animate = true,
-  handle = '@luxuryrealty_sf',
+  handle = '@flatheadluxury',
   copyText = defaultCopy,
   hashtags = defaultHashtags,
 }: AdCardMockupProps) {
@@ -138,7 +139,7 @@ export function AdCardMockup({
             <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-white/5">
               {/* Avatar */}
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold to-gold-muted flex items-center justify-center text-[10px] font-bold text-background shrink-0">
-                LR
+                FL
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-cream truncate">
@@ -153,18 +154,18 @@ export function AdCardMockup({
               </div>
             </div>
 
-            {/* Property image placeholder */}
+            {/* Property image */}
             <div className="aspect-[4/3] relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-gold-muted/30 via-surface-hover to-gold/10" />
-              {/* Faux property silhouette */}
-              <div className="absolute bottom-0 left-0 right-0 h-2/3">
-                <div className="absolute bottom-0 left-[10%] w-[35%] h-[80%] bg-white/5 rounded-t-sm" />
-                <div className="absolute bottom-0 left-[50%] w-[40%] h-[60%] bg-white/[0.03] rounded-t-sm" />
-                <div className="absolute bottom-0 left-[15%] w-[25%] h-[50%] bg-white/[0.04] rounded-t-sm" />
-              </div>
+              <Image
+                src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&q=80"
+                alt="Montana lakefront lodge"
+                fill
+                className="object-cover"
+                sizes="300px"
+              />
               {/* Price tag */}
               <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm rounded-md px-2 py-1">
-                <span className="text-xs font-bold text-gold">$2,850,000</span>
+                <span className="text-xs font-bold text-gold">$2,350,000</span>
               </div>
             </div>
 

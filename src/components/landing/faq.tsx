@@ -39,9 +39,9 @@ const defaultFaqs: FAQItemType[] = [
 ];
 
 const propertyImages = [
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=80',
-  'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=400&q=80',
-  'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=400&q=80',
+  'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400&q=80',
+  'https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=400&q=80',
+  'https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=400&q=80',
 ];
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {

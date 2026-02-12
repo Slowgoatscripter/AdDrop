@@ -70,7 +70,7 @@ export function Hero({
           {/* ── Left column ── */}
           <div className="text-center lg:text-left">
             {/* Title — 300ms clip reveal */}
-            <h1 className="mb-6 text-[clamp(4rem,10vw,8rem)] leading-[0.9] tracking-tight">
+            <h1 className="mb-6 pr-4 text-[clamp(4rem,10vw,8rem)] leading-[0.9] tracking-tight">
               <motion.span
                 className="inline-block font-sans font-bold text-cream"
                 initial={a ? { clipPath: 'inset(0 100% 0 0)' } : undefined}
@@ -80,7 +80,7 @@ export function Hero({
                 {titlePrefix}
               </motion.span>
               <motion.span
-                className="inline-block font-serif font-[900] italic bg-gradient-to-r from-[#E6A817] via-[#F0C040] to-[#D4941A] bg-clip-text text-transparent"
+                className="inline-block font-serif font-[900] italic pr-3 bg-gradient-to-r from-[#E6A817] via-[#F0C040] to-[#D4941A] bg-clip-text text-transparent"
                 initial={a ? { clipPath: 'inset(0 0 0 100%)' } : undefined}
                 animate={a ? { clipPath: 'inset(0 0 0 0%)' } : undefined}
                 transition={a ? { delay: 0.3, duration: 0.6, ease } : undefined}
