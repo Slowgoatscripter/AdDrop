@@ -13,14 +13,14 @@ const personas = [
     icon: Users,
     title: 'Team Leaders',
     description:
-      'Your agents need consistent, branded ad campaigns fast. AdDrop ensures every listing gets the same professional treatment.',
+      'Each listing gets polished, consistent ad copy — giving your team a head start on marketing.',
     image: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80',
   },
   {
     icon: Building,
     title: 'Brokerages',
     description:
-      'Dozens of listings, multiple agents, compliance requirements. AdDrop standardizes your marketing while saving your team significant time.',
+      'AdDrop helps every agent on your team produce compliant, polished ad copy — one listing at a time.',
     image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80',
   },
 ];

@@ -21,7 +21,7 @@ const defaultStats: LandingStat[] = [
   { value: '12+', label: 'Platforms' },
   { value: 'Minutes', label: 'Not Hours' },
   { value: 'Ads Are', label: 'Scanned' },
-  { value: '5', label: 'Tone Options' },
+  { value: '3', label: 'Tone Options' },
 ];
 
 const ease = [0.25, 0.46, 0.45, 0.94] as const;
@@ -124,7 +124,7 @@ export function Hero({
             </motion.div>
 
             {/* Stats bar — 1400ms staggered */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-8 mt-12">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-12">
               {displayStats.map((stat, i) => (
                 <motion.div
                   key={stat.label}

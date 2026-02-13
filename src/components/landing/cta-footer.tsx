@@ -4,7 +4,7 @@ import { Check } from 'lucide-react';
 const valuePoints = [
   'Free beta account',
   '2 campaigns per week',
-  'No credit card ever',
+  'No credit card required',
   'Compliance-checked',
 ];
 
@@ -28,7 +28,7 @@ export function CTAFooter({
   const description =
     descriptionProp ||
     betaNotice ||
-    'In the time it took to read this page, AdDrop could have built your entire campaign.';
+    'In the time it takes to write one ad, AdDrop builds your entire campaign.';
   return (
     <section className="relative py-32 overflow-hidden">
       {/* Background image */}

@@ -21,9 +21,9 @@ export const settingsDefaults: Record<string, unknown> = {
   'landing.hero_cta': 'Start Creating — Free',
   'landing.stats': [
     { value: '12+', label: 'Ad Platforms' },
-    { value: '5', label: 'Tone Options' },
-    { value: 'Generated ads are', label: 'Compliance Scanned' },
-    { value: 'A few minutes', label: 'Generation Time' },
+    { value: '3', label: 'Tone Options' },
+    { value: 'Ads Are', label: 'Compliance Scanned' },
+    { value: 'Minutes', label: 'Not Hours' },
   ] as LandingStat[],
   'landing.faq': [
     { question: 'Is AdDrop really free?', answer: 'Yes — AdDrop is completely free during beta. Create a free account, get 2 campaigns per week, and never see a credit card form.' },
@@ -36,7 +36,7 @@ export const settingsDefaults: Record<string, unknown> = {
   ] as FAQItem[],
   'landing.cta_headline': 'Your Next Listing Deserves Better Marketing',
   'landing.cta_text': 'Create Your First Campaign',
-  'landing.cta_beta': 'Free during beta. 2 campaigns per week. No credit card. Ever.',
+  'landing.cta_beta': 'Free during beta. 2 campaigns per week. No credit card required.',
   'presets.default': [
     {
       name: 'Flathead Luxury Lakefront',
