@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { ScrapeResult, ListingData } from '@/lib/types';
 import { parseJsonLd, parseOpenGraph, parseHtmlMeta, mergeListingData } from './parsers';
+import { validateUrl, followRedirectsSafely } from './url-validator';
 
 export async function scrapeListing(url: string): Promise<ScrapeResult> {
   try {
@@ -9,7 +10,13 @@ export async function scrapeListing(url: string): Promise<ScrapeResult> {
       return { success: false, error: 'Invalid URL protocol. Use http or https.' };
     }
 
-    const response = await fetch(url, {
+    // SSRF protection: validate URL before fetching
+    const urlCheck = await validateUrl(url);
+    if (!urlCheck.safe) {
+      return { success: false, error: urlCheck.error || 'URL validation failed' };
+    }
+
+    const { response } = await followRedirectsSafely(url, 5, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
@@ -26,7 +33,6 @@ export async function scrapeListing(url: string): Promise<ScrapeResult> {
         'Sec-Fetch-User': '?1',
         'Upgrade-Insecure-Requests': '1',
       },
-      redirect: 'follow',
       signal: AbortSignal.timeout(15000),
     });
 
