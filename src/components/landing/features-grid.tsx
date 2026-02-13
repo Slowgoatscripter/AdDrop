@@ -43,7 +43,7 @@ const features = [
     icon: Palette,
     title: 'Multiple Tones',
     description:
-      'Professional, friendly, luxury, urgent — match the tone to your listing and audience.',
+      'Professional, casual, luxury — match the tone to your listing and audience.',
     spotlight: false,
   },
   {

@@ -91,7 +91,7 @@ export function SocialProof() {
               }`}
             >
               {isNaN(numeric) ? (
-                <div className="font-serif text-5xl md:text-6xl font-bold bg-gradient-to-br from-gold via-gold-bright to-gold-light bg-clip-text text-transparent">
+                <div className="font-serif text-4xl md:text-5xl font-bold bg-gradient-to-br from-gold via-gold-bright to-gold-light bg-clip-text text-transparent">
                   {benefit.value}{benefit.suffix}
                 </div>
               ) : (
