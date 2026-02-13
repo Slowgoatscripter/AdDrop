@@ -124,7 +124,7 @@ export function Hero({
             </motion.div>
 
             {/* Stats bar — 1400ms staggered */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-8 mt-12">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-12">
               {displayStats.map((stat, i) => (
                 <motion.div
                   key={stat.label}

@@ -17,14 +17,14 @@ const steps = [
     icon: Sparkles,
     title: 'AI builds your campaign',
     description:
-      'Our AI generates platform-optimized ad copy in multiple tones — professional, friendly, luxury, and more.',
+      'Our AI generates platform-optimized ad copy in multiple tones — professional, casual, luxury — each tailored to your listing.',
   },
   {
     number: '03',
     icon: Download,
     title: 'Download & publish',
     description:
-      'Export ready-to-post ads for Instagram, Facebook, Google, print, direct mail, and more in one step.',
+      'Export all your ad copy as a PDF — ready to copy, paste, and publish across platforms.',
   },
 ];
 

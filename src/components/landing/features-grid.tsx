@@ -36,7 +36,7 @@ const features = [
     icon: Download,
     title: 'One-Click Export',
     description:
-      'Download your entire campaign as ready-to-post assets. No reformatting needed.',
+      'Download your entire campaign copy as a PDF. Copy, paste, and post.',
     spotlight: false,
   },
   {

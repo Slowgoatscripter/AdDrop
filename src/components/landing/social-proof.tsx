@@ -15,7 +15,7 @@ const benefits: Benefit[] = [
     value: 'Minutes',
     suffix: '',
     label: 'Not Hours',
-    sublabel: 'Faster than writing one ad manually',
+    sublabel: 'Generate all platforms at once',
   },
   {
     value: '12',
@@ -77,7 +77,7 @@ export function SocialProof() {
           Why Agents Choose AdDrop
         </h2>
         <p className="text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
-          One listing in. A complete marketing suite out. Free during beta.
+          One listing in. A complete ad campaign out. Free during beta.
 </p>
 
         <div className="grid md:grid-cols-3 gap-0">
