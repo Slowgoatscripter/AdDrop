@@ -1,13 +1,14 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Copy, Check } from 'lucide-react';
-import { useState } from 'react';
+import { CopyButton } from '@/components/copy-button';
 import { ComplianceBadge } from './compliance-badge';
 import { QualityBadge } from './quality-badge';
 import { ViolationDetails } from './violation-details';
-import type { PlatformComplianceResult, ComplianceViolation } from '@/lib/types';
-import type { PlatformQualityResult } from '@/lib/types/quality';
+import { PlatformComplianceResult, ComplianceViolation } from '@/lib/types';
+import { PlatformQualityResult } from '@/lib/types/quality';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
 
 interface AdCardWrapperProps {
   platform: string;
@@ -15,96 +16,81 @@ interface AdCardWrapperProps {
   dimensionLabel: string;
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
-  copyText: string;
+  toneSwitcher?: ReactNode;
+  copyText?: string;
+  children: ReactNode;
   violations?: ComplianceViolation[];
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
-  toneSwitcher?: ReactNode;
-  children: ReactNode;
 }
 
-/**
- * Wrapper for ad preview cards. Provides a consistent frame with platform icon,
- * dimension label, compliance/quality badges, copy button, and violation details.
- */
 export function AdCardWrapper({
   platform,
   platformIcon,
   dimensionLabel,
   complianceResult,
   qualityResult,
+  toneSwitcher,
   copyText,
+  children,
   violations,
   onReplace,
-  toneSwitcher,
-  children,
 }: AdCardWrapperProps) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(copyText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback for non-secure contexts
-      const textarea = document.createElement('textarea');
-      textarea.value = copyText;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      {/* Header bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
-        <div className="flex items-center gap-2">
-          {platformIcon}
-          <span className="text-sm font-semibold text-foreground">{platform}</span>
-          <span className="text-xs text-muted-foreground">{dimensionLabel}</span>
+    <div className="bg-card border rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
+        <div className="flex items-center gap-2.5">
+          <span className="flex-shrink-0">{platformIcon}</span>
+          <div className="flex items-baseline gap-2">
+            <h3 className="font-semibold text-sm">{platform}</h3>
+            <span className="text-xs text-muted-foreground">{dimensionLabel}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {complianceResult && <ComplianceBadge result={complianceResult} />}
           {qualityResult && <QualityBadge result={qualityResult} />}
-          <button
-            onClick={handleCopy}
-            className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-            title="Copy ad text"
-          >
-            {copied ? (
-              <Check className="w-4 h-4 text-green-500" />
-            ) : (
-              <Copy className="w-4 h-4" />
-            )}
-          </button>
         </div>
       </div>
 
-      {/* Tone switcher */}
-      {toneSwitcher && (
-        <div className="px-4 py-3 border-b border-border bg-muted/10">
-          {toneSwitcher}
-        </div>
-      )}
-
-      {/* Ad preview content */}
-      <div className="border-b border-border">
+      {/* Mockup area — the star of the show */}
+      <div className="p-4">
         {children}
       </div>
 
-      {/* Violation details (if any) */}
-      {violations && violations.length > 0 && onReplace && (
-        <div className="px-4 py-3">
-          <ViolationDetails
-            violations={violations}
-            onReplace={onReplace}
-          />
+      {/* Controls */}
+      <div className="px-4 pb-4 space-y-3">
+        {/* Tone switcher slot */}
+        {toneSwitcher && (
+          <div className="pt-1">{toneSwitcher}</div>
+        )}
+
+        {/* Divider */}
+        <div className="border-t border-border/50" />
+
+        {/* Copy + Export row */}
+        <div className="flex items-center justify-between gap-2">
+          {copyText ? (
+            <CopyButton text={copyText} label="Copy Ad Text" />
+          ) : (
+            <div />
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            disabled
+            title="Coming soon"
+            className="text-xs gap-1.5 opacity-50 cursor-not-allowed"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export
+          </Button>
         </div>
-      )}
+
+        {/* Violation details */}
+        {violations && violations.length > 0 && onReplace && (
+          <ViolationDetails violations={violations} onReplace={onReplace} />
+        )}
+      </div>
     </div>
   );
 }

@@ -1,14 +1,15 @@
-import { ReactNode } from 'react';
+'use client'
 
-interface FeedbackShellProps {
-  children: ReactNode;
-}
+import { FeedbackProvider } from './feedback-provider'
+import { FeedbackFAB } from './feedback-fab'
+import { FeedbackModal } from './feedback-modal'
 
-/**
- * Shell wrapper that provides feedback functionality to pages.
- * Wraps page content and can display a floating feedback button.
- * Currently a passthrough wrapper - feedback UI will be added later.
- */
-export function FeedbackShell({ children }: FeedbackShellProps) {
-  return <>{children}</>;
+export function FeedbackShell({ children }: { children: React.ReactNode }) {
+  return (
+    <FeedbackProvider>
+      {children}
+      <FeedbackFAB />
+      <FeedbackModal />
+    </FeedbackProvider>
+  )
 }

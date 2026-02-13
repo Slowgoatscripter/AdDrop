@@ -1,71 +1,78 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js'
 
-export interface CampaignUsage {
-  isLimited: boolean;
-  resetsAt: Date;
-  used: number;
-  limit: number;
-  isExempt: boolean;
+export const BETA_CAMPAIGN_LIMIT = 2
+export const BETA_WINDOW_DAYS = 7
+
+export interface UsageInfo {
+  used: number
+  limit: number
+  remaining: number
+  resetsAt: Date | null
+  isLimited: boolean
+  isExempt: boolean
 }
 
-/**
- * Get the current campaign usage for a user during the beta period.
- * Beta users are limited to a set number of campaigns per week.
- */
 export async function getCampaignUsage(
   supabase: SupabaseClient,
   userId: string
-): Promise<CampaignUsage> {
-  const WEEKLY_LIMIT = 2;
-
-  // Check if user is exempt from rate limits
+): Promise<UsageInfo> {
+  // 1. Check if user is admin or rate-limit exempt
   const { data: profile } = await supabase
     .from('profiles')
-    .select('rate_limit_exempt')
+    .select('role, rate_limit_exempt')
     .eq('id', userId)
-    .single();
+    .single()
 
-  if (profile?.rate_limit_exempt) {
+  if (profile?.role === 'admin' || profile?.rate_limit_exempt) {
     return {
-      isLimited: false,
-      resetsAt: getNextMonday(),
       used: 0,
-      limit: WEEKLY_LIMIT,
+      limit: Infinity,
+      remaining: Infinity,
+      resetsAt: null,
+      isLimited: false,
       isExempt: true,
-    };
+    }
   }
 
-  // Count campaigns created this week
-  const weekStart = getWeekStart();
+  // 2. Count campaigns in rolling 7-day window
+  const windowStart = new Date(
+    Date.now() - BETA_WINDOW_DAYS * 24 * 60 * 60 * 1000
+  ).toISOString()
+
   const { count } = await supabase
     .from('campaigns')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
-    .gte('created_at', weekStart.toISOString());
+    .gte('created_at', windowStart)
 
-  const used = count ?? 0;
+  const used = count ?? 0
+
+  // 3. Calculate reset date from oldest campaign in window + 7 days
+  let resetsAt: Date | null = null
+  if (used >= BETA_CAMPAIGN_LIMIT) {
+    const { data: oldest } = await supabase
+      .from('campaigns')
+      .select('created_at')
+      .eq('user_id', userId)
+      .gte('created_at', windowStart)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .single()
+
+    if (oldest) {
+      resetsAt = new Date(
+        new Date(oldest.created_at).getTime() +
+          BETA_WINDOW_DAYS * 24 * 60 * 60 * 1000
+      )
+    }
+  }
 
   return {
-    isLimited: used >= WEEKLY_LIMIT,
-    resetsAt: getNextMonday(),
     used,
-    limit: WEEKLY_LIMIT,
+    limit: BETA_CAMPAIGN_LIMIT,
+    remaining: Math.max(0, BETA_CAMPAIGN_LIMIT - used),
+    resetsAt,
+    isLimited: used >= BETA_CAMPAIGN_LIMIT,
     isExempt: false,
-  };
-}
-
-function getWeekStart(): Date {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(now);
-  monday.setDate(diff);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
-}
-
-function getNextMonday(): Date {
-  const monday = getWeekStart();
-  monday.setDate(monday.getDate() + 7);
-  return monday;
+  }
 }
