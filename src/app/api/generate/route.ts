@@ -72,6 +72,15 @@ export async function POST(request: NextRequest) {
     }
     const listing = parseResult.data as ListingData;
 
+    // Strip obvious injection patterns (speed bump, not a full defense)
+    if (listing.description) {
+      listing.description = listing.description
+        .split('\n')
+        .filter(line => !/^\s*(ignore|forget|disregard|instead|override|system:|assistant:)/i.test(line))
+        .join('\n')
+        .slice(0, 5000);
+    }
+
     // Validate platforms parameter (optional — undefined = all platforms)
     let platforms: PlatformId[] | undefined;
     if (body.platforms !== undefined) {
