@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CampaignKit } from '@/lib/types';
 import { autoFixCampaign, checkAllPlatforms, getDefaultCompliance } from '@/lib/compliance/engine';
+import { createClient } from '@/lib/supabase/client';
 import { PropertyHeader } from './property-header';
 import { CampaignTabs } from './campaign-tabs';
 import { ComplianceBanner } from './compliance-banner';
@@ -13,13 +14,45 @@ export function CampaignShell() {
   const params = useParams();
   const router = useRouter();
   const [campaign, setCampaign] = useState<CampaignKit | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const id = params.id as string;
-    const stored = sessionStorage.getItem(`campaign-${id}`);
-    if (stored) {
-      setCampaign(JSON.parse(stored));
+    async function loadCampaign() {
+      const id = params.id as string;
+      setLoading(true);
+
+      try {
+        // Try loading from database first
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('campaigns')
+          .select('generated_ads')
+          .eq('id', id)
+          .single();
+
+        if (!error && data?.generated_ads) {
+          setCampaign(data.generated_ads as CampaignKit);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error('[campaign-shell] DB fetch failed, trying sessionStorage:', err);
+      }
+
+      // Fallback to sessionStorage for backward compatibility
+      try {
+        const stored = sessionStorage.getItem(`campaign-${params.id}`);
+        if (stored) {
+          setCampaign(JSON.parse(stored));
+        }
+      } catch {
+        sessionStorage.removeItem(`campaign-${params.id}`);
+      }
+
+      setLoading(false);
     }
+
+    loadCampaign();
   }, [params.id]);
 
   const handleFixAll = useCallback(() => {
@@ -39,97 +72,69 @@ export function CampaignShell() {
       if (!campaign) return;
 
       const config = getDefaultCompliance();
-
-      // Deep clone and do targeted replacement
       const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
 
-      // Replace the term in the target platform's text
       function replaceInText(text: string): string {
         const regex = new RegExp(`\\b${oldTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[-\s]+/g, '[\\s\\-]+')}\\b`, 'gi');
         return text.replace(regex, (matched) => {
-          if (matched === matched.toUpperCase() && matched !== matched.toLowerCase()) {
-            return newTerm.toUpperCase();
-          }
-          if (matched[0] === matched[0].toUpperCase() && matched[0] !== matched[0].toLowerCase()) {
-            return newTerm.charAt(0).toUpperCase() + newTerm.slice(1);
-          }
+          if (matched === matched.toUpperCase() && matched !== matched.toLowerCase()) return newTerm.toUpperCase();
+          if (matched[0] === matched[0].toUpperCase() && matched[0] !== matched[0].toLowerCase()) return newTerm.charAt(0).toUpperCase() + newTerm.slice(1);
           return newTerm;
         });
       }
 
-      // Apply replacement based on platform path
+      const r = replaceInText;
       const parts = platform.split('.');
       const root = parts[0];
 
-      if (root === 'instagram' || root === 'facebook') {
-        const tone = parts[1];
-        if (root === 'instagram' && updated.instagram) {
-          updated.instagram[tone as keyof typeof updated.instagram] = replaceInText(updated.instagram[tone as keyof typeof updated.instagram]);
-        } else if (root === 'facebook' && updated.facebook) {
-          updated.facebook[tone as keyof typeof updated.facebook] = replaceInText(updated.facebook[tone as keyof typeof updated.facebook]);
+      // Helper for tone-keyed social platforms (instagram, facebook)
+      const replaceToned = (data: Record<string, string> | undefined, tone: string) => {
+        if (data) data[tone] = r(data[tone]);
+      };
+
+      // Helper for print-style platforms (magazineFullPage, magazineHalfPage)
+      type PrintRecord = Record<string, { headline: string; body: string; cta: string }>;
+      const replacePrint = (data: PrintRecord | undefined) => {
+        if (data) data[parts[1]][parts[2] as 'headline' | 'body' | 'cta'] = r(data[parts[1]][parts[2] as 'headline' | 'body' | 'cta']);
+      };
+
+      // Helper for postcard (front fields + back text)
+      type PostcardRecord = Record<string, { front: { headline: string; body: string; cta: string }; back: string }>;
+      const replacePostcard = (data: PostcardRecord | undefined) => {
+        if (!data) return;
+        if (parts[2] === 'front') data[parts[1]].front[parts[3] as 'headline' | 'body' | 'cta'] = r(data[parts[1]].front[parts[3] as 'headline' | 'body' | 'cta']);
+        else if (parts[2] === 'back') data[parts[1]].back = r(data[parts[1]].back);
+      };
+
+      // Strategy: platform-keyed replacers
+      const replacers: Record<string, () => void> = {
+        instagram:      () => replaceToned(updated.instagram, parts[1]),
+        facebook:       () => replaceToned(updated.facebook, parts[1]),
+        twitter:        () => { if (updated.twitter) updated.twitter = r(updated.twitter); },
+        metaAd:         () => { if (updated.metaAd) updated.metaAd[parts[1] as keyof typeof updated.metaAd] = r(updated.metaAd[parts[1] as keyof typeof updated.metaAd]); },
+        magazineFullPage:  () => replacePrint(updated.magazineFullPage as PrintRecord),
+        magazineHalfPage:  () => replacePrint(updated.magazineHalfPage as PrintRecord),
+        postcard:       () => replacePostcard(updated.postcard as PostcardRecord),
+        zillow:         () => { if (updated.zillow) updated.zillow = r(updated.zillow); },
+        realtorCom:     () => { if (updated.realtorCom) updated.realtorCom = r(updated.realtorCom); },
+        homesComTrulia: () => { if (updated.homesComTrulia) updated.homesComTrulia = r(updated.homesComTrulia); },
+        mlsDescription: () => { if (updated.mlsDescription) updated.mlsDescription = r(updated.mlsDescription); },
+        hashtags:       () => { updated.hashtags = updated.hashtags.map(r); },
+        callsToAction:  () => { updated.callsToAction = updated.callsToAction.map(r); },
+        targetingNotes: () => { updated.targetingNotes = r(updated.targetingNotes); },
+        sellingPoints:  () => { updated.sellingPoints = updated.sellingPoints.map(r); },
+      };
+
+      // Google Ads uses indexed key: googleAds[0], googleAds[1], etc.
+      if (root.startsWith('googleAds') && updated.googleAds) {
+        const match = root.match(/googleAds\[(\d+)\]/);
+        if (match) {
+          const idx = parseInt(match[1]);
+          const field = parts[1] as 'headline' | 'description';
+          updated.googleAds[idx][field] = r(updated.googleAds[idx][field]);
         }
-      } else if (root === 'twitter') {
-        if (updated.twitter) updated.twitter = replaceInText(updated.twitter);
-      } else if (root.startsWith('googleAds')) {
-        if (updated.googleAds) {
-          const match = root.match(/googleAds\[(\d+)\]/);
-          if (match) {
-            const idx = parseInt(match[1]);
-            const field = parts[1] as 'headline' | 'description';
-            updated.googleAds[idx][field] = replaceInText(updated.googleAds[idx][field]);
-          }
-        }
-      } else if (root === 'metaAd') {
-        if (updated.metaAd) {
-          const field = parts[1] as keyof typeof updated.metaAd;
-          updated.metaAd[field] = replaceInText(updated.metaAd[field]);
-        }
-      } else if (root === 'magazineFullPage') {
-        if (updated.magazineFullPage) {
-          const style = parts[1];
-          const field = parts[2] as 'headline' | 'body' | 'cta';
-          (updated.magazineFullPage as Record<string, { headline: string; body: string; cta: string }>)[style][field] = replaceInText(
-            (updated.magazineFullPage as Record<string, { headline: string; body: string; cta: string }>)[style][field]
-          );
-        }
-      } else if (root === 'magazineHalfPage') {
-        if (updated.magazineHalfPage) {
-          const style = parts[1];
-          const field = parts[2] as 'headline' | 'body' | 'cta';
-          (updated.magazineHalfPage as Record<string, { headline: string; body: string; cta: string }>)[style][field] = replaceInText(
-            (updated.magazineHalfPage as Record<string, { headline: string; body: string; cta: string }>)[style][field]
-          );
-        }
-      } else if (root === 'postcard') {
-        if (updated.postcard) {
-          const style = parts[1];
-          if (parts[2] === 'front') {
-            const field = parts[3] as 'headline' | 'body' | 'cta';
-            (updated.postcard as Record<string, { front: { headline: string; body: string; cta: string }; back: string }>)[style].front[field] = replaceInText(
-              (updated.postcard as Record<string, { front: { headline: string; body: string; cta: string }; back: string }>)[style].front[field]
-            );
-          } else if (parts[2] === 'back') {
-            (updated.postcard as Record<string, { front: any; back: string }>)[style].back = replaceInText(
-              (updated.postcard as Record<string, { front: any; back: string }>)[style].back
-            );
-          }
-        }
-      } else if (root === 'zillow') {
-        if (updated.zillow) updated.zillow = replaceInText(updated.zillow);
-      } else if (root === 'realtorCom') {
-        if (updated.realtorCom) updated.realtorCom = replaceInText(updated.realtorCom);
-      } else if (root === 'homesComTrulia') {
-        if (updated.homesComTrulia) updated.homesComTrulia = replaceInText(updated.homesComTrulia);
-      } else if (root === 'mlsDescription') {
-        if (updated.mlsDescription) updated.mlsDescription = replaceInText(updated.mlsDescription);
-      } else if (root === 'hashtags') {
-        updated.hashtags = updated.hashtags.map((h) => replaceInText(h));
-      } else if (root === 'callsToAction') {
-        updated.callsToAction = updated.callsToAction.map((c) => replaceInText(c));
-      } else if (root === 'targetingNotes') {
-        updated.targetingNotes = replaceInText(updated.targetingNotes);
-      } else if (root === 'sellingPoints') {
-        updated.sellingPoints = updated.sellingPoints.map((s) => replaceInText(s));
+      } else {
+        replacers[root]?.();
       }
 
       // Re-run compliance
@@ -142,12 +147,26 @@ export function CampaignShell() {
     [campaign]
   );
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="h-6 w-6 mx-auto animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-muted-foreground">Loading campaign...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!campaign) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-muted-foreground">Campaign not found or session expired.</p>
-          <Button onClick={() => router.push('/')}>Generate New Campaign</Button>
+          <p className="text-muted-foreground">Campaign not found.</p>
+          <div className="flex gap-3 justify-center">
+            <Button variant="outline" onClick={() => router.push('/dashboard')}>Go to Dashboard</Button>
+            <Button onClick={() => router.push('/create')}>Generate New Campaign</Button>
+          </div>
         </div>
       </div>
     );
@@ -157,7 +176,7 @@ export function CampaignShell() {
     const res = await fetch('/api/export', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ campaign, format }),
+      body: JSON.stringify({ campaignId: campaign!.id, format }),
     });
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -174,7 +193,7 @@ export function CampaignShell() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">Campaign Kit</h1>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push('/')}>New Campaign</Button>
+            <Button variant="outline" onClick={() => router.push('/create')}>New Campaign</Button>
             <Button variant="outline" onClick={() => handleExport('csv')}>Export CSV</Button>
             <Button onClick={() => handleExport('pdf')}>Export PDF</Button>
           </div>

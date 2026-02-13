@@ -26,10 +26,17 @@ export async function loadComplianceDocs(config: MLSComplianceConfig): Promise<s
   for (const docPath of allPaths) {
     try {
       const fullPath = path.resolve(process.cwd(), docPath);
+      const docsRoot = path.resolve(process.cwd(), 'docs');
+
+      // Block path traversal: resolved path must be inside docs/
+      if (!fullPath.startsWith(docsRoot + path.sep) && fullPath !== docsRoot) {
+        console.warn(`Compliance doc path traversal blocked: ${docPath}`);
+        continue;
+      }
+
       const content = await fs.readFile(fullPath, 'utf-8');
       contents.push(content);
     } catch {
-      // Missing doc file -- log warning but continue
       console.warn(`Compliance doc not found: ${docPath}`);
     }
   }

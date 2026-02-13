@@ -120,7 +120,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, campaign });
   } catch (error) {
     console.error('Generate API error:', error);
-    const message = error instanceof Error ? error.message : 'Generation failed';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Generation failed' }, { status: 500 });
   }
 }

@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: '/(login|signup|forgot-password|reset-password)',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, private' },
+        ],
+      },
     ];
   },
   images: {
