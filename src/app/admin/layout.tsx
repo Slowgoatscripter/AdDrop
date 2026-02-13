@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/admin/sidebar'
+import { AppHeader } from '@/components/nav/app-header'
+import { FeedbackShell } from '@/components/feedback/feedback-shell'
+import { Footer } from '@/components/nav/footer'
 
 export default async function AdminLayout({
   children,
@@ -18,23 +21,24 @@ export default async function AdminLayout({
     .eq('id', user.id)
     .single()
 
+  if (profile?.role !== 'admin') redirect('/')
+
+  const headerUser = {
+    displayName: profile?.display_name ?? undefined,
+    email: profile?.email ?? user.email ?? '',
+    role: profile?.role ?? 'user',
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-      <div className="ml-60">
-        <header className="h-14 border-b border-border flex items-center justify-between px-6">
-          <div />
-          <div className="flex items-center gap-3">
-            <span className="text-xs px-2 py-0.5 rounded-full bg-gold/10 text-gold font-medium">
-              {profile?.role}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {profile?.display_name || profile?.email}
-            </span>
-          </div>
-        </header>
-        <main className="p-6">{children}</main>
+    <FeedbackShell>
+      <div className="min-h-screen bg-background flex flex-col">
+        <Sidebar />
+        <div className="md:ml-60 flex-1 flex flex-col">
+          <AppHeader variant="admin" user={headerUser} />
+          <main className="flex-1 p-6">{children}</main>
+          <Footer />
+        </div>
       </div>
-    </div>
+    </FeedbackShell>
   )
 }
