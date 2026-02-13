@@ -52,6 +52,11 @@ export function findQualityIssues(
 ): QualityIssue[] {
   if (!text || text.trim().length === 0) return [];
 
+  if (text.length > 100_000) {
+    console.warn('Text too long for quality regex check, skipping');
+    return [];
+  }
+
   const activeRules = rules || qualityRules;
   const issues: QualityIssue[] = [];
 
@@ -200,7 +205,7 @@ export function checkFormattingAbuse(
       priority: 'recommended',
       source: 'regex',
       issue: 'Excessive ellipsis',
-      suggestedFix: 'Use standard ellipsis (...) or a dash (—)',
+      suggestedFix: 'Use standard ellipsis (...) or a dash (---)',
       context: extractContext(text, ellipsisMatch.index!, ellipsisMatch.index! + ellipsisMatch[0].length),
     });
   }

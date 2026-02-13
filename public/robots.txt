@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /api/
+Disallow: /create
+Disallow: /campaign/

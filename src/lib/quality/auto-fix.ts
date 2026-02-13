@@ -121,6 +121,10 @@ async function autoFixTextAI(
  */
 function setNestedValue(obj: Record<string, any>, path: string, value: string): void {
   const parts = path.replace(/\[(\d+)\]/g, '.$1').split('.');
+
+  // Guard against prototype pollution
+  if (parts.some(p => p === '__proto__' || p === 'constructor' || p === 'prototype')) return;
+
   let current = obj;
 
   for (let i = 0; i < parts.length - 1; i++) {

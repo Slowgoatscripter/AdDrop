@@ -2,6 +2,14 @@ import { resolveMlsNumber } from '@/lib/scraper/mls-resolver';
 import { scrapeListing } from '@/lib/scraper';
 import { POST } from '../route';
 
+jest.mock('@/lib/supabase/auth-helpers', () => ({
+  requireAuth: jest.fn().mockResolvedValue({
+    user: { id: 'user-123' },
+    supabase: {},
+    error: null,
+  }),
+}));
+
 jest.mock('@/lib/scraper/mls-resolver');
 jest.mock('@/lib/scraper', () => ({
   scrapeListing: jest.fn(),

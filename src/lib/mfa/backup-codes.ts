@@ -4,18 +4,18 @@ import { SupabaseClient } from '@supabase/supabase-js'
 
 export function generateBackupCodes(count = 8): string[] {
   return Array.from({ length: count }, () => {
-    const bytes = randomBytes(4)
+    const bytes = randomBytes(8)
     const hex = bytes.toString('hex').toUpperCase()
-    return `${hex.slice(0, 4)}-${hex.slice(4, 8)}`
+    return `${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}`
   })
 }
 
 export async function hashBackupCode(code: string): Promise<string> {
-  return bcrypt.hash(code.replace('-', '').toUpperCase(), 10)
+  return bcrypt.hash(code.replace(/-/g, '').toUpperCase(), 10)
 }
 
 export async function verifyBackupCode(code: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(code.replace('-', '').toUpperCase(), hash)
+  return bcrypt.compare(code.replace(/-/g, '').toUpperCase(), hash)
 }
 
 // Store codes using service_role or server client

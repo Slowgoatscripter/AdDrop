@@ -1,3 +1,5 @@
+import { validateUrl, followRedirectsSafely } from './url-validator';
+
 export interface MlsResolveResult {
   success: boolean;
   url?: string;
@@ -35,9 +37,9 @@ export async function resolveMlsNumber(
   for (const source of SOURCES) {
     try {
       const url = source.buildUrl(sanitized);
-      const response = await fetch(url, {
+
+      const { finalUrl, response } = await followRedirectsSafely(url, 5, {
         method: 'GET',
-        redirect: 'follow',
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -46,9 +48,13 @@ export async function resolveMlsNumber(
       });
 
       if (response.ok) {
+        // Validate the final resolved URL before returning
+        const finalCheck = await validateUrl(finalUrl);
+        if (!finalCheck.safe) continue;
+
         return {
           success: true,
-          url: response.url,
+          url: finalUrl,
           source: source.name,
         };
       }

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { ListingData } from '@/lib/types/listing'
+import { settingsDefaults } from '@/lib/settings/defaults'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -78,14 +79,33 @@ export async function deletePreset(id: string) {
 }
 
 export async function reseedPresets() {
-  const { supabase } = await requireAdmin()
+  const { user, supabase } = await requireAdmin()
 
+  // Delete all existing presets for this user
   const { error: deleteError } = await supabase
     .from('test_presets')
     .delete()
-    .neq('id', '00000000-0000-0000-0000-000000000000')
+    .eq('created_by', user.id)
 
   if (deleteError) throw new Error(deleteError.message)
+
+  // Insert defaults
+  const defaults = settingsDefaults['presets.default'] as Array<{
+    name: string
+    listing_data: ListingData
+  }>
+
+  const rows = defaults.map((p) => ({
+    name: p.name,
+    listing_data: p.listing_data,
+    created_by: user.id,
+  }))
+
+  const { error: insertError } = await supabase
+    .from('test_presets')
+    .insert(rows)
+
+  if (insertError) throw new Error(insertError.message)
 
   revalidatePath('/admin/test')
 }

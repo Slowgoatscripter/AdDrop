@@ -2,27 +2,44 @@
  * @jest-environment node
  */
 
-// Mock the generate function BEFORE importing anything
+jest.mock('@/lib/supabase/auth-helpers', () => ({
+  requireAuth: jest.fn(),
+}))
+
+jest.mock('@/lib/usage/campaign-limits', () => ({
+  getCampaignUsage: jest.fn(),
+}))
+
 jest.mock('@/lib/ai/generate', () => ({
   generateCampaign: jest.fn(),
-}));
+}))
 
 // Polyfill Web APIs for Next.js
-import { TextEncoder, TextDecoder } from 'util';
-Object.assign(global, { TextEncoder, TextDecoder });
+import { TextEncoder, TextDecoder } from 'util'
+Object.assign(global, { TextEncoder, TextDecoder })
 
 // Use native fetch if available (Node 18+) or mock minimally
 if (typeof global.Request === 'undefined') {
-  const { Request, Response, Headers } = require('undici');
-  Object.assign(global, { Request, Response, Headers, fetch: async () => new Response() });
+  const { Request, Response, Headers } = require('undici')
+  Object.assign(global, { Request, Response, Headers, fetch: async () => new Response() })
 }
 
-import { POST } from '../route';
-import { NextRequest } from 'next/server';
-import { generateCampaign } from '@/lib/ai/generate';
-import { ListingData } from '@/lib/types';
+import { NextRequest } from 'next/server'
+import { POST } from '../route'
+import { generateCampaign } from '@/lib/ai/generate'
+import { requireAuth } from '@/lib/supabase/auth-helpers'
+import { getCampaignUsage } from '@/lib/usage/campaign-limits'
+import type { ListingData } from '@/lib/types'
 
 describe('POST /api/generate', () => {
+  const mockInsert = jest.fn()
+  const mockFrom = jest.fn(() => ({ insert: mockInsert }))
+  const mockSupabase = { from: mockFrom } as unknown as { from: typeof mockFrom }
+
+  const mockRequireAuth = requireAuth as jest.MockedFunction<typeof requireAuth>
+  const mockGetCampaignUsage = getCampaignUsage as jest.MockedFunction<typeof getCampaignUsage>
+  const mockGenerateCampaign = generateCampaign as jest.MockedFunction<typeof generateCampaign>
+
   const mockListing: ListingData = {
     url: 'https://example.com/listing/123',
     address: {
@@ -39,7 +56,7 @@ describe('POST /api/generate', () => {
     features: ['Granite Countertops'],
     description: 'Beautiful home',
     photos: ['https://example.com/photo1.jpg'],
-  };
+  }
 
   const mockCampaign = {
     id: 'test-campaign-id',
@@ -79,116 +96,190 @@ describe('POST /api/generate', () => {
     callsToAction: ['CTA'],
     targetingNotes: 'notes',
     sellingPoints: ['point1'],
-  };
+  }
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.OPENAI_API_KEY = 'test-api-key';
-  });
+    jest.clearAllMocks()
+    process.env.OPENAI_API_KEY = 'test-api-key'
+    mockRequireAuth.mockResolvedValue({
+      user: { id: 'user-123' } as never,
+      supabase: mockSupabase as never,
+      error: null,
+    })
+    mockGetCampaignUsage.mockResolvedValue({
+      used: 0,
+      limit: 2,
+      remaining: 2,
+      resetsAt: null,
+      isLimited: false,
+      isExempt: false,
+    })
+    mockInsert.mockResolvedValue({ error: null })
+  })
 
   afterEach(() => {
-    delete process.env.OPENAI_API_KEY;
-  });
+    delete process.env.OPENAI_API_KEY
+  })
 
-  test('returns 500 when OpenAI API key is not configured', async () => {
-    delete process.env.OPENAI_API_KEY;
+  test('returns auth error when requireAuth fails', async () => {
+    mockRequireAuth.mockResolvedValueOnce({
+      user: null,
+      supabase: mockSupabase as never,
+      error: new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401 }) as never,
+    })
 
     const request = new NextRequest('http://localhost:3000/api/generate', {
       method: 'POST',
       body: JSON.stringify({ listing: mockListing }),
-    });
+    })
 
-    const response = await POST(request);
-    const data = await response.json();
+    const response = await POST(request)
+    expect(response.status).toBe(401)
+  })
 
-    expect(response.status).toBe(500);
-    expect(data.error).toBe('OpenAI API key not configured');
-  });
+  test('returns 500 when OpenAI API key is not configured', async () => {
+    delete process.env.OPENAI_API_KEY
+
+    const request = new NextRequest('http://localhost:3000/api/generate', {
+      method: 'POST',
+      body: JSON.stringify({ listing: mockListing }),
+    })
+
+    const response = await POST(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(500)
+    expect(data.error).toBe('OpenAI API key not configured')
+  })
 
   test('returns 400 when listing data is missing', async () => {
     const request = new NextRequest('http://localhost:3000/api/generate', {
       method: 'POST',
       body: JSON.stringify({}),
-    });
+    })
 
-    const response = await POST(request);
-    const data = await response.json();
+    const response = await POST(request)
+    const data = await response.json()
 
-    expect(response.status).toBe(400);
-    expect(data.error).toBe('Listing data is required');
-  });
+    expect(response.status).toBe(400)
+    expect(data.error).toBe('Invalid listing data')
+  })
 
-  test('returns 400 when listing address is missing', async () => {
-    const invalidListing = { ...mockListing, address: undefined };
+  test('returns 429 when user is rate limited', async () => {
+    const resetAt = new Date('2026-02-20T00:00:00.000Z')
+    mockGetCampaignUsage.mockResolvedValueOnce({
+      used: 2,
+      limit: 2,
+      remaining: 0,
+      resetsAt: resetAt,
+      isLimited: true,
+      isExempt: false,
+    })
 
     const request = new NextRequest('http://localhost:3000/api/generate', {
       method: 'POST',
-      body: JSON.stringify({ listing: invalidListing }),
-    });
+      body: JSON.stringify({ listing: mockListing }),
+    })
 
-    const response = await POST(request);
-    const data = await response.json();
+    const response = await POST(request)
+    const data = await response.json()
 
-    expect(response.status).toBe(400);
-    expect(data.error).toBe('Listing data is required');
-  });
+    expect(response.status).toBe(429)
+    expect(data.code).toBe('RATE_LIMITED')
+    expect(data.usage.used).toBe(2)
+    expect(data.usage.resetsAt).toBe(resetAt.toISOString())
+    expect(mockGenerateCampaign).not.toHaveBeenCalled()
+  })
 
   test('successfully generates campaign and returns 200', async () => {
-    (generateCampaign as jest.Mock).mockResolvedValue(mockCampaign);
+    mockGenerateCampaign.mockResolvedValue(mockCampaign as never)
 
     const request = new NextRequest('http://localhost:3000/api/generate', {
       method: 'POST',
       body: JSON.stringify({ listing: mockListing }),
-    });
+    })
 
-    const response = await POST(request);
-    const data = await response.json();
+    const response = await POST(request)
+    const data = await response.json()
 
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.campaign).toEqual(mockCampaign);
-  });
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(data.campaign).toEqual(mockCampaign)
+    expect(mockGenerateCampaign).toHaveBeenCalledWith(mockListing, undefined)
+    expect(mockFrom).toHaveBeenCalledWith('campaigns')
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: mockCampaign.id,
+        user_id: 'user-123',
+        name: '123 Main St, Bozeman, MT',
+        platform: 'all',
+        status: 'generated',
+      })
+    )
+  })
 
-  test('calls generateCampaign with listing data', async () => {
-    (generateCampaign as jest.Mock).mockResolvedValue(mockCampaign);
+  test('passes selected platforms and persists platform list', async () => {
+    mockGenerateCampaign.mockResolvedValue(mockCampaign as never)
+
+    const request = new NextRequest('http://localhost:3000/api/generate', {
+      method: 'POST',
+      body: JSON.stringify({ listing: mockListing, platforms: ['facebook', 'instagram'] }),
+    })
+
+    const response = await POST(request)
+    expect(response.status).toBe(200)
+    expect(mockGenerateCampaign).toHaveBeenCalledWith(mockListing, ['facebook', 'instagram'])
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        platform: 'facebook,instagram',
+      })
+    )
+  })
+
+  test('still returns success when campaign persistence fails', async () => {
+    mockGenerateCampaign.mockResolvedValue(mockCampaign as never)
+    mockInsert.mockResolvedValueOnce({ error: { message: 'db write failed' } })
 
     const request = new NextRequest('http://localhost:3000/api/generate', {
       method: 'POST',
       body: JSON.stringify({ listing: mockListing }),
-    });
+    })
 
-    await POST(request);
+    const response = await POST(request)
+    const data = await response.json()
 
-    expect(generateCampaign).toHaveBeenCalledWith(mockListing);
-  });
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(data.campaign).toEqual(mockCampaign)
+  })
 
   test('returns 500 when generation fails', async () => {
-    (generateCampaign as jest.Mock).mockRejectedValue(new Error('AI service unavailable'));
+    mockGenerateCampaign.mockRejectedValue(new Error('AI service unavailable'))
 
     const request = new NextRequest('http://localhost:3000/api/generate', {
       method: 'POST',
       body: JSON.stringify({ listing: mockListing }),
-    });
+    })
 
-    const response = await POST(request);
-    const data = await response.json();
+    const response = await POST(request)
+    const data = await response.json()
 
-    expect(response.status).toBe(500);
-    expect(data.error).toBe('AI service unavailable');
-  });
+    expect(response.status).toBe(500)
+    expect(data.error).toBe('Generation failed')
+  })
 
   test('handles non-Error exceptions', async () => {
-    (generateCampaign as jest.Mock).mockRejectedValue('Unknown error');
+    mockGenerateCampaign.mockRejectedValue('Unknown error')
 
     const request = new NextRequest('http://localhost:3000/api/generate', {
       method: 'POST',
       body: JSON.stringify({ listing: mockListing }),
-    });
+    })
 
-    const response = await POST(request);
-    const data = await response.json();
+    const response = await POST(request)
+    const data = await response.json()
 
-    expect(response.status).toBe(500);
-    expect(data.error).toBe('Generation failed');
-  });
-});
+    expect(response.status).toBe(500)
+    expect(data.error).toBe('Generation failed')
+  })
+})

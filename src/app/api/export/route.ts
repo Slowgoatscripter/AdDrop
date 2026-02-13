@@ -2,23 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CampaignKit } from '@/lib/types';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function POST(request: NextRequest) {
   try {
-    const { user, error: authError } = await requireAuth();
+    const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
 
     const body = await request.json();
-    const { campaign, format } = body as { campaign: CampaignKit; format: 'pdf' | 'csv' | 'json' };
+    const { campaignId, format } = body as { campaignId: string; format: 'pdf' | 'csv' | 'json' };
 
-    if (!campaign) {
-      return NextResponse.json({ error: 'Campaign data is required' }, { status: 400 });
+    // Validate UUID format
+    if (!campaignId || !uuidRegex.test(campaignId)) {
+      return NextResponse.json({ error: 'Invalid campaign ID' }, { status: 400 });
     }
+
+    // Load campaign from DB with ownership verification
+    const { data: row, error } = await supabase
+      .from('campaigns')
+      .select('generated_ads')
+      .eq('id', campaignId)
+      .eq('user_id', user!.id)
+      .single();
+
+    if (error || !row) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
+
+    const campaign = row.generated_ads as CampaignKit;
+
+    // Sanitize ID for Content-Disposition header (belt-and-suspenders)
+    const safeId = campaignId.replace(/[^a-zA-Z0-9-]/g, '');
 
     if (format === 'json') {
       return new NextResponse(JSON.stringify(campaign, null, 2), {
         headers: {
           'Content-Type': 'application/json',
-          'Content-Disposition': `attachment; filename="campaign-${campaign.id}.json"`,
+          'Content-Disposition': `attachment; filename="campaign-${safeId}.json"`,
         },
       });
     }
@@ -29,7 +49,7 @@ export async function POST(request: NextRequest) {
       return new NextResponse(csv, {
         headers: {
           'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="campaign-${campaign.id}.csv"`,
+          'Content-Disposition': `attachment; filename="campaign-${safeId}.csv"`,
         },
       });
     }
@@ -40,15 +60,12 @@ export async function POST(request: NextRequest) {
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="campaign-${campaign.id}.pdf"`,
+        'Content-Disposition': `attachment; filename="campaign-${safeId}.pdf"`,
       },
     });
   } catch (error) {
     console.error('Export error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Export failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Export failed' }, { status: 500 });
   }
 }
 
