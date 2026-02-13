@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Shield, ShieldCheck, ShieldOff, Copy, Download, RefreshCw, AlertTriangle, Info } from 'lucide-react'
+import { Shield, ShieldCheck, ShieldOff, Copy, Download, RefreshCw, AlertTriangle, Info, KeyRound, Mail, CheckCircle } from 'lucide-react'
 import {
   getMfaStatus,
   enrollMfa,
   verifyMfaEnrollment,
   unenrollMfa,
   generateNewBackupCodes,
+  requestPasswordChange,
 } from './actions'
 
 type MfaState = 'loading' | 'not_enrolled' | 'enrolling' | 'verifying' | 'showing_backup_codes' | 'enrolled'
@@ -40,6 +41,11 @@ export default function SecurityPage() {
   const [showDisableConfirm, setShowDisableConfirm] = useState(false)
   const [disableCode, setDisableCode] = useState('')
   const [disabling, setDisabling] = useState(false)
+
+  // Password change
+  const [passwordResetSending, setPasswordResetSending] = useState(false)
+  const [passwordResetSent, setPasswordResetSent] = useState(false)
+  const [passwordResetEmail, setPasswordResetEmail] = useState('')
 
   // Error/message
   const [error, setError] = useState<string | null>(null)
@@ -154,6 +160,19 @@ export default function SecurityPage() {
     loadStatus()
   }
 
+  async function handlePasswordReset() {
+    setError(null)
+    setPasswordResetSending(true)
+    const result = await requestPasswordChange()
+    setPasswordResetSending(false)
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+    setPasswordResetEmail(result.data?.email ?? '')
+    setPasswordResetSent(true)
+  }
+
   if (state === 'loading') {
     return (
       <div className="space-y-4">
@@ -170,7 +189,7 @@ export default function SecurityPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-xl font-bold text-foreground">Security</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage two-factor authentication</p>
+        <p className="text-sm text-muted-foreground mt-1">Manage your password and two-factor authentication</p>
       </div>
 
       {isAdmin && (
@@ -188,6 +207,40 @@ export default function SecurityPage() {
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
+
+      {/* Change password */}
+      <div className="border border-border rounded-lg p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <KeyRound className="w-6 h-6 text-muted-foreground" />
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Password</h2>
+            <p className="text-sm text-muted-foreground">
+              Change your account password via a secure email link.
+            </p>
+          </div>
+        </div>
+
+        {passwordResetSent ? (
+          <div className="flex items-start gap-3 p-4 rounded-lg bg-green-500/5 border border-green-500/20">
+            <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Password reset email sent</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Check <span className="font-medium text-foreground">{passwordResetEmail}</span> for a link to reset your password.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={handlePasswordReset}
+            disabled={passwordResetSending}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Mail className="w-4 h-4" />
+            {passwordResetSending ? 'Sending...' : 'Send password reset email'}
+          </button>
+        )}
+      </div>
 
       {/* Not enrolled */}
       {state === 'not_enrolled' && (

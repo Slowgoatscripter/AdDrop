@@ -8,6 +8,25 @@ import {
   getRemainingCount,
 } from '@/lib/mfa/backup-codes'
 
+export async function requestPasswordChange() {
+  try {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || !user.email) return { error: 'Not authenticated', data: null }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/callback?next=/reset-password`,
+    })
+
+    if (error) return { error: error.message, data: null }
+
+    return { data: { email: user.email }, error: null }
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : 'Unknown error' }
+  }
+}
+
 export async function getMfaStatus() {
   try {
     const supabase = await createClient()
