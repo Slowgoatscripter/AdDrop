@@ -120,6 +120,19 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Beta-gated routes — redirect to signup with return URL
+  if (
+    pathname.startsWith('/create') ||
+    pathname.startsWith('/campaign')
+  ) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/signup'
+      url.searchParams.set('next', pathname)
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Redirect authenticated users away from auth pages
   const authPages = ['/login', '/signup', '/forgot-password']
   if (authPages.includes(pathname) && user) {

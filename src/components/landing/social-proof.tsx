@@ -12,9 +12,9 @@ interface Benefit {
 
 const benefits: Benefit[] = [
   {
-    value: '60',
-    suffix: 's',
-    label: 'Average Generation Time',
+    value: 'Minutes',
+    suffix: '',
+    label: 'Not Hours',
     sublabel: 'Faster than writing one ad manually',
   },
   {
@@ -24,10 +24,10 @@ const benefits: Benefit[] = [
     sublabel: 'Every channel your listings need',
   },
   {
-    value: '100',
-    suffix: '%',
-    label: 'Compliance Built In',
-    sublabel: 'Fair housing standards, always',
+    value: 'Generated',
+    suffix: ' Ads',
+    label: 'Compliance-Scanned',
+    sublabel: 'Fair housing standards, built in',
   },
 ];
 
@@ -77,27 +77,36 @@ export function SocialProof() {
           Why Agents Choose AdDrop
         </h2>
         <p className="text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
-          One listing in. A complete marketing suite out.
-        </p>
+          One listing in. A complete marketing suite out. Free during beta.
+</p>
 
         <div className="grid md:grid-cols-3 gap-0">
-          {benefits.map((benefit, index) => (
+          {benefits.map((benefit, index) => {
+            const numeric = parseInt(benefit.value);
+            return (
             <div
               key={benefit.label}
               className={`text-center p-8 md:p-12 ${
                 index < benefits.length - 1 ? 'md:border-r border-gold/10' : ''
               }`}
             >
-              <CountUpNumber
-                target={parseInt(benefit.value)}
-                suffix={benefit.suffix}
-              />
+              {isNaN(numeric) ? (
+                <div className="font-serif text-5xl md:text-6xl font-bold bg-gradient-to-br from-gold via-gold-bright to-gold-light bg-clip-text text-transparent">
+                  {benefit.value}{benefit.suffix}
+                </div>
+              ) : (
+                <CountUpNumber
+                  target={numeric}
+                  suffix={benefit.suffix}
+                />
+              )}
               <p className="text-lg font-semibold text-cream mt-4 mb-2">
                 {benefit.label}
               </p>
               <p className="text-sm text-muted-foreground">{benefit.sublabel}</p>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

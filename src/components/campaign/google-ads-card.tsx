@@ -1,60 +1,143 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CopyButton } from '@/components/copy-button';
-import { ComplianceBadge } from './compliance-badge';
-import { QualityBadge } from './quality-badge';
+import { useState } from 'react';
+import { AdCardWrapper } from './ad-card-wrapper';
+import { BrowserFrame } from './browser-frame';
 import { ViolationDetails } from './violation-details';
 import { GoogleAd, PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import { ListingData } from '@/lib/types/listing';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface GoogleAdsCardProps {
   ads: GoogleAd[];
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  listing?: ListingData;
 }
 
-export function GoogleAdsCard({ ads, complianceResult, qualityResult, onReplace }: GoogleAdsCardProps) {
+/** Google Ads icon (simplified "Ad" badge) */
+function GoogleAdsIcon() {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <CardTitle className="text-lg">Google Ads</CardTitle>
-          {complianceResult && <ComplianceBadge result={complianceResult} />}
-          {qualityResult && <QualityBadge result={qualityResult} />}
-        </div>
-        <p className="text-sm text-muted-foreground">3 headline + description combinations</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {ads.map((ad, i) => (
-          <div key={i} className="bg-secondary rounded-lg p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground">Variation {i + 1}</p>
-              <CopyButton text={`${ad.headline}\n${ad.description}`} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-blue-400">{ad.headline}</p>
-                <Badge variant={ad.headline.length > 30 ? 'destructive' : 'secondary'} className="text-xs">
-                  {ad.headline.length}/30
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-sm text-muted-foreground">{ad.description}</p>
-                <Badge variant={ad.description.length > 90 ? 'destructive' : 'secondary'} className="text-xs flex-shrink-0">
-                  {ad.description.length}/90
-                </Badge>
-              </div>
-            </div>
-          </div>
-        ))}
+    <div className="w-6 h-6 rounded bg-[#4285F4] flex items-center justify-center">
+      <span className="text-white text-[10px] font-bold">Ad</span>
+    </div>
+  );
+}
 
-        {complianceResult && complianceResult.violations.length > 0 && onReplace && (
-          <ViolationDetails violations={complianceResult.violations} onReplace={onReplace} />
-        )}
-      </CardContent>
-    </Card>
+export function GoogleAdsCard({
+  ads,
+  complianceResult,
+  qualityResult,
+  onReplace,
+  listing,
+}: GoogleAdsCardProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const activeAd = ads[activeIndex];
+  if (!activeAd) return null;
+
+  const city = listing?.address?.city || 'Montana';
+  const state = listing?.address?.state || 'MT';
+  const propertyType = listing?.propertyType || 'homes';
+
+  const searchQuery = `${propertyType} for sale ${city} ${state}`;
+  const displayUrl = `www.yoursite.com \u203A ${city.toLowerCase().replace(/\s+/g, '-')}-listings`;
+
+  const copyText = `${activeAd.headline}\n${activeAd.description}`;
+
+  const prev = () => setActiveIndex((i) => (i > 0 ? i - 1 : ads.length - 1));
+  const next = () => setActiveIndex((i) => (i < ads.length - 1 ? i + 1 : 0));
+
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <AdCardWrapper
+        platform="Google Ads"
+        platformIcon={<GoogleAdsIcon />}
+        dimensionLabel="Responsive Search Ad"
+        complianceResult={complianceResult}
+        qualityResult={qualityResult}
+        copyText={copyText}
+        violations={complianceResult?.violations}
+        onReplace={onReplace}
+      >
+        <BrowserFrame searchQuery={searchQuery}>
+          <div className="px-4 md:px-6 py-4 bg-white">
+            {/* SERP result */}
+            <div className="space-y-1">
+              {/* Sponsored label + display URL */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-[#202124]">Sponsored</span>
+                <span className="text-xs text-[#202124]">&middot;</span>
+              </div>
+              <div className="flex items-center gap-0.5 text-sm text-[#202124]">
+                {/* Favicon placeholder */}
+                <div className="w-4 h-4 rounded-full bg-slate-200 mr-1.5 flex-shrink-0" />
+                <span className="truncate">
+                  <span className="font-medium">{displayUrl.split(' ')[0]}</span>
+                  <span className="text-[#5F6368]">
+                    {' '}{displayUrl.slice(displayUrl.indexOf('\u203A'))}
+                  </span>
+                </span>
+              </div>
+
+              {/* Headline — Google blue */}
+              <h3
+                className="text-xl leading-[26px] text-[#1a0dab] hover:underline cursor-pointer"
+                style={{ fontFamily: 'arial, sans-serif' }}
+              >
+                {activeAd.headline}
+              </h3>
+
+              {/* Description */}
+              <p
+                className="text-sm leading-[22px] text-[#4D5156]"
+                style={{ fontFamily: 'arial, sans-serif' }}
+              >
+                {activeAd.description}
+              </p>
+            </div>
+
+            {/* Variation navigator */}
+            {ads.length > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-slate-100">
+                <button
+                  onClick={prev}
+                  className="p-1 rounded-full hover:bg-slate-100 transition-colors text-slate-500"
+                  aria-label="Previous variation"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <div className="flex items-center gap-1.5">
+                  {ads.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveIndex(i)}
+                      className={`w-2 h-2 rounded-full transition-colors ${
+                        i === activeIndex
+                          ? 'bg-[#1a0dab]'
+                          : 'bg-slate-300 hover:bg-slate-400'
+                      }`}
+                      aria-label={`Variation ${i + 1}`}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={next}
+                  className="p-1 rounded-full hover:bg-slate-100 transition-colors text-slate-500"
+                  aria-label="Next variation"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <span className="text-xs text-slate-400 ml-1">
+                  {activeIndex + 1} / {ads.length}
+                </span>
+              </div>
+            )}
+          </div>
+        </BrowserFrame>
+      </AdCardWrapper>
+    </div>
   );
 }

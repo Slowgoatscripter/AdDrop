@@ -71,7 +71,7 @@ export function UrlInputForm() {
       <CardHeader>
         <CardTitle className="text-2xl">Generate Your Ad Campaign</CardTitle>
         <CardDescription>
-          Paste a property listing URL and we&apos;ll create ready-to-post ads for every platform.
+          Paste a property listing URL and we&apos;ll create ready-to-post ads for selected platforms.
         </CardDescription>
       </CardHeader>
       <CardContent>

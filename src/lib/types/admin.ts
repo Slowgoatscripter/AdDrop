@@ -4,6 +4,7 @@ export interface Profile {
   display_name: string | null
   role: 'admin' | 'user'
   created_at: string
+  rate_limit_exempt?: boolean
 }
 
 export interface AdminStats {

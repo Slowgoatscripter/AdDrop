@@ -101,7 +101,7 @@ export function Lightbox({
         </button>
       )}
 
-      {/* Image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={images[currentIndex]}
         alt={`${alt} ${currentIndex + 1}`}

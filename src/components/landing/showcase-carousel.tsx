@@ -224,7 +224,7 @@ export function ShowcaseCarousel() {
           See What AdDrop Creates
         </h2>
         <p className="text-muted-foreground text-center mb-12">
-          Real examples. Different properties. Every platform.
+          Sample outputs across platforms.
         </p>
 
         {/* Platform tab selector */}

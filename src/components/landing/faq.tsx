@@ -9,22 +9,27 @@ const defaultFaqs: FAQItemType[] = [
   {
     question: 'Is AdDrop really free?',
     answer:
-      'Yes — AdDrop is completely free during our beta period. No account, no credit card, no catch. We want you to try it and tell us what you think.',
+      'Yes — AdDrop is completely free during beta. Create a free account, get 2 campaigns per week, and never see a credit card form. We want you to try it and tell us what you think.',
+  },
+  {
+    question: 'Why do I need an account?',
+    answer:
+      'Your account lets us save your campaigns, track your usage, and give you a dashboard to manage everything. Sign up with email and password. No credit card, no commitments.',
   },
   {
     question: 'What information do I need to get started?',
     answer:
-      'Just your property address, a few photos, and basic details like beds, baths, and price. It takes about a minute to fill out — then AdDrop handles the rest.',
+      'Just your property address, a few photos, and basic details like beds, baths, and price. Typically ready in a few minutes, depending on listing complexity.',
   },
   {
     question: 'How does the AI know what to write?',
     answer:
-      "AdDrop's AI is trained specifically for real estate marketing. It understands platform best practices, character limits, tone variations, and fair housing compliance. It writes ads that sound like they came from a professional copywriter.",
+      "AdDrop's AI is designed for real estate marketing workflows. It understands platform best practices, character limits, tone variations, and fair housing compliance. It writes ads designed to sound polished and professional.",
   },
   {
     question: 'Is the ad copy compliant with fair housing laws?',
     answer:
-      'AdDrop includes built-in compliance checking that automatically flags and corrects problematic language. Currently optimized for Montana MLS requirements, with more states coming soon.',
+      'AdDrop includes built-in compliance checking that helps identify and suggests corrections for problematic language. Currently optimized for Montana MLS requirements, with more states coming soon.',
   },
   {
     question: 'Can I edit the generated ads?',

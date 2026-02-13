@@ -19,8 +19,8 @@ interface HeroProps {
 
 const defaultStats: LandingStat[] = [
   { value: '12+', label: 'Platforms' },
-  { value: '<60s', label: 'Generation' },
-  { value: '100%', label: 'Compliant' },
+  { value: 'Minutes', label: 'Not Hours' },
+  { value: 'Ads Are', label: 'Scanned' },
   { value: '5', label: 'Tone Options' },
 ];
 
@@ -29,9 +29,9 @@ const ease = [0.25, 0.46, 0.45, 0.94] as const;
 export function Hero({
   titlePrefix = 'Ad',
   titleAccent = 'Drop',
-  tagline = 'Your Listing. 12 Platforms. Zero Effort.',
-  description = 'Enter your property details and get a complete ad campaign — Instagram, Facebook, Google, print, direct mail — in under 60 seconds.',
-  ctaText = 'Start Creating Ads',
+  tagline = 'Your Listing. 12 Platforms. Minimal Effort.',
+  description = 'Create a free account, enter your property details, and get a complete ad campaign — Instagram, Facebook, Google, print, direct mail — typically ready in a few minutes.',
+  ctaText = 'Start Creating — Free',
   ctaHref = '/create',
   stats,
 }: HeroProps) {
@@ -46,7 +46,7 @@ export function Hero({
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
       {/* Background image */}
       <Image
-        src="/images/hero-bg.jpg"
+        src="https://images.unsplash.com/photo-1609366314330-e359fed1cd55?w=1920&q=80"
         fill
         priority
         alt=""

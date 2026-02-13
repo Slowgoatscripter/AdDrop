@@ -4,10 +4,23 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { ListingData } from '@/lib/types/listing'
 
-export async function getPresets() {
+async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') throw new Error('Not authorized')
+  return { user, supabase }
+}
+
+export async function getPresets() {
+  const { supabase } = await requireAdmin()
 
   const { data, error } = await supabase
     .from('test_presets')
@@ -19,9 +32,7 @@ export async function getPresets() {
 }
 
 export async function createPreset(name: string, listingData: ListingData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
+  const { user, supabase } = await requireAdmin()
 
   const { error } = await supabase
     .from('test_presets')
@@ -37,9 +48,7 @@ export async function createPreset(name: string, listingData: ListingData) {
 }
 
 export async function updatePreset(id: string, name: string, listingData: ListingData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
+  const { supabase } = await requireAdmin()
 
   const { error } = await supabase
     .from('test_presets')
@@ -56,9 +65,7 @@ export async function updatePreset(id: string, name: string, listingData: Listin
 }
 
 export async function deletePreset(id: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
+  const { supabase } = await requireAdmin()
 
   const { error } = await supabase
     .from('test_presets')
@@ -66,6 +73,19 @@ export async function deletePreset(id: string) {
     .eq('id', id)
 
   if (error) throw new Error(error.message)
+
+  revalidatePath('/admin/test')
+}
+
+export async function reseedPresets() {
+  const { supabase } = await requireAdmin()
+
+  const { error: deleteError } = await supabase
+    .from('test_presets')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000')
+
+  if (deleteError) throw new Error(deleteError.message)
 
   revalidatePath('/admin/test')
 }

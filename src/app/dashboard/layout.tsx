@@ -1,13 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-
-async function signOut() {
-  'use server'
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  redirect('/login')
-}
+import { AppHeader } from '@/components/nav/app-header'
+import { FeedbackShell } from '@/components/feedback/feedback-shell'
+import { Footer } from '@/components/nav/footer'
 
 export default async function DashboardLayout({
   children,
@@ -25,28 +20,19 @@ export default async function DashboardLayout({
     .eq('id', user.id)
     .single()
 
+  const headerUser = {
+    displayName: profile?.display_name ?? undefined,
+    email: profile?.email ?? user.email ?? '',
+    role: profile?.role ?? 'user',
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="h-14 border-b border-border flex items-center justify-between px-6">
-        <Link href="/dashboard" className="text-lg font-bold text-foreground">AdDrop</Link>
-        <div className="flex items-center gap-3">
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gold/10 text-gold font-medium">
-            {profile?.role}
-          </span>
-          <span className="text-sm text-muted-foreground">
-            {profile?.display_name || profile?.email}
-          </span>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
-      <main className="p-6 max-w-5xl mx-auto">{children}</main>
-    </div>
+    <FeedbackShell>
+      <div className="min-h-screen bg-background flex flex-col">
+        <AppHeader variant="app" user={headerUser} />
+        <main className="flex-1 p-6 max-w-5xl mx-auto w-full">{children}</main>
+        <Footer />
+      </div>
+    </FeedbackShell>
   )
 }

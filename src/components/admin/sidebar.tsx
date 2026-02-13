@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, Settings, LogOut, FlaskConical } from 'lucide-react'
+import { LayoutDashboard, Users, Settings, LogOut, FlaskConical, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
   { href: '/admin/test', label: 'AI Test', icon: FlaskConical },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
@@ -19,11 +20,11 @@ export function Sidebar() {
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    router.push('/')
   }
 
   return (
-    <aside className="w-60 h-screen fixed left-0 top-0 bg-card border-r border-border flex flex-col">
+    <aside className="hidden md:flex w-60 h-screen fixed left-0 top-0 bg-card border-r border-border flex-col">
       <div className="p-4 border-b border-border">
         <Link href="/admin" className="text-lg font-bold text-gold">
           AdDrop

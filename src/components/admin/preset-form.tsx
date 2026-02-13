@@ -232,16 +232,27 @@ export function PresetForm({ preset, onSave, onCancel }: PresetFormProps) {
             <Plus className="w-4 h-4" />
           </button>
         </div>
-        <div className="space-y-1 mt-2">
-          {listing.photos.map((p, i) => (
-            <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="truncate flex-1">{p}</span>
-              <button type="button" onClick={() => removeFromList('photos', i)} className="text-muted-foreground hover:text-red-400 shrink-0">
-                <Minus className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-        </div>
+        {listing.photos.length > 0 && (
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mt-2">
+            {listing.photos.map((p, i) => (
+              <div key={i} className="relative group aspect-square rounded-md overflow-hidden bg-muted border border-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p}
+                  alt={`Photo ${i + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeFromList('photos', i)}
+                  className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Actions */}

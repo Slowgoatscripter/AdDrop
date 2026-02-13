@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateUserRole } from '@/app/admin/users/actions'
+import { updateUserRole, toggleRateLimitExempt } from '@/app/admin/users/actions'
 import { RoleBadge } from './role-badge'
 import { Search } from 'lucide-react'
 import type { Profile } from '@/lib/types/admin'
@@ -31,6 +31,16 @@ export function UsersTable({ profiles, currentUserId }: UsersTableProps) {
     })
   }
 
+  function handleRateLimitToggle(userId: string, currentExempt: boolean) {
+    startTransition(async () => {
+      try {
+        await toggleRateLimitExempt(userId, !currentExempt)
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Failed to toggle rate limit')
+      }
+    })
+  }
+
   return (
     <div>
       <div className="relative mb-4">
@@ -52,6 +62,7 @@ export function UsersTable({ profiles, currentUserId }: UsersTableProps) {
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Email</th>
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Role</th>
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Joined</th>
+              <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Rate Limit</th>
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -69,6 +80,25 @@ export function UsersTable({ profiles, currentUserId }: UsersTableProps) {
                 </td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
                   {new Date(profile.created_at).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-3">
+                  {profile.role === 'admin' ? (
+                    <span className="text-xs text-muted-foreground">Admin (exempt)</span>
+                  ) : (
+                    <button
+                      onClick={() => handleRateLimitToggle(profile.id, !!profile.rate_limit_exempt)}
+                      disabled={isPending}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 disabled:opacity-50 ${
+                        profile.rate_limit_exempt ? 'bg-gold' : 'bg-muted-foreground/30'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
+                          profile.rate_limit_exempt ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                        }`}
+                      />
+                    </button>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {profile.id === currentUserId ? (
@@ -91,7 +121,7 @@ export function UsersTable({ profiles, currentUserId }: UsersTableProps) {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   No users found
                 </td>
               </tr>

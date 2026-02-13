@@ -25,7 +25,7 @@ export function ComplianceBanner({ result, onFixAll }: ComplianceBannerProps) {
             <p className="text-sm font-semibold text-green-900">
               {result.totalPassed}/{result.totalChecks} checks passed
             </p>
-            <p className="text-xs text-green-700">All platforms are compliant with fair housing guidelines</p>
+            <p className="text-xs text-green-700">No issues flagged by current fair housing checks</p>
           </div>
         </div>
       </div>

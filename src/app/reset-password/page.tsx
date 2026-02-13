@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { sanitizeAuthError } from '@/lib/auth/sanitize-error'
 import { Lock } from 'lucide-react'
+import { AppHeader } from '@/components/nav/app-header'
+import { Footer } from '@/components/nav/footer'
 
 function PasswordStrength({ password }: { password: string }) {
   const length = password.length
@@ -110,103 +112,115 @@ export default function ResetPasswordPage() {
   // Still checking for session
   if (hasSession === null) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6 bg-background">
-        <div className="w-full max-w-sm text-center">
-          <div className="flex justify-center mb-4">
-            <Lock className="w-10 h-10 text-gold animate-pulse" />
+      <div className="min-h-screen flex flex-col">
+        <AppHeader variant="auth" />
+        <main className="flex-1 flex items-center justify-center p-6 bg-background">
+          <div className="w-full max-w-sm text-center">
+            <div className="flex justify-center mb-4">
+              <Lock className="w-10 h-10 text-gold animate-pulse" />
+            </div>
+            <p className="text-sm text-muted-foreground">Verifying your reset link...</p>
           </div>
-          <p className="text-sm text-muted-foreground">Verifying your reset link...</p>
-        </div>
-      </main>
+        </main>
+        <Footer />
+      </div>
     )
   }
 
   // No valid session
   if (!hasSession) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6 bg-background">
-        <div className="w-full max-w-sm text-center">
-          <div className="flex justify-center mb-4">
-            <Lock className="w-10 h-10 text-destructive" />
+      <div className="min-h-screen flex flex-col">
+        <AppHeader variant="auth" />
+        <main className="flex-1 flex items-center justify-center p-6 bg-background">
+          <div className="w-full max-w-sm text-center">
+            <div className="flex justify-center mb-4">
+              <Lock className="w-10 h-10 text-destructive" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Invalid or expired link</h1>
+            <p className="text-sm text-muted-foreground mb-6">
+              This password reset link is no longer valid. Please request a new one.
+            </p>
+            <Link
+              href="/forgot-password"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-gold text-background font-medium hover:bg-gold/90 transition-colors"
+            >
+              Request new reset link
+            </Link>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Invalid or expired link</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            This password reset link is no longer valid. Please request a new one.
-          </p>
-          <Link
-            href="/forgot-password"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-gold text-background font-medium hover:bg-gold/90 transition-colors"
-          >
-            Request new reset link
-          </Link>
-        </div>
-      </main>
+        </main>
+        <Footer />
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-3">
-            <Lock className="w-10 h-10 text-gold" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Set new password</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Choose a strong password for your account
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-muted-foreground mb-1.5">
-              New password
-            </label>
-            <input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              minLength={8}
-              className="w-full px-3 py-2 rounded-md bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold"
-              placeholder="••••••••"
-            />
-            <div className="mt-2">
-              <PasswordStrength password={newPassword} />
+    <div className="min-h-screen flex flex-col">
+      <AppHeader variant="auth" />
+      <main className="flex-1 flex items-center justify-center p-6 bg-background">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-3">
+              <Lock className="w-10 h-10 text-gold" />
             </div>
+            <h1 className="text-2xl font-bold text-foreground">Set new password</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Choose a strong password for your account
+            </p>
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-muted-foreground mb-1.5">
-              Confirm new password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              minLength={8}
-              className="w-full px-3 py-2 rounded-md bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold"
-              placeholder="••••••••"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium text-muted-foreground mb-1.5">
+                New password
+              </label>
+              <input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={8}
+                className="w-full px-3 py-2 rounded-md bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold"
+                placeholder="••••••••"
+              />
+              <div className="mt-2">
+                <PasswordStrength password={newPassword} />
+              </div>
+            </div>
 
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-muted-foreground mb-1.5">
+                Confirm new password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+                className="w-full px-3 py-2 rounded-md bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold"
+                placeholder="••••••••"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-gold text-background font-medium hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Lock className="w-4 h-4" />
-            {loading ? 'Updating password...' : 'Reset password'}
-          </button>
-        </form>
-      </div>
-    </main>
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-gold text-background font-medium hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Lock className="w-4 h-4" />
+              {loading ? 'Updating password...' : 'Reset password'}
+            </button>
+          </form>
+        </div>
+      </main>
+      <Footer />
+    </div>
   )
 }

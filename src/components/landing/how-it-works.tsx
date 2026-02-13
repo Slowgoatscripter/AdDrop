@@ -24,7 +24,7 @@ const steps = [
     icon: Download,
     title: 'Download & publish',
     description:
-      'Export ready-to-post ads for Instagram, Facebook, Google, print, direct mail, and more. One click.',
+      'Export ready-to-post ads for Instagram, Facebook, Google, print, direct mail, and more in one step.',
   },
 ];
 

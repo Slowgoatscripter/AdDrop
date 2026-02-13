@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, FlaskConical, Loader2 } from 'lucide-react'
+import { Plus, FlaskConical, Loader2, RotateCcw } from 'lucide-react'
 import { PresetCard } from '@/components/admin/preset-card'
 import { PresetForm } from '@/components/admin/preset-form'
-import { getPresets, createPreset, updatePreset, deletePreset } from './actions'
+import { getPresets, createPreset, updatePreset, deletePreset, reseedPresets } from './actions'
 import type { TestPreset } from '@/lib/types/preset'
 import type { ListingData } from '@/lib/types/listing'
 
@@ -18,6 +18,7 @@ export default function TestBenchPage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [reseeding, setReseeding] = useState(false)
 
   useEffect(() => {
     loadPresets()
@@ -67,6 +68,21 @@ export default function TestBenchPage() {
     })
   }
 
+  async function handleReseed() {
+    if (!confirm('This will delete all your current presets and replace them with the Montana defaults. Continue?')) return
+    setReseeding(true)
+    setError(null)
+    try {
+      await reseedPresets()
+      setSelectedId(null)
+      await loadPresets()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reseed presets')
+    } finally {
+      setReseeding(false)
+    }
+  }
+
   async function handleGenerate() {
     const preset = presets.find((p) => p.id === selectedId)
     if (!preset) return
@@ -107,13 +123,23 @@ export default function TestBenchPage() {
             Select a preset and generate a campaign without re-entering property data
           </p>
         </div>
-        <button
-          onClick={() => { setEditingPreset(null); setShowForm(true) }}
-          className="flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-gold text-background font-medium hover:bg-gold/90 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          New Preset
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleReseed}
+            disabled={reseeding}
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+          >
+            <RotateCcw className={`w-4 h-4 ${reseeding ? 'animate-spin' : ''}`} />
+            {reseeding ? 'Reseeding...' : 'Reseed Defaults'}
+          </button>
+          <button
+            onClick={() => { setEditingPreset(null); setShowForm(true) }}
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-gold text-background font-medium hover:bg-gold/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            New Preset
+          </button>
+        </div>
       </div>
 
       {error && (

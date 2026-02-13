@@ -7,19 +7,25 @@ import { createClient } from '@/lib/supabase/client'
 import { sanitizeAuthError } from '@/lib/auth/sanitize-error'
 import { Captcha } from '@/components/auth/captcha'
 import { LogIn } from 'lucide-react'
+import { AppHeader } from '@/components/nav/app-header'
+import { Footer } from '@/components/nav/footer'
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <main className="min-h-screen flex items-center justify-center p-6 bg-background">
-        <div className="w-full max-w-sm text-center">
-          <LogIn className="w-10 h-10 text-gold mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </main>
-    }>
-      <LoginContent />
-    </Suspense>
+    <div className="min-h-screen flex flex-col">
+      <AppHeader variant="auth" />
+      <Suspense fallback={
+        <main className="flex-1 flex items-center justify-center p-6 bg-background">
+          <div className="w-full max-w-sm text-center">
+            <LogIn className="w-10 h-10 text-gold mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          </div>
+        </main>
+      }>
+        <LoginContent />
+      </Suspense>
+      <Footer />
+    </div>
   )
 }
 
@@ -72,7 +78,11 @@ function LoginContent() {
         .eq('id', user.id)
         .single()
 
-      if (profile?.role === 'admin') {
+      // Support ?next= redirect (with open redirect protection)
+      const next = searchParams.get('next')
+      if (next && next.startsWith('/') && !next.startsWith('//')) {
+        router.push(next)
+      } else if (profile?.role === 'admin') {
         router.push('/admin')
       } else {
         router.push('/dashboard')
@@ -83,7 +93,7 @@ function LoginContent() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 bg-background">
+    <main className="flex-1 flex items-center justify-center p-6 bg-background">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-foreground">AdDrop</h1>

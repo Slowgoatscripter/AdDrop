@@ -2,9 +2,10 @@ import Image from 'next/image';
 import { Check } from 'lucide-react';
 
 const valuePoints = [
-  'No credit card required',
-  'Generate in 60 seconds',
-  '100% compliant',
+  'Free beta account',
+  '2 campaigns per week',
+  'No credit card ever',
+  'Compliance-checked',
 ];
 
 interface CTAFooterProps {
@@ -20,7 +21,7 @@ export function CTAFooter({
   headline = 'Your Next Listing Deserves Better Marketing',
   description: descriptionProp,
   betaNotice,
-  ctaText = 'Create Your First Campaign',
+  ctaText = 'Create Your First Campaign — Free',
   ctaHref = '/create',
 }: CTAFooterProps) {
   // Support both description (new) and betaNotice (legacy) props
@@ -32,7 +33,7 @@ export function CTAFooter({
     <section className="relative py-32 overflow-hidden">
       {/* Background image */}
       <Image
-        src="/images/cta-bg.jpg"
+        src="https://images.unsplash.com/photo-1613082973415-b9079d072ae3?w=1920&q=80"
         fill
         className="object-cover"
         sizes="100vw"

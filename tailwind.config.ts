@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import typography from "@tailwindcss/typography";
 
 export default {
     darkMode: ["class"],
@@ -13,6 +14,7 @@ export default {
   		fontFamily: {
   			sans: ['var(--font-body)', 'system-ui', 'sans-serif'],
   			serif: ['var(--font-fraunces)', 'Georgia', 'serif'],
+  			playfair: ['var(--font-playfair)', 'Georgia', 'serif'],
   		},
   		colors: {
   			background: 'hsl(var(--background))',
@@ -73,10 +75,21 @@ export default {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+  		keyframes: {
+  			marquee: {
+  				'0%': { transform: 'translateX(0%)' },
+  				'100%': { transform: 'translateX(-100%)' },
+  			},
+  			'pulse-gold': {
+  				'0%, 100%': { boxShadow: '0 0 0 0 hsl(var(--gold) / 0.5)' },
+  				'50%': { boxShadow: '0 0 0 10px hsl(var(--gold) / 0)' },
+  			},
+  		},
   		animation: {
   			marquee: 'marquee 30s linear infinite',
+  			'pulse-gold': 'pulse-gold 2s ease-in-out infinite',
   		},
   	}
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [tailwindcssAnimate, typography],
 } satisfies Config;

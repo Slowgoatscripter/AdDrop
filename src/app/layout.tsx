@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Fraunces, Space_Grotesk } from 'next/font/google';
+import { Fraunces, Space_Grotesk, Playfair_Display } from 'next/font/google';
+import { Toaster } from 'sonner';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -15,9 +16,19 @@ const spaceGrotesk = Space_Grotesk({
   variable: '--font-body',
 });
 
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+  weight: ['400', '700'],
+});
+
 export const metadata: Metadata = {
   title: 'AdDrop — AI-Powered Real Estate Marketing',
-  description: 'Turn any property listing into a complete ad campaign across 12+ platforms in seconds. Instagram, Facebook, Google, print, and more.',
+  description: 'Create ad campaigns across 12 platforms. Instagram, Facebook, Google, print, and more.',
+  icons: {
+    icon: { url: '/favicon.svg', type: 'image/svg+xml' },
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +38,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${fraunces.variable} ${spaceGrotesk.variable} font-sans noise-overlay bg-background text-foreground`}>{children}</body>
+      <body className={`${fraunces.variable} ${spaceGrotesk.variable} ${playfairDisplay.variable} font-sans noise-overlay bg-background text-foreground`}>
+        {children}
+        <Toaster
+          position="bottom-left"
+          theme="dark"
+          toastOptions={{
+            className: 'bg-card border border-border text-cream shadow-lg',
+            duration: 4000,
+          }}
+        />
+      </body>
     </html>
   );
 }

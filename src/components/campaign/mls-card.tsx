@@ -23,7 +23,7 @@ export function MlsCard({ description, complianceResult, onReplace }: MlsCardPro
               <CardTitle className="text-lg">MLS Description</CardTitle>
               {complianceResult && <ComplianceBadge result={complianceResult} />}
             </div>
-            <p className="text-sm text-muted-foreground">Montana MLS Compliant</p>
+            <p className="text-sm text-muted-foreground">Montana MLS compliance checks enabled</p>
           </div>
           <CopyButton text={description} />
         </div>

@@ -6,7 +6,7 @@ const personas = [
     icon: User,
     title: 'Solo Agents',
     description:
-      'You handle everything — listings, showings, negotiations, AND marketing. AdDrop gives you a marketing department in 30 seconds.',
+      'You handle everything — listings, showings, negotiations, AND marketing. AdDrop helps you produce campaigns faster.',
     image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&q=80',
   },
   {
@@ -20,7 +20,7 @@ const personas = [
     icon: Building,
     title: 'Brokerages',
     description:
-      'Dozens of listings, multiple agents, compliance requirements. AdDrop standardizes your marketing while saving your team hundreds of hours.',
+      'Dozens of listings, multiple agents, compliance requirements. AdDrop standardizes your marketing while saving your team significant time.',
     image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80',
   },
 ];
