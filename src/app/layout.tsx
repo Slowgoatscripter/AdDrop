@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Fraunces, Space_Grotesk, Playfair_Display } from 'next/font/google';
 import { Toaster } from 'sonner';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -48,6 +49,7 @@ export default function RootLayout({
             duration: 4000,
           }}
         />
+        <Analytics />
       </body>
     </html>
   );
