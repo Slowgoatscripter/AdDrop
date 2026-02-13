@@ -52,6 +52,11 @@ export function findQualityIssues(
 ): QualityIssue[] {
   if (!text || text.trim().length === 0) return [];
 
+  if (text.length > 100_000) {
+    console.warn('Text too long for quality regex check, skipping');
+    return [];
+  }
+
   const activeRules = rules || qualityRules;
   const issues: QualityIssue[] = [];
 

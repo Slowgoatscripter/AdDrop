@@ -57,6 +57,11 @@ export function findViolations(
 ): ComplianceViolation[] {
   if (!text || text.trim().length === 0) return [];
 
+  if (text.length > 100_000) {
+    console.warn('Text too long for compliance regex check, skipping');
+    return [];
+  }
+
   const violations: ComplianceViolation[] = [];
 
   for (const prohibitedTerm of config.prohibitedTerms) {
