@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { FlaskConical, Database, Play, BarChart3 } from 'lucide-react'
 import type { ComplianceTestAd, ComplianceTestRun } from '@/lib/types/compliance-qa'
+import { ScannerView } from './scanner-view'
+import { CorpusView } from './corpus-view'
+import { RunnerView } from './runner-view'
+import { ScorecardView } from './scorecard-view'
 
 const tabs = [
   { id: 'scanner', label: 'Ad Hoc Scanner', icon: FlaskConical },
@@ -59,18 +63,54 @@ export function QATabs({ initialAds, initialRuns }: QATabsProps) {
         ))}
       </div>
 
-      {/* Tab content — placeholders until Tasks 7-10 */}
+      {/* Tab content */}
       {activeTab === 'scanner' && (
-        <div className="text-muted-foreground text-sm">Scanner view — loading...</div>
+        <ScannerView
+          onSaveToCorpus={async (ad) => {
+            const res = await fetch('/api/admin/compliance-qa/corpus', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(ad),
+            })
+            if (!res.ok) throw new Error('Failed to save')
+            await refreshAds()
+          }}
+        />
       )}
       {activeTab === 'corpus' && (
-        <div className="text-muted-foreground text-sm">Corpus view — loading...</div>
+        <CorpusView
+          ads={ads}
+          onDelete={async (id) => {
+            await fetch(`/api/admin/compliance-qa/corpus/${id}`, { method: 'DELETE' })
+            await refreshAds()
+          }}
+          onDuplicate={async (ad) => {
+            await fetch('/api/admin/compliance-qa/corpus', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                state: ad.state,
+                name: `${ad.name} (copy)`,
+                text: ad.text,
+                expected_violations: ad.expected_violations,
+                is_clean: ad.is_clean,
+                tags: ad.tags,
+                source: ad.source,
+              }),
+            })
+            await refreshAds()
+          }}
+          onRefresh={refreshAds}
+        />
       )}
       {activeTab === 'runner' && (
-        <div className="text-muted-foreground text-sm">Runner view — loading...</div>
+        <RunnerView
+          ads={ads}
+          onRunComplete={refreshRuns}
+        />
       )}
       {activeTab === 'scorecard' && (
-        <div className="text-muted-foreground text-sm">Scorecard view — loading...</div>
+        <ScorecardView ads={ads} runs={runs} />
       )}
     </div>
   )
