@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CampaignKit } from '@/lib/types';
-import { autoFixCampaign, checkAllPlatforms, getDefaultCompliance } from '@/lib/compliance/engine';
+import { autoFixCampaign, checkAllPlatforms, getComplianceConfig, getDefaultCompliance } from '@/lib/compliance/engine';
 import { createClient } from '@/lib/supabase/client';
 import { PropertyHeader } from './property-header';
 import { CampaignTabs } from './campaign-tabs';
@@ -58,7 +58,7 @@ export function CampaignShell() {
   const handleFixAll = useCallback(() => {
     if (!campaign || !campaign.complianceResult) return;
 
-    const config = getDefaultCompliance();
+    const config = getComplianceConfig(campaign.stateCode ?? 'MT') ?? getDefaultCompliance();
     const fixed = autoFixCampaign(campaign, campaign.complianceResult);
     const newResult = checkAllPlatforms(fixed, config);
     const updated = { ...fixed, complianceResult: newResult };
@@ -71,7 +71,7 @@ export function CampaignShell() {
     (platform: string, oldTerm: string, newTerm: string) => {
       if (!campaign) return;
 
-      const config = getDefaultCompliance();
+      const config = getComplianceConfig(campaign.stateCode ?? 'MT') ?? getDefaultCompliance();
       const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
 
       function replaceInText(text: string): string {

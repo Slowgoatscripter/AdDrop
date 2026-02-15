@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { ListingData, CampaignKit, PlatformId, ALL_PLATFORMS } from '@/lib/types';
-import { checkAllPlatforms, getDefaultCompliance } from '@/lib/compliance/engine';
+import { checkAllPlatforms } from '@/lib/compliance/engine';
+import { getComplianceSettings } from '@/lib/compliance/compliance-settings';
 import { buildGenerationPrompt } from './prompt';
 import {
   checkAllPlatformQuality,
@@ -87,7 +88,7 @@ export async function generateCampaign(
   // Strip hallucinated platforms — only keep requested + strategy (Review Fix #4)
   const generated = stripToRequestedPlatforms(rawGenerated, targetPlatforms);
 
-  const compliance = getDefaultCompliance();
+  const { config: compliance, stateCode } = await getComplianceSettings();
   const campaignId = crypto.randomUUID();
 
   // Build campaign with only requested platform fields
@@ -113,6 +114,7 @@ export async function generateCampaign(
     // Metadata
     complianceResult: { platforms: [], totalChecks: 0, totalPassed: 0, hardViolations: 0, softWarnings: 0, allPassed: true },
     selectedPlatforms: targetPlatforms,
+    stateCode,
     // Strategy fields — always present
     hashtags: (generated.hashtags as string[]) ?? [],
     callsToAction: (generated.callsToAction as string[]) ?? [],

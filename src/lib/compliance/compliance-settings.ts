@@ -10,6 +10,7 @@ import { montanaCompliance } from './montana';
 export async function getComplianceSettings(): Promise<{
   enabled: boolean;
   config: MLSComplianceConfig;
+  stateCode: string;
 }> {
   const enabled = await getSetting<boolean>('compliance.enabled');
   const stateCode = await getSetting<string>('compliance.state');
@@ -26,5 +27,5 @@ export async function getComplianceSettings(): Promise<{
     ),
   };
 
-  return { enabled, config: filteredConfig };
+  return { enabled, config: filteredConfig, stateCode: stateCode.toUpperCase() };
 }

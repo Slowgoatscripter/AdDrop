@@ -85,6 +85,7 @@ export interface CampaignKit {
   complianceResult: CampaignComplianceResult;
   qualityResult?: CampaignQualityResult;
   selectedPlatforms?: PlatformId[];
+  stateCode?: string;
   // Strategy fields — always generated
   hashtags: string[];
   callsToAction: string[];
