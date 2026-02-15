@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     // Build query
     let query = supabase
       .from('compliance_test_runs')
-      .select('id, run_type, state, triggered_by, run_at, duration_ms, summary, cross_state')
+      .select('*')
       .order('run_at', { ascending: false })
       .limit(limit);
 
