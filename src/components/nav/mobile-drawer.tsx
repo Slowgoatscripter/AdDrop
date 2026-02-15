@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useCallback, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { X, LogOut, MessageSquare } from 'lucide-react'
@@ -61,9 +62,15 @@ function DrawerLink({
 
 export function MobileDrawer({ open, onClose, variant, user, onFeedbackClick }: MobileDrawerProps) {
   const [showNewBadge, setShowNewBadge] = useState(false)
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
   const pathname = usePathname()
   const router = useRouter()
   const prefersReduced = useReducedMotion()
+
+  // Resolve portal target on mount (must be in useEffect for SSR)
+  useEffect(() => {
+    setPortalTarget(document.body)
+  }, [])
 
   // Check localStorage for "New" badge visibility
   useEffect(() => {
@@ -138,7 +145,7 @@ export function MobileDrawer({ open, onClose, variant, user, onFeedbackClick }: 
     ? { closed: { opacity: 0 }, open: { opacity: 1 } }
     : { closed: { opacity: 0 }, open: { opacity: 1 } }
 
-  return (
+  const drawerContent = (
     <AnimatePresence>
       {open && (
         <>
@@ -321,4 +328,8 @@ export function MobileDrawer({ open, onClose, variant, user, onFeedbackClick }: 
       )}
     </AnimatePresence>
   )
+
+  // Portal to document.body so drawer is never inside <main> (avoids inert blocking interactions)
+  if (!portalTarget) return null
+  return createPortal(drawerContent, portalTarget)
 }
