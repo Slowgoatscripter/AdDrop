@@ -16,6 +16,9 @@ import {
   Maximize,
   Calendar,
   Tag,
+  Plus,
+  X,
+  Loader2,
 } from 'lucide-react'
 import type { ComplianceTestProperty } from '@/lib/types/compliance-qa'
 
@@ -61,6 +64,40 @@ const formatRiskLabel = (category: string) =>
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ')
 
+const RISK_CATEGORY_OPTIONS = [
+  'clean',
+  'economic-exclusion',
+  'religion-steering',
+  'familial-status',
+  'disability',
+  'race-color-national-origin',
+  'sex-gender',
+  'age',
+  'marital-status',
+  'multi-category',
+]
+
+const INITIAL_FORM = {
+  name: '',
+  state: 'MT',
+  risk_category: 'clean',
+  is_seed: false,
+  tags: '',
+  street: '',
+  city: '',
+  addressState: 'MT',
+  zip: '',
+  price: '',
+  beds: '',
+  baths: '',
+  sqft: '',
+  lotSize: '',
+  yearBuilt: '',
+  propertyType: 'Single Family',
+  features: '',
+  description: '',
+}
+
 export function CorpusView({ properties, onDelete, onDuplicate, onRefresh }: CorpusViewProps) {
   const [search, setSearch] = useState('')
   const [stateFilter, setStateFilter] = useState('all')
@@ -69,6 +106,9 @@ export function CorpusView({ properties, onDelete, onDuplicate, onRefresh }: Cor
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [expandedDescription, setExpandedDescription] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [form, setForm] = useState(INITIAL_FORM)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Unique values for filters
@@ -202,6 +242,66 @@ export function CorpusView({ properties, onDelete, onDuplicate, onRefresh }: Cor
     URL.revokeObjectURL(url)
   }
 
+  async function handleAddProperty(e: React.FormEvent) {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/admin/compliance-qa/corpus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          state: form.state,
+          risk_category: form.risk_category,
+          is_seed: form.is_seed,
+          tags: form.tags
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean),
+          listing_data: {
+            url: '',
+            address: {
+              street: form.street,
+              city: form.city,
+              state: form.addressState,
+              zip: form.zip,
+            },
+            price: Number(form.price) || 0,
+            beds: Number(form.beds) || 0,
+            baths: Number(form.baths) || 0,
+            sqft: Number(form.sqft) || 0,
+            lotSize: form.lotSize || undefined,
+            yearBuilt: form.yearBuilt ? Number(form.yearBuilt) : undefined,
+            propertyType: form.propertyType,
+            features: form.features
+              .split(',')
+              .map((f) => f.trim())
+              .filter(Boolean),
+            description: form.description,
+            photos: [],
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create property')
+      }
+
+      setForm(INITIAL_FORM)
+      setShowAddForm(false)
+      await onRefresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to create property')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const updateForm = (field: string, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
   return (
     <div>
       {/* Stats bar */}
@@ -304,7 +404,262 @@ export function CorpusView({ properties, onDelete, onDuplicate, onRefresh }: Cor
           <Download className="w-4 h-4" />
           Export
         </button>
+
+        {/* Add Property button */}
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            showAddForm
+              ? 'bg-muted text-foreground border border-border'
+              : 'bg-gold text-background hover:bg-gold/90'
+          }`}
+        >
+          {showAddForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {showAddForm ? 'Cancel' : 'Add Property'}
+        </button>
       </div>
+
+      {/* Add Property Form */}
+      {showAddForm && (
+        <form onSubmit={handleAddProperty} className="mb-4 p-4 rounded-lg border border-gold/30 bg-gold/5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">New Test Property</h3>
+
+          {/* Row 1: Name, State, Risk Category */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Name *</label>
+              <input
+                type="text"
+                required
+                value={form.name}
+                onChange={(e) => updateForm('name', e.target.value)}
+                placeholder="e.g., Luxury Whitefish Estate"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">State *</label>
+              <input
+                type="text"
+                required
+                maxLength={2}
+                value={form.state}
+                onChange={(e) => {
+                  const val = e.target.value.toUpperCase()
+                  updateForm('state', val)
+                  updateForm('addressState', val)
+                }}
+                placeholder="MT"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Risk Category *</label>
+              <select
+                value={form.risk_category}
+                onChange={(e) => updateForm('risk_category', e.target.value)}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              >
+                {RISK_CATEGORY_OPTIONS.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {formatRiskLabel(cat)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Row 2: Address */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Street *</label>
+              <input
+                type="text"
+                required
+                value={form.street}
+                onChange={(e) => updateForm('street', e.target.value)}
+                placeholder="123 Main St"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">City *</label>
+              <input
+                type="text"
+                required
+                value={form.city}
+                onChange={(e) => updateForm('city', e.target.value)}
+                placeholder="Billings"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">ZIP *</label>
+              <input
+                type="text"
+                required
+                value={form.zip}
+                onChange={(e) => updateForm('zip', e.target.value)}
+                placeholder="59101"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+          </div>
+
+          {/* Row 3: Property details */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Price *</label>
+              <input
+                type="number"
+                required
+                value={form.price}
+                onChange={(e) => updateForm('price', e.target.value)}
+                placeholder="350000"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Beds *</label>
+              <input
+                type="number"
+                required
+                value={form.beds}
+                onChange={(e) => updateForm('beds', e.target.value)}
+                placeholder="3"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Baths *</label>
+              <input
+                type="number"
+                required
+                value={form.baths}
+                onChange={(e) => updateForm('baths', e.target.value)}
+                placeholder="2"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Sqft *</label>
+              <input
+                type="number"
+                required
+                value={form.sqft}
+                onChange={(e) => updateForm('sqft', e.target.value)}
+                placeholder="1800"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Year Built</label>
+              <input
+                type="number"
+                value={form.yearBuilt}
+                onChange={(e) => updateForm('yearBuilt', e.target.value)}
+                placeholder="2020"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Lot Size</label>
+              <input
+                type="text"
+                value={form.lotSize}
+                onChange={(e) => updateForm('lotSize', e.target.value)}
+                placeholder="0.5 acres"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+          </div>
+
+          {/* Row 4: Property Type, Features, Tags */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Property Type</label>
+              <select
+                value={form.propertyType}
+                onChange={(e) => updateForm('propertyType', e.target.value)}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              >
+                <option value="Single Family">Single Family</option>
+                <option value="Condo">Condo</option>
+                <option value="Townhouse">Townhouse</option>
+                <option value="Multi-Family">Multi-Family</option>
+                <option value="Land">Land</option>
+                <option value="Commercial">Commercial</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                Features <span className="text-muted-foreground/60">(comma-separated)</span>
+              </label>
+              <input
+                type="text"
+                value={form.features}
+                onChange={(e) => updateForm('features', e.target.value)}
+                placeholder="garage, pool, backyard"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                Tags <span className="text-muted-foreground/60">(comma-separated)</span>
+              </label>
+              <input
+                type="text"
+                value={form.tags}
+                onChange={(e) => updateForm('tags', e.target.value)}
+                placeholder="luxury, pricing-language"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+              />
+            </div>
+          </div>
+
+          {/* Row 5: Description */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Description</label>
+            <textarea
+              value={form.description}
+              onChange={(e) => updateForm('description', e.target.value)}
+              placeholder="Property description..."
+              rows={3}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 resize-none"
+            />
+          </div>
+
+          {/* Row 6: Seed checkbox + Submit */}
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.is_seed}
+                onChange={(e) => updateForm('is_seed', e.target.checked)}
+                className="rounded border-border"
+              />
+              Seed property (manually crafted for testing)
+            </label>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-gold px-4 py-2 text-sm font-medium text-background hover:bg-gold/90 rounded-md flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Create Property
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Table */}
       <div className="rounded-lg border border-border bg-card overflow-hidden">
