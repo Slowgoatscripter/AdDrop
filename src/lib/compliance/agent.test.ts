@@ -459,3 +459,144 @@ describe('scanTextWithAgent', () => {
     expect(result.platforms).toEqual([]);
   });
 });
+
+describe('Montana compliance audit fixes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should flag creed violations for Montana', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            platforms: [
+              { platform: 'general', verdict: 'fail', violationCount: 1, autoFixCount: 0 }
+            ],
+            campaignVerdict: 'non-compliant',
+            violations: [{
+              platform: 'general',
+              term: 'conservative neighborhood',
+              category: 'creed',
+              severity: 'hard',
+              explanation: 'Implies political or religious preference',
+              law: 'Montana Human Rights Act §49-2-305',
+              isContextual: true
+            }],
+            autoFixes: [],
+            totalViolations: 1,
+            totalAutoFixes: 0,
+          })
+        }
+      }]
+    });
+
+    const result = await scanTextWithAgent(
+      'Conservative neighborhood with like-minded neighbors',
+      'MT',
+      'general',
+      montanaCompliance
+    );
+
+    expect(result.violations.length).toBeGreaterThan(0);
+    expect(result.violations.some(v => v.category === 'creed')).toBe(true);
+  });
+
+  test('should not flag factual proximity statements', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            platforms: [
+              { platform: 'general', verdict: 'pass', violationCount: 0, autoFixCount: 0 }
+            ],
+            campaignVerdict: 'compliant',
+            violations: [],
+            autoFixes: [],
+            totalViolations: 0,
+            totalAutoFixes: 0,
+          })
+        }
+      }]
+    });
+
+    const result = await scanTextWithAgent(
+      'Located near church and community center',
+      'MT',
+      'general',
+      montanaCompliance
+    );
+
+    const proximityViolations = result.violations.filter(
+      v => v.term === 'near church'
+    );
+    expect(proximityViolations).toHaveLength(0);
+  });
+
+  test('should not flag inclusive language like singles welcome', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            platforms: [
+              { platform: 'general', verdict: 'pass', violationCount: 0, autoFixCount: 0 }
+            ],
+            campaignVerdict: 'compliant',
+            violations: [],
+            autoFixes: [],
+            totalViolations: 0,
+            totalAutoFixes: 0,
+          })
+        }
+      }]
+    });
+
+    const result = await scanTextWithAgent(
+      'Singles welcome to apply',
+      'MT',
+      'general',
+      montanaCompliance
+    );
+
+    const maritalViolations = result.violations.filter(
+      v => v.term === 'singles welcome'
+    );
+    expect(maritalViolations).toHaveLength(0);
+  });
+
+  test('should flag pregnancy discrimination', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            platforms: [
+              { platform: 'general', verdict: 'fail', violationCount: 1, autoFixCount: 0 }
+            ],
+            campaignVerdict: 'non-compliant',
+            violations: [{
+              platform: 'general',
+              term: 'no pregnant women',
+              category: 'sex-gender',
+              severity: 'hard',
+              explanation: 'Discriminates based on pregnancy status',
+              law: 'Fair Housing Act §3604(c)',
+              isContextual: false
+            }],
+            autoFixes: [],
+            totalViolations: 1,
+            totalAutoFixes: 0,
+          })
+        }
+      }]
+    });
+
+    const result = await scanTextWithAgent(
+      'No pregnant women allowed in this building',
+      'MT',
+      'general',
+      montanaCompliance
+    );
+
+    expect(result.violations.some(v => v.term === 'no pregnant women')).toBe(true);
+  });
+});
