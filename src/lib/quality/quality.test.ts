@@ -137,6 +137,54 @@ describe('Platform Formats', () => {
 });
 
 // ============================
+// Language Anti-Patterns NOT Flagged
+// ============================
+describe('Language anti-patterns are not flagged by regex engine', () => {
+  test('common real-estate anti-patterns produce zero issues', () => {
+    const textWithAntiPatterns =
+      'Nestled in a quiet neighborhood, this home boasts a cozy living room ' +
+      'with a charming fireplace. The stunning kitchen is a must-see! ' +
+      'This gem won\'t last long. Priced to sell. Schedule a tour today.';
+
+    // findQualityIssues should not flag any language anti-patterns
+    const ruleIssues = findQualityIssues(textWithAntiPatterns, 'instagram.professional');
+    expect(ruleIssues).toEqual([]);
+
+    // checkFormattingAbuse should also not flag these words
+    const abuseIssues = checkFormattingAbuse(textWithAntiPatterns, 'instagram.professional');
+    expect(abuseIssues).toEqual([]);
+
+    // checkPlatformFormat should not flag language either
+    const formatIssues = checkPlatformFormat(textWithAntiPatterns, 'instagram.professional');
+    // Only possible issue is missing CTA, but "Schedule" is present
+    const languageIssues = formatIssues.filter(i =>
+      i.category !== 'platform-format' && i.category !== 'cta-effectiveness'
+    );
+    expect(languageIssues).toEqual([]);
+  });
+
+  test('full campaign with language anti-patterns passes quality engine', () => {
+    const campaign = buildMockCampaign({
+      instagram: {
+        professional: 'Nestled in the hills, this home boasts mountain views. Schedule a tour today. #realestate #montana #dreamhome',
+        casual: 'This cozy gem is a must-see! Charming inside and out. Book your showing! #realestate #montana #dreamhome',
+        luxury: 'A stunning estate nestled among towering pines. Discover elegance. #realestate #montana #dreamhome',
+      },
+    });
+    const result = checkAllPlatformQuality(campaign);
+    // Language words like "nestled", "boasts", "cozy", "gem", "stunning", "charming"
+    // should NOT produce any issues — those are now handled by the AI scorer
+    const igResults = result.platforms.filter(p => p.platform.startsWith('instagram'));
+    for (const igResult of igResults) {
+      const languageFlagged = igResult.issues.filter(i =>
+        i.category !== 'platform-format' && i.category !== 'cta-effectiveness' && i.category !== 'formatting'
+      );
+      expect(languageFlagged).toEqual([]);
+    }
+  });
+});
+
+// ============================
 // findQualityIssues Tests
 // ============================
 describe('findQualityIssues', () => {

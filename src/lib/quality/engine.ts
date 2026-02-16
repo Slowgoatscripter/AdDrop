@@ -44,6 +44,10 @@ function extractContext(text: string, matchStart: number, matchEnd: number): str
 
 /**
  * Find quality issues in a single text string using regex rules.
+ * After language rules were moved to the AI scorer, this function runs only
+ * the ~5 formatting rules (emoji spam, dollar-sign formatting, JUST LISTED, etc.).
+ * Some overlap with checkFormattingAbuse exists (exclamation marks, ellipsis) but
+ * each function catches patterns the other does not, so both are retained.
  */
 export function findQualityIssues(
   text: string,
@@ -292,7 +296,8 @@ export function extractPlatformTexts(campaign: CampaignKit): [string, string][] 
 }
 
 /**
- * Check all platforms in a campaign kit for quality issues (regex layer only).
+ * Check all platforms in a campaign kit for quality issues (format-only regex layer).
+ * Language/anti-pattern checking is handled by the AI scorer, not here.
  */
 export function checkAllPlatformQuality(
   campaign: CampaignKit,
