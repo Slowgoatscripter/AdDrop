@@ -8,11 +8,26 @@ import {
 import { autoFixTextRegex, autoFixQuality } from './auto-fix';
 import { formattingRules, platformFormats } from './rules';
 import { buildQualityCheatSheet } from './docs';
+import { mergeQualityResults } from './scorer';
 import { QualityIssue, QualityRule } from '@/lib/types/quality';
 import { CampaignKit } from '@/lib/types/campaign';
 
 // Import scorer internals for testing via require (to access non-exported members)
 // We'll test exported functions and verify constants via module inspection
+
+// Mock OpenAI to avoid requiring API key in tests
+jest.mock('openai', () => {
+  return {
+    __esModule: true,
+    default: jest.fn().mockImplementation(() => ({
+      chat: {
+        completions: {
+          create: jest.fn(),
+        },
+      },
+    })),
+  };
+});
 
 // Mock loadQualityDocs to avoid file system access in tests
 jest.mock('./docs', () => {
@@ -675,5 +690,67 @@ describe('Scorer: scoreAllPlatformQuality signature', () => {
     expect(source).toContain(
       'buildScoringPrompt(propertyContext, platformTextBlock, demographic, tone)',
     );
+  });
+});
+
+// ============================
+// mergeQualityResults Tests
+// ============================
+describe('mergeQualityResults', () => {
+  test('merges format-only regex results with AI results including voice-authenticity', () => {
+    const regexResult = {
+      platforms: [{
+        platform: 'instagram.professional',
+        issues: [{
+          platform: 'instagram.professional',
+          category: 'formatting' as const,
+          priority: 'required' as const,
+          source: 'regex' as const,
+          issue: 'Exceeds character limit',
+          suggestedFix: 'Shorten text',
+        }],
+        passed: false,
+      }],
+      totalChecks: 1,
+      totalPassed: 0,
+      requiredIssues: 1,
+      recommendedIssues: 0,
+      allPassed: false,
+      improvementsApplied: 0,
+    };
+
+    const aiResult = {
+      platforms: [{
+        platform: 'instagram.professional',
+        issues: [{
+          platform: 'instagram.professional',
+          category: 'voice-authenticity' as const,
+          priority: 'recommended' as const,
+          source: 'ai' as const,
+          issue: 'Distancing construction detected',
+          suggestedFix: 'Use direct, grounded phrasing',
+          score: 5,
+        }],
+        passed: false,
+      }],
+      totalChecks: 1,
+      totalPassed: 0,
+      requiredIssues: 0,
+      recommendedIssues: 1,
+      allPassed: false,
+      overallScore: 6,
+      improvementsApplied: 0,
+    };
+
+    const merged = mergeQualityResults(regexResult, aiResult);
+    const platform = merged.platforms.find(p => p.platform === 'instagram.professional');
+
+    expect(platform).toBeDefined();
+    expect(platform!.issues.length).toBe(2);
+    expect(platform!.issues.some(i => i.category === 'formatting')).toBe(true);
+    expect(platform!.issues.some(i => i.category === 'voice-authenticity')).toBe(true);
+    expect(merged.requiredIssues).toBe(1);
+    expect(merged.recommendedIssues).toBe(1);
+    expect(merged.overallScore).toBe(6);
   });
 });
