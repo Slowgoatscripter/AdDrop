@@ -31,7 +31,7 @@ interface AIScoreResponse {
   }>;
 }
 
-/** The 9 AI quality dimensions */
+/** The 10 AI quality dimensions */
 const AI_CATEGORIES: QualityCategory[] = [
   'hook-strength',
   'specificity',
@@ -42,6 +42,7 @@ const AI_CATEGORIES: QualityCategory[] = [
   'demographic-fit',
   'property-type-fit',
   'emotional-triggers',
+  'voice-authenticity',
 ];
 
 /* ------------------------------------------------------------------ */
@@ -77,7 +78,8 @@ function buildPlatformTextBlock(platformTexts: [string, string][]): string {
 function buildScoringPrompt(
   propertyContext: string,
   platformTextBlock: string,
-  demographic?: string
+  demographic?: string,
+  tone?: 'professional' | 'casual' | 'luxury',
 ): string {
   const demographicLine = demographic
     ? `Target demographic: ${demographic}`
@@ -95,7 +97,7 @@ ${platformTextBlock}
 
 ## Scoring Rubric (1-10 scale)
 
-Score each platform text on these 9 dimensions:
+Score each platform text on these 10 dimensions:
 
 1. **hook-strength**: Does the opening grab attention with something specific and compelling? (1 = generic opener, 10 = irresistible hook with unique property detail)
 2. **specificity**: What is the ratio of concrete details (numbers, names, specific features) to generic claims ("beautiful", "amazing")? (1 = all generic, 10 = rich in specifics)
@@ -106,6 +108,50 @@ Score each platform text on these 9 dimensions:
 7. **demographic-fit**: Does the copy match the target buyer persona's values, concerns, and language? ${demographic ? '(1 = mismatched, 10 = perfectly targeted)' : '(Score 7 if no demographic specified)'}
 8. **property-type-fit**: Does the vocabulary and framing match the property type? (luxury condo vs starter home vs family house vs investment property) (1 = mismatched tone, 10 = perfectly calibrated)
 9. **emotional-triggers**: Does the copy use evidence-backed emotional levers? (scarcity, social proof, aspiration, fear of missing out, belonging) (1 = no emotional appeal, 10 = multiple well-executed triggers)
+
+10. **voice-authenticity** (1-10): Does this copy sound like a seasoned real estate professional wrote it?
+
+### Principles
+1. Present, not narrating — Writing as if standing in the room showing the home. "This" not "It's a." Direct and grounded.
+2. Precise material/feature language — Names the actual thing when data is available. "Wide-plank white oak floors" not "beautiful hardwood floors." Score precision relative to the detail available in the listing data — don't penalize generic language when it's a data limitation.
+3. Economy of words — Trusts the feature. "10-foot ceilings. South-facing windows. Light all day." Doesn't explain why that's good.
+4. Implied lifestyle — "The patio opens directly off the kitchen" implies entertaining without saying "perfect for entertaining."
+5. Rhythm and cadence — Mixes short declarative sentences with slightly longer ones.
+6. Quiet confidence — Never tries too hard. No over-explaining, no stacking adjectives, no breathless enthusiasm.
+
+### Evaluate relative to intended tone: ${tone || 'professional'}
+- Professional: Direct, authoritative, data-supported. All principles apply fully.
+- Casual: Conversational, uses contractions ("it's", "you'll"), fragments allowed. The "it's" construction is sometimes appropriate. Score against casual-voice standards, not professional ones.
+- Luxury: Elevated, sensory, experiential. Longer sentences allowed, more descriptive language. Still no over-explaining, but "reveals" and "unfolds" are in-vocabulary.
+
+### AI Anti-Patterns to Detect
+1. Distancing constructions: "It's the kind of [noun] that [verb]...", "It's a [noun] that [verb]...", "There's a [noun] that..."
+2. Stacked benefit chains: "Whether you're hosting friends, enjoying quiet mornings, or unwinding after a long day"
+3. Narrator hedging: "The kind of [X] that makes you [Y]", "The type of space where you can..."
+4. Over-qualifying: "A thoughtfully designed space that seamlessly blends..."
+5. Implied reader emotions: "You'll love...", "You'll appreciate...", "Imagine coming home to...", "Picture yourself..."
+
+### Before/After Examples
+BAD → GOOD:
+- "It's the kind of kitchen that handles real use." → "This kitchen handles real life. Weeknight dinners, meal prep, Sunday hosting."
+- "It's a room that protects your focus." → "Dedicated office off the primary suite. Quiet, private, away from the main living areas."
+- "It's a backyard that feels like a retreat." → "Fenced backyard with mature trees, flagstone patio, and a built-in firepit."
+- "You'll love the abundance of natural light." → "South-facing windows. Light all day."
+- "The spacious primary suite provides a private sanctuary." → "Primary suite with sitting area, walk-in closet, and en-suite bath."
+- "Beautiful hardwood floors throughout." → "Wide-plank white oak floors throughout the main level."
+- "Whether you're hosting friends, enjoying quiet mornings, or unwinding after a long day, this patio has you covered." → "Covered patio with ceiling fan and string light hookups. Seats eight comfortably."
+- "The kind of kitchen that makes you want to cook." → "Gas range, pot filler, and a 10-foot island with prep sink."
+- "The type of neighborhood where kids still ride bikes." → "Cul-de-sac with sidewalks. Three parks within walking distance."
+- "This unit boasts stunning city views from every room." → "Corner unit, 14th floor. Downtown skyline views from the living room and primary bedroom."
+- "The HOA takes care of everything so you can just relax." → "HOA covers water, trash, exterior maintenance, and pool. $285/month."
+- "A beautiful piece of land with endless possibilities." → "2.3 acres, R-1 zoned, flat and buildable. Public water and sewer at the street."
+
+### Scoring Rubric
+- 9-10: Reads like a top-producing agent wrote it. Precise, confident, grounded. Can't tell AI was involved.
+- 7-8: Mostly strong. Occasional generic phrasing but overall voice is consistent and professional.
+- 5-6: Mixed. Some lines land, others feel narrated or over-explained.
+- 3-4: Reads like AI with a real estate template. Distancing constructions, stacked adjectives.
+- 1-2: Generic AI output. No real estate fluency.
 
 ## Response Format
 
@@ -128,7 +174,7 @@ Return ONLY valid JSON with this structure:
 
 Group related platform fields together. For example, group all "instagram.*" texts under one "instagram" platform key, all "facebook.*" under "facebook", all "googleAds[*].*" under "googleAds", all "metaAd.*" under "metaAd", all "magazineFullPage.*" under "magazineFullPage", all "magazineHalfPage.*" under "magazineHalfPage", all "postcard.*" under "postcard".
 
-Each platform key should have exactly 9 score entries (one per category). Ensure every category from the rubric is scored.`;
+Each platform key should have exactly 10 score entries (one per category). Ensure every category from the rubric is scored.`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -161,7 +207,7 @@ function toPlatformGroup(key: string): string {
 /* ------------------------------------------------------------------ */
 
 /**
- * Score all platform copy across 9 AI quality dimensions in a single
+ * Score all platform copy across 10 AI quality dimensions in a single
  * OpenAI API call. Returns the AI portion of a CampaignQualityResult.
  *
  * If the API call fails for any reason the function returns an empty
@@ -170,7 +216,8 @@ function toPlatformGroup(key: string): string {
 export async function scoreAllPlatformQuality(
   campaign: CampaignKit,
   listing?: ListingData,
-  demographic?: string
+  demographic?: string,
+  tone?: 'professional' | 'casual' | 'luxury',
 ): Promise<CampaignQualityResult> {
   const emptyResult: CampaignQualityResult = {
     platforms: [],
@@ -187,11 +234,11 @@ export async function scoreAllPlatformQuality(
 
   const propertyContext = buildPropertyContext(listing);
   const platformTextBlock = buildPlatformTextBlock(platformTexts);
-  const prompt = buildScoringPrompt(propertyContext, platformTextBlock, demographic);
+  const prompt = buildScoringPrompt(propertyContext, platformTextBlock, demographic, tone);
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5.2',
       messages: [
         {
           role: 'system',

@@ -11,6 +11,9 @@ import { buildQualityCheatSheet } from './docs';
 import { QualityIssue, QualityRule } from '@/lib/types/quality';
 import { CampaignKit } from '@/lib/types/campaign';
 
+// Import scorer internals for testing via require (to access non-exported members)
+// We'll test exported functions and verify constants via module inspection
+
 // Mock loadQualityDocs to avoid file system access in tests
 jest.mock('./docs', () => {
   const actual = jest.requireActual('./docs');
@@ -576,5 +579,101 @@ describe('buildQualityCheatSheet', () => {
   test('omits demographic section when not specified', () => {
     const sheet = buildQualityCheatSheet();
     expect(sheet).not.toContain('Target Demographic');
+  });
+});
+
+// ============================
+// Scorer Tests (GPT-5.2 + voice-authenticity)
+// ============================
+describe('Scorer: AI_CATEGORIES and model', () => {
+  // We test internals by reading the module source since AI_CATEGORIES
+  // and buildScoringPrompt are not exported. For exported functions we
+  // mock OpenAI to capture prompt content.
+
+  let scorerSource: string;
+
+  beforeAll(() => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require('fs');
+    const path = require('path');
+    scorerSource = fs.readFileSync(
+      path.resolve(__dirname, 'scorer.ts'),
+      'utf-8',
+    );
+  });
+
+  test('AI_CATEGORIES includes voice-authenticity', () => {
+    expect(scorerSource).toContain("'voice-authenticity'");
+    // Verify it appears in the AI_CATEGORIES array block
+    const categoriesMatch = scorerSource.match(
+      /const AI_CATEGORIES[\s\S]*?\];/,
+    );
+    expect(categoriesMatch).not.toBeNull();
+    expect(categoriesMatch![0]).toContain("'voice-authenticity'");
+  });
+
+  test('AI_CATEGORIES has exactly 10 entries', () => {
+    const categoriesMatch = scorerSource.match(
+      /const AI_CATEGORIES[\s\S]*?\];/,
+    );
+    expect(categoriesMatch).not.toBeNull();
+    const singleQuoteEntries = categoriesMatch![0].match(/'/g);
+    // Each entry has 2 single quotes (opening + closing), so 20 quotes = 10 entries
+    expect(singleQuoteEntries!.length).toBe(20);
+  });
+
+  test('model is set to gpt-5.2', () => {
+    expect(scorerSource).toContain("model: 'gpt-5.2'");
+    expect(scorerSource).not.toContain("model: 'gpt-4o-mini'");
+  });
+
+  test('buildScoringPrompt accepts tone parameter', () => {
+    // Verify the function signature includes tone
+    const sigMatch = scorerSource.match(
+      /function buildScoringPrompt\([\s\S]*?\): string/,
+    );
+    expect(sigMatch).not.toBeNull();
+    expect(sigMatch![0]).toContain("tone?: 'professional' | 'casual' | 'luxury'");
+  });
+
+  test('prompt includes voice-authenticity scoring dimension', () => {
+    expect(scorerSource).toContain('voice-authenticity');
+    expect(scorerSource).toContain('Does this copy sound like a seasoned real estate professional');
+  });
+
+  test('prompt includes tone interpolation for voice-authenticity', () => {
+    // The prompt template should interpolate tone
+    expect(scorerSource).toContain("${tone || 'professional'}");
+  });
+});
+
+describe('Scorer: scoreAllPlatformQuality signature', () => {
+  test('accepts tone parameter', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require('fs');
+    const path = require('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, 'scorer.ts'),
+      'utf-8',
+    );
+    const sigMatch = source.match(
+      /export async function scoreAllPlatformQuality\([\s\S]*?\): Promise/,
+    );
+    expect(sigMatch).not.toBeNull();
+    expect(sigMatch![0]).toContain("tone?: 'professional' | 'casual' | 'luxury'");
+  });
+
+  test('passes tone through to buildScoringPrompt', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require('fs');
+    const path = require('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, 'scorer.ts'),
+      'utf-8',
+    );
+    // The call to buildScoringPrompt should include tone as 4th argument
+    expect(source).toContain(
+      'buildScoringPrompt(propertyContext, platformTextBlock, demographic, tone)',
+    );
   });
 });
