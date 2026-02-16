@@ -12,6 +12,25 @@ import type {
   PropertySnapshot,
 } from '@/lib/types/compliance-qa';
 
+const FULL_PIPELINE_CONCURRENCY = 3;
+const SNAPSHOT_CONCURRENCY = 5;
+
+async function runWithConcurrency<T>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<void>
+): Promise<void> {
+  const executing = new Set<Promise<void>>();
+  for (const item of items) {
+    const p = fn(item).then(() => { executing.delete(p); });
+    executing.add(p);
+    if (executing.size >= limit) {
+      await Promise.race(executing);
+    }
+  }
+  await Promise.all(executing);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { user, supabase, error } = await requireAuth();
@@ -62,127 +81,91 @@ export async function POST(request: NextRequest) {
     let passedCount = 0;
     let failedCount = 0;
 
-    // Process each property based on mode
+    // Process each property based on mode (parallel with concurrency limit)
     if (mode === 'full-pipeline') {
-      // Full pipeline: generate campaign for each property
-      for (const property of properties as ComplianceTestProperty[]) {
-        try {
-          // Run full generation pipeline (includes compliance agent)
-          const campaign = await generateCampaign(property.listing_data);
+      await runWithConcurrency(
+        properties as ComplianceTestProperty[],
+        FULL_PIPELINE_CONCURRENCY,
+        async (property) => {
+          try {
+            const campaign = await generateCampaign(property.listing_data);
 
-          // Extract platform texts for snapshot
-          const generatedText: Record<string, string> = {};
-          if (campaign.instagram) {
-            if (campaign.instagram.casual) generatedText['instagram.casual'] = campaign.instagram.casual;
-            if (campaign.instagram.professional) generatedText['instagram.professional'] = campaign.instagram.professional;
-            if (campaign.instagram.luxury) generatedText['instagram.luxury'] = campaign.instagram.luxury;
-          }
-          if (campaign.facebook) {
-            if (campaign.facebook.casual) generatedText['facebook.casual'] = campaign.facebook.casual;
-            if (campaign.facebook.professional) generatedText['facebook.professional'] = campaign.facebook.professional;
-            if (campaign.facebook.luxury) generatedText['facebook.luxury'] = campaign.facebook.luxury;
-          }
-          if (campaign.twitter) generatedText['twitter'] = campaign.twitter;
-          if (campaign.googleAds) {
-            generatedText['googleAds'] = campaign.googleAds.map(ad =>
-              `${ad.headline} - ${ad.description}`
-            ).join('\n');
-          }
-          if (campaign.metaAd) {
-            generatedText['metaAd'] = `${campaign.metaAd.headline}\n${campaign.metaAd.primaryText}\n${campaign.metaAd.description}`;
-          }
-          if (campaign.magazineFullPage) {
-            if (campaign.magazineFullPage.professional) {
-              generatedText['magazineFullPage.professional'] = campaign.magazineFullPage.professional.body;
+            const generatedText: Record<string, string> = {};
+            if (campaign.instagram) {
+              if (campaign.instagram.casual) generatedText['instagram.casual'] = campaign.instagram.casual;
+              if (campaign.instagram.professional) generatedText['instagram.professional'] = campaign.instagram.professional;
+              if (campaign.instagram.luxury) generatedText['instagram.luxury'] = campaign.instagram.luxury;
             }
-            if (campaign.magazineFullPage.luxury) {
-              generatedText['magazineFullPage.luxury'] = campaign.magazineFullPage.luxury.body;
+            if (campaign.facebook) {
+              if (campaign.facebook.casual) generatedText['facebook.casual'] = campaign.facebook.casual;
+              if (campaign.facebook.professional) generatedText['facebook.professional'] = campaign.facebook.professional;
+              if (campaign.facebook.luxury) generatedText['facebook.luxury'] = campaign.facebook.luxury;
             }
-          }
-          if (campaign.magazineHalfPage) {
-            if (campaign.magazineHalfPage.professional) {
-              generatedText['magazineHalfPage.professional'] = campaign.magazineHalfPage.professional.body;
+            if (campaign.twitter) generatedText['twitter'] = campaign.twitter;
+            if (campaign.googleAds) {
+              generatedText['googleAds'] = campaign.googleAds.map(ad =>
+                `${ad.headline} - ${ad.description}`
+              ).join('\n');
             }
-            if (campaign.magazineHalfPage.luxury) {
-              generatedText['magazineHalfPage.luxury'] = campaign.magazineHalfPage.luxury.body;
+            if (campaign.metaAd) {
+              generatedText['metaAd'] = `${campaign.metaAd.headline}\n${campaign.metaAd.primaryText}\n${campaign.metaAd.description}`;
             }
-          }
-          if (campaign.postcard) {
-            if (campaign.postcard.professional) {
-              generatedText['postcard.professional'] = campaign.postcard.professional.front.body;
+            if (campaign.magazineFullPage) {
+              if (campaign.magazineFullPage.professional) {
+                generatedText['magazineFullPage.professional'] = campaign.magazineFullPage.professional.body;
+              }
+              if (campaign.magazineFullPage.luxury) {
+                generatedText['magazineFullPage.luxury'] = campaign.magazineFullPage.luxury.body;
+              }
             }
-            if (campaign.postcard.casual) {
-              generatedText['postcard.casual'] = campaign.postcard.casual.front.body;
+            if (campaign.magazineHalfPage) {
+              if (campaign.magazineHalfPage.professional) {
+                generatedText['magazineHalfPage.professional'] = campaign.magazineHalfPage.professional.body;
+              }
+              if (campaign.magazineHalfPage.luxury) {
+                generatedText['magazineHalfPage.luxury'] = campaign.magazineHalfPage.luxury.body;
+              }
             }
-          }
-          if (campaign.zillow) generatedText['zillow'] = campaign.zillow;
-          if (campaign.realtorCom) generatedText['realtorCom'] = campaign.realtorCom;
-          if (campaign.homesComTrulia) generatedText['homesComTrulia'] = campaign.homesComTrulia;
-          if (campaign.mlsDescription) generatedText['mlsDescription'] = campaign.mlsDescription;
+            if (campaign.postcard) {
+              if (campaign.postcard.professional) {
+                generatedText['postcard.professional'] = campaign.postcard.professional.front.body;
+              }
+              if (campaign.postcard.casual) {
+                generatedText['postcard.casual'] = campaign.postcard.casual.front.body;
+              }
+            }
+            if (campaign.zillow) generatedText['zillow'] = campaign.zillow;
+            if (campaign.realtorCom) generatedText['realtorCom'] = campaign.realtorCom;
+            if (campaign.homesComTrulia) generatedText['homesComTrulia'] = campaign.homesComTrulia;
+            if (campaign.mlsDescription) generatedText['mlsDescription'] = campaign.mlsDescription;
 
-          // Save snapshot
-          await supabase.from('compliance_test_snapshots').insert({
-            property_id: property.id,
-            generated_text: generatedText,
-            approved: false,
-          });
+            await supabase.from('compliance_test_snapshots').insert({
+              property_id: property.id,
+              generated_text: generatedText,
+              approved: false,
+            });
 
-          // Use compliance result from campaign
-          const complianceResult = campaign.complianceResult;
-          const passed = complianceResult.campaignVerdict === 'compliant';
+            const complianceResult = campaign.complianceResult;
+            const passed = complianceResult.campaignVerdict === 'compliant';
 
-          if (passed) passedCount++;
-          else failedCount++;
+            if (passed) passedCount++;
+            else failedCount++;
 
-          totalViolations += complianceResult.totalViolations;
-          totalAutoFixes += complianceResult.totalAutoFixes;
+            totalViolations += complianceResult.totalViolations;
+            totalAutoFixes += complianceResult.totalAutoFixes;
 
-          results.push({
-            propertyId: property.id,
-            propertyName: property.name,
-            state: property.state,
-            riskCategory: property.risk_category,
-            passed,
-            complianceResult,
-            generatedText,
-            qualityFixesApplied: campaign.qualityResult?.improvementsApplied || 0,
-          });
-        } catch (error) {
-          console.error(`Error processing property ${property.id}:`, error);
-          failedCount++;
-          results.push({
-            propertyId: property.id,
-            propertyName: property.name,
-            state: property.state,
-            riskCategory: property.risk_category,
-            passed: false,
-            complianceResult: {
-              platforms: [],
-              campaignVerdict: 'needs-review',
-              violations: [],
-              autoFixes: [],
-              totalViolations: 0,
-              totalAutoFixes: 0,
-            },
-          });
-        }
-      }
-    } else {
-      // Snapshot mode: scan approved snapshots
-      for (const property of properties as ComplianceTestProperty[]) {
-        try {
-          // Fetch latest approved snapshot
-          const { data: snapshots, error: snapshotError } = await supabase
-            .from('compliance_test_snapshots')
-            .select('*')
-            .eq('property_id', property.id)
-            .eq('approved', true)
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-          if (snapshotError || !snapshots || snapshots.length === 0) {
-            // No approved snapshot - skip
-            console.warn(`No approved snapshot for property ${property.id}`);
+            results.push({
+              propertyId: property.id,
+              propertyName: property.name,
+              state: property.state,
+              riskCategory: property.risk_category,
+              passed,
+              complianceResult,
+              generatedText,
+              qualityFixesApplied: campaign.qualityResult?.improvementsApplied || 0,
+            });
+          } catch (error) {
+            console.error(`Error processing property ${property.id}:`, error);
             failedCount++;
             results.push({
               propertyId: property.id,
@@ -199,78 +182,106 @@ export async function POST(request: NextRequest) {
                 totalAutoFixes: 0,
               },
             });
-            continue;
           }
+        }
+      );
+    } else {
+      // Snapshot mode: scan approved snapshots in parallel
+      await runWithConcurrency(
+        properties as ComplianceTestProperty[],
+        SNAPSHOT_CONCURRENCY,
+        async (property) => {
+          try {
+            const { data: snapshots, error: snapshotError } = await supabase
+              .from('compliance_test_snapshots')
+              .select('*')
+              .eq('property_id', property.id)
+              .eq('approved', true)
+              .order('created_at', { ascending: false })
+              .limit(1);
 
-          const snapshot = snapshots[0] as PropertySnapshot;
-          const generatedText = snapshot.generated_text;
+            if (snapshotError || !snapshots || snapshots.length === 0) {
+              console.warn(`No approved snapshot for property ${property.id}`);
+              failedCount++;
+              results.push({
+                propertyId: property.id,
+                propertyName: property.name,
+                state: property.state,
+                riskCategory: property.risk_category,
+                passed: false,
+                complianceResult: {
+                  platforms: [],
+                  campaignVerdict: 'needs-review',
+                  violations: [],
+                  autoFixes: [],
+                  totalViolations: 0,
+                  totalAutoFixes: 0,
+                },
+              });
+              return;
+            }
 
-          // Get state-specific compliance config for this property
-          const { config } = await getComplianceSettings(property.state);
+            const snapshot = snapshots[0] as PropertySnapshot;
+            const generatedText = snapshot.generated_text;
 
-          // Scan each platform text with agent
-          const allViolations = [];
-          const allAutoFixes = [];
-          let propertyViolations = 0;
-          let propertyAutoFixes = 0;
+            const { config } = await getComplianceSettings(property.state);
 
-          for (const [platform, text] of Object.entries(generatedText)) {
-            const scanResult = await scanTextWithAgent(
-              text,
-              property.state,
-              platform,
-              config
+            // Scan all platform texts in parallel within this property
+            const platformEntries = Object.entries(generatedText);
+            const scanResults = await Promise.all(
+              platformEntries.map(([platform, text]) =>
+                scanTextWithAgent(text, property.state, platform, config)
+              )
             );
 
-            allViolations.push(...scanResult.violations);
-            allAutoFixes.push(...scanResult.autoFixes);
-            propertyViolations += scanResult.totalViolations;
-            propertyAutoFixes += scanResult.totalAutoFixes;
+            const allViolations = scanResults.flatMap(r => r.violations);
+            const allAutoFixes = scanResults.flatMap(r => r.autoFixes);
+            const propertyViolations = scanResults.reduce((sum, r) => sum + r.totalViolations, 0);
+            const propertyAutoFixes = scanResults.reduce((sum, r) => sum + r.totalAutoFixes, 0);
+
+            const passed = propertyViolations === 0;
+            if (passed) passedCount++;
+            else failedCount++;
+
+            totalViolations += propertyViolations;
+            totalAutoFixes += propertyAutoFixes;
+
+            results.push({
+              propertyId: property.id,
+              propertyName: property.name,
+              state: property.state,
+              riskCategory: property.risk_category,
+              passed,
+              complianceResult: {
+                platforms: [],
+                campaignVerdict: passed ? 'compliant' : 'needs-review',
+                violations: allViolations,
+                autoFixes: allAutoFixes,
+                totalViolations: propertyViolations,
+                totalAutoFixes: propertyAutoFixes,
+              },
+            });
+          } catch (error) {
+            console.error(`Error processing property ${property.id}:`, error);
+            failedCount++;
+            results.push({
+              propertyId: property.id,
+              propertyName: property.name,
+              state: property.state,
+              riskCategory: property.risk_category,
+              passed: false,
+              complianceResult: {
+                platforms: [],
+                campaignVerdict: 'needs-review',
+                violations: [],
+                autoFixes: [],
+                totalViolations: 0,
+                totalAutoFixes: 0,
+              },
+            });
           }
-
-          // Aggregate result
-          const passed = propertyViolations === 0;
-          if (passed) passedCount++;
-          else failedCount++;
-
-          totalViolations += propertyViolations;
-          totalAutoFixes += propertyAutoFixes;
-
-          results.push({
-            propertyId: property.id,
-            propertyName: property.name,
-            state: property.state,
-            riskCategory: property.risk_category,
-            passed,
-            complianceResult: {
-              platforms: [],
-              campaignVerdict: passed ? 'compliant' : 'needs-review',
-              violations: allViolations,
-              autoFixes: allAutoFixes,
-              totalViolations: propertyViolations,
-              totalAutoFixes: propertyAutoFixes,
-            },
-          });
-        } catch (error) {
-          console.error(`Error processing property ${property.id}:`, error);
-          failedCount++;
-          results.push({
-            propertyId: property.id,
-            propertyName: property.name,
-            state: property.state,
-            riskCategory: property.risk_category,
-            passed: false,
-            complianceResult: {
-              platforms: [],
-              campaignVerdict: 'needs-review',
-              violations: [],
-              autoFixes: [],
-              totalViolations: 0,
-              totalAutoFixes: 0,
-            },
-          });
         }
-      }
+      );
     }
 
     const durationMs = Date.now() - startTime;
