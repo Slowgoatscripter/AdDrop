@@ -7,7 +7,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Implies racial or economic exclusion of protected classes',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'desirable location',
   },
   {
@@ -15,7 +15,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Implies exclusion based on protected class characteristics',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'sought-after area',
   },
   {
@@ -23,7 +23,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Suggests people are excluded from the community',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'well-established community',
   },
   {
@@ -31,7 +31,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Steers buyers based on racial demographics and crime stereotypes',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'peaceful setting',
   },
   {
@@ -39,7 +39,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Implies other areas are unsafe, often a proxy for racial composition',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'quiet area',
   },
   {
@@ -47,7 +47,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Neighborhood safety language is a proxy for racial steering',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'quiet neighborhood',
   },
   {
@@ -55,7 +55,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Crime-related language steers based on racial demographics',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'well-maintained area',
   },
   {
@@ -63,7 +63,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Crime references in listings are proxies for racial composition',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'peaceful community',
   },
   {
@@ -71,7 +71,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'School quality references are proxies for racial composition',
-    law: 'Fair Housing Act §3604(c); HUD advertising guidelines',
+    law: '42 U.S.C. § 3604(c); HUD advertising guidelines',
     suggestedAlternative: 'near schools',
   },
   {
@@ -79,7 +79,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'School rating language steers based on racial demographics',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'close to schools',
   },
   {
@@ -87,7 +87,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'soft',
     shortExplanation: 'School quality language can be a proxy for neighborhood demographics',
-    law: 'Fair Housing Act §3604(c); NAR guidelines',
+    law: '42 U.S.C. § 3604(c); NAR guidelines',
     suggestedAlternative: 'near schools',
   },
   {
@@ -95,7 +95,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'References to racial makeup of a neighborhood constitute steering',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'welcoming neighborhood',
   },
   {
@@ -103,7 +103,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Code for demographic shifts; constitutes racial steering',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'evolving community',
   },
   {
@@ -111,7 +111,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'hard',
     shortExplanation: 'Implies selection of neighbors by protected characteristics',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'friendly community',
   },
   {
@@ -127,7 +127,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'soft',
     shortExplanation: 'Can imply economic or racial exclusion',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'well-regarded area',
   },
   {
@@ -135,7 +135,7 @@ const steeringTerms: ProhibitedTerm[] = [
     category: 'steering',
     severity: 'soft',
     shortExplanation: 'Often code for gentrifying area; implies demographic change',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'growing community',
   },
   {
@@ -227,7 +227,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Suggests preference for families, excludes non-family households',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'welcoming community',
   },
   {
@@ -235,7 +235,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Implies preference for families with children over other household types',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'suitable for all',
   },
   {
@@ -243,7 +243,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Targets families and excludes other household compositions',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'spacious and versatile',
   },
   {
@@ -251,7 +251,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Explicitly targets families, excluding non-family households',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'ideal living space',
   },
   {
@@ -259,7 +259,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Targets households with children, discriminates against those without',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'spacious living areas',
   },
   {
@@ -267,7 +267,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Directly excludes families with children',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'quiet setting',
   },
   {
@@ -275,7 +275,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Excludes families with children unless qualifying as senior housing',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'quiet community',
   },
   {
@@ -283,7 +283,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Excludes families with children unless HOPA-qualified',
-    law: 'Fair Housing Act §3604(c); HOPA',
+    law: '42 U.S.C. § 3604(c); HOPA',
     suggestedAlternative: 'established community',
   },
   {
@@ -291,7 +291,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Implies exclusion of children unless HOPA-qualified',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'comfortable living',
   },
   {
@@ -299,7 +299,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'hard',
     shortExplanation: 'Targets specific household composition, excludes others',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'cozy layout',
   },
   {
@@ -307,7 +307,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'soft',
     shortExplanation: 'Targets a specific life stage, may discourage families with children',
-    law: 'Fair Housing Act §3604(c); NAR guidelines',
+    law: '42 U.S.C. § 3604(c); NAR guidelines',
     suggestedAlternative: 'low-maintenance lifestyle',
   },
   {
@@ -323,7 +323,7 @@ const familialStatusTerms: ProhibitedTerm[] = [
     category: 'familial-status',
     severity: 'soft',
     shortExplanation: 'Emphasizing child amenities can signal familial status preference',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'parks nearby',
   },
   {
@@ -455,7 +455,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Derogatory language toward people with disabilities',
-    law: 'Fair Housing Act §3604(f)',
+    law: '42 U.S.C. § 3604(f)',
     suggestedAlternative: 'accessible',
   },
   {
@@ -463,7 +463,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Directly excludes people with physical disabilities',
-    law: 'Fair Housing Act §3604(f)',
+    law: '42 U.S.C. § 3604(f)',
     suggestedAlternative: 'all welcome',
   },
   {
@@ -471,7 +471,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Excludes people with mobility impairments',
-    law: 'Fair Housing Act §3604(f)',
+    law: '42 U.S.C. § 3604(f)',
     suggestedAlternative: 'multi-level home',
   },
   {
@@ -479,7 +479,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Directly discriminates against wheelchair users',
-    law: 'Fair Housing Act §3604(f)',
+    law: '42 U.S.C. § 3604(f)',
     suggestedAlternative: 'limited accessibility features',
   },
   {
@@ -487,7 +487,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Discourages people with disabilities from applying',
-    law: 'Fair Housing Act §3604(f)',
+    law: '42 U.S.C. § 3604(f)',
     suggestedAlternative: 'contact agent for accessibility details',
   },
   {
@@ -495,7 +495,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Excludes people with mental health disabilities',
-    law: 'Fair Housing Act §3604(f)',
+    law: '42 U.S.C. § 3604(f)',
     suggestedAlternative: 'all applicants welcome',
   },
   {
@@ -503,7 +503,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Implies physical ability is a requirement for occupancy',
-    law: 'Fair Housing Act §3604(f)',
+    law: '42 U.S.C. § 3604(f)',
     suggestedAlternative: 'all are welcome',
   },
   {
@@ -511,7 +511,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Group homes for disabled persons are protected under FHA',
-    law: 'Fair Housing Act §3604(f); Olmstead v. L.C.',
+    law: '42 U.S.C. § 3604(f); Olmstead v. L.C.',
     suggestedAlternative: 'single-family residence',
   },
   {
@@ -519,7 +519,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'soft',
     shortExplanation: 'Assumes ambulatory ability; may discourage disabled applicants',
-    law: 'Fair Housing Act §3604(f); NAR guidelines',
+    law: '42 U.S.C. § 3604(f); NAR guidelines',
     suggestedAlternative: 'nearby',
   },
   {
@@ -635,7 +635,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'Describes neighborhood by racial composition',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'established neighborhood',
   },
   {
@@ -643,7 +643,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'Describes neighborhood by racial composition',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'vibrant neighborhood',
   },
   {
@@ -651,7 +651,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'References ethnicity to describe an area',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'diverse neighborhood',
   },
   {
@@ -659,7 +659,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'Explicitly excludes racial or ethnic minorities',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'all welcome',
   },
   {
@@ -667,7 +667,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'Explicit racial discrimination',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'open to all',
   },
   {
@@ -675,7 +675,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'Language restrictions are a proxy for national origin discrimination',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'all are welcome',
   },
   {
@@ -683,7 +683,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'Discriminates based on national origin',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'all applicants welcome',
   },
   {
@@ -691,7 +691,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'Discriminates based on national origin or citizenship',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'open to all qualified applicants',
   },
   {
@@ -699,7 +699,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'hard',
     shortExplanation: 'Language requirements are national origin discrimination',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'all are welcome',
   },
   {
@@ -707,7 +707,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'soft',
     shortExplanation: 'Using ethnic descriptions signals racial makeup of area',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'diverse dining options nearby',
   },
   {
@@ -903,7 +903,7 @@ const religionTerms: ProhibitedTerm[] = [
     category: 'religion',
     severity: 'hard',
     shortExplanation: 'Shows religious preference; discourages non-Christian applicants',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'near places of worship',
   },
   {
@@ -911,7 +911,7 @@ const religionTerms: ProhibitedTerm[] = [
     category: 'religion',
     severity: 'hard',
     shortExplanation: 'Describes area by religious affiliation; excludes non-Christians',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'welcoming community',
   },
   {
@@ -919,7 +919,7 @@ const religionTerms: ProhibitedTerm[] = [
     category: 'religion',
     severity: 'hard',
     shortExplanation: 'Describes area by religious affiliation',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'established neighborhood',
   },
   {
@@ -927,7 +927,7 @@ const religionTerms: ProhibitedTerm[] = [
     category: 'religion',
     severity: 'hard',
     shortExplanation: 'Describes area by religious affiliation',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'diverse community',
   },
   {
@@ -935,7 +935,7 @@ const religionTerms: ProhibitedTerm[] = [
     category: 'religion',
     severity: 'hard',
     shortExplanation: 'Excludes people based on religious practice',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'all welcome',
   },
   {
@@ -943,7 +943,7 @@ const religionTerms: ProhibitedTerm[] = [
     category: 'religion',
     severity: 'hard',
     shortExplanation: 'Implies religious practice as a qualification for housing',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'community-oriented',
   },
   {
@@ -1059,7 +1059,7 @@ const sexGenderTerms: ProhibitedTerm[] = [
     category: 'sex-gender',
     severity: 'hard',
     shortExplanation: 'Targets single males, implies gender preference',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'modern living space',
   },
   {
@@ -1067,7 +1067,7 @@ const sexGenderTerms: ProhibitedTerm[] = [
     category: 'sex-gender',
     severity: 'soft',
     shortExplanation: 'Gendered language that targets male buyers',
-    law: 'Fair Housing Act §3604(c); NAR guidelines',
+    law: '42 U.S.C. § 3604(c); NAR guidelines',
     suggestedAlternative: 'bonus room',
   },
   {
@@ -1099,7 +1099,7 @@ const sexGenderTerms: ProhibitedTerm[] = [
     category: 'sex-gender',
     severity: 'hard',
     shortExplanation: 'Specifying gender of desired tenant is discriminatory',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'roommate wanted',
   },
   {
@@ -1107,7 +1107,7 @@ const sexGenderTerms: ProhibitedTerm[] = [
     category: 'sex-gender',
     severity: 'hard',
     shortExplanation: 'Specifying gender of desired tenant is discriminatory',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'roommate wanted',
   },
   {
@@ -1115,7 +1115,7 @@ const sexGenderTerms: ProhibitedTerm[] = [
     category: 'sex-gender',
     severity: 'hard',
     shortExplanation: 'Gender-based restriction on occupancy',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'all welcome',
   },
   {
@@ -1123,7 +1123,7 @@ const sexGenderTerms: ProhibitedTerm[] = [
     category: 'sex-gender',
     severity: 'hard',
     shortExplanation: 'Gender-based restriction on occupancy',
-    law: 'Fair Housing Act §3604(c)',
+    law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'all welcome',
   },
   {
@@ -1131,7 +1131,7 @@ const sexGenderTerms: ProhibitedTerm[] = [
     category: 'sex-gender',
     severity: 'hard',
     shortExplanation: 'Discriminates based on sexual orientation and gender identity',
-    law: 'Fair Housing Act §3604(c); Executive Order 13988 (2021)',
+    law: '42 U.S.C. § 3604(c); Executive Order 13988 (2021)',
     suggestedAlternative: 'all are welcome',
   },
   {
@@ -1263,7 +1263,7 @@ const ageTerms: ProhibitedTerm[] = [
     category: 'age',
     severity: 'hard',
     shortExplanation: 'Targets a specific age group, excluding older applicants',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'working professionals',
   },
   {
@@ -1271,7 +1271,7 @@ const ageTerms: ProhibitedTerm[] = [
     category: 'age',
     severity: 'hard',
     shortExplanation: 'Targets a specific generation, excludes others',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'modern lifestyle',
   },
   {
@@ -1279,7 +1279,7 @@ const ageTerms: ProhibitedTerm[] = [
     category: 'age',
     severity: 'hard',
     shortExplanation: 'Targets retirees and discourages younger applicants',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'established community',
   },
   {
@@ -1287,7 +1287,7 @@ const ageTerms: ProhibitedTerm[] = [
     category: 'age',
     severity: 'hard',
     shortExplanation: 'Age-targeted language unless HOPA-qualified',
-    law: 'Montana Human Rights Act, MCA §49-2-305; HOPA',
+    law: 'MCA § 49-2-305; HOPA',
     suggestedAlternative: 'comfortable living',
   },
   {
@@ -1295,7 +1295,7 @@ const ageTerms: ProhibitedTerm[] = [
     category: 'age',
     severity: 'hard',
     shortExplanation: 'Targets by age and familial status',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'any buyer',
   },
   {
@@ -1303,7 +1303,7 @@ const ageTerms: ProhibitedTerm[] = [
     category: 'age',
     severity: 'hard',
     shortExplanation: 'Directly excludes older individuals',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'all welcome',
   },
   {
@@ -1311,7 +1311,7 @@ const ageTerms: ProhibitedTerm[] = [
     category: 'age',
     severity: 'soft',
     shortExplanation: 'Implies the area is for younger people',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'vibrant neighborhood',
   },
   {
@@ -1319,7 +1319,7 @@ const ageTerms: ProhibitedTerm[] = [
     category: 'age',
     severity: 'soft',
     shortExplanation: 'Implies the area is for older residents',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'established community',
   },
   {
@@ -1411,7 +1411,7 @@ const maritalStatusTerms: ProhibitedTerm[] = [
     category: 'marital-status',
     severity: 'hard',
     shortExplanation: 'Restricts housing based on marital status',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'all applicants welcome',
   },
   {
@@ -1419,7 +1419,7 @@ const maritalStatusTerms: ProhibitedTerm[] = [
     category: 'marital-status',
     severity: 'hard',
     shortExplanation: 'Targets by marital status',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'all buyers',
   },
   {
@@ -1427,7 +1427,7 @@ const maritalStatusTerms: ProhibitedTerm[] = [
     category: 'marital-status',
     severity: 'hard',
     shortExplanation: 'Targets a specific marital status',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'efficient layout',
   },
   {
@@ -1435,7 +1435,7 @@ const maritalStatusTerms: ProhibitedTerm[] = [
     category: 'marital-status',
     severity: 'hard',
     shortExplanation: 'Directly discriminates based on marital status',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'all welcome',
   },
   {
@@ -1443,8 +1443,8 @@ const maritalStatusTerms: ProhibitedTerm[] = [
     category: 'marital-status',
     severity: 'soft',
     shortExplanation: 'References marital status in housing advertising',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
-    suggestedAlternative: 'any buyer',
+    law: 'MCA § 49-2-305',
+    suggestedAlternative: 'remove reference to marital status',
   },
   {
     term: 'singles only',
@@ -1519,7 +1519,7 @@ const creedTerms: ProhibitedTerm[] = [
     category: 'creed',
     severity: 'hard',
     shortExplanation: 'Describes area by political leaning; discriminates on political beliefs (conservative compliance interpretation — creed coverage of political worldview is not explicitly established in MT housing case law)',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'established neighborhood',
   },
   {
@@ -1527,7 +1527,7 @@ const creedTerms: ProhibitedTerm[] = [
     category: 'creed',
     severity: 'hard',
     shortExplanation: 'Describes area by political leaning (conservative compliance interpretation — creed coverage of political worldview is not explicitly established in MT housing case law)',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'diverse community',
   },
   {
@@ -1535,7 +1535,7 @@ const creedTerms: ProhibitedTerm[] = [
     category: 'creed',
     severity: 'soft',
     shortExplanation: 'Political affiliation used to describe area character',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'community values',
   },
   {
@@ -1543,7 +1543,7 @@ const creedTerms: ProhibitedTerm[] = [
     category: 'creed',
     severity: 'soft',
     shortExplanation: 'Political affiliation used to describe area character',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'quality of life',
   },
   {
@@ -1551,7 +1551,7 @@ const creedTerms: ProhibitedTerm[] = [
     category: 'creed',
     severity: 'hard',
     shortExplanation: 'Can imply political or ideological homogeneity (conservative compliance interpretation — creed coverage of political worldview is not explicitly established in MT housing case law)',
-    law: 'Montana Human Rights Act, MCA §49-2-305',
+    law: 'MCA § 49-2-305',
     suggestedAlternative: 'friendly neighbors',
   },
   {
@@ -1667,7 +1667,7 @@ const economicExclusionTerms: ProhibitedTerm[] = [
     category: 'economic-exclusion',
     severity: 'soft',
     shortExplanation: 'Class-based language implies economic exclusion',
-    law: 'Fair Housing Act §3604(c); NAR guidelines',
+    law: '42 U.S.C. § 3604(c); NAR guidelines',
     suggestedAlternative: 'premium location',
   },
   {
@@ -1885,6 +1885,11 @@ export const montanaCompliance: MLSComplianceConfig = {
     'Must disclose if property is in a flood zone (if known)',
     'Fair housing compliance required',
     'No discriminatory language per Fair Housing Act',
+    '48-hour listing entry deadline for new listings and status changes (excludes weekends/holidays)',
+    'Clear Cooperation Policy: publicly marketed listings must be entered within 1 business day',
+    'Internet ads must include licensee identification on every viewable page or linked (ARM 24.210.430)',
+    'Material changes must be updated within 7 days (ARM 24.210.430)',
+    'Must display creation date and last-update date on web advertising (ARM 24.210.430)',
   ],
   requiredDisclosures: [
     'Listing courtesy of [Broker Name]',
