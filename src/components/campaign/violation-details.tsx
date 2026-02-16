@@ -23,6 +23,7 @@ const categoryColors: Record<string, string> = {
   'creed': 'bg-gray-100 text-gray-800',
   'economic-exclusion': 'bg-yellow-100 text-yellow-800',
   'misleading-claims': 'bg-rose-100 text-rose-800',
+  'military-status': 'bg-green-100 text-green-800',
 };
 
 const categoryLabels: Record<string, string> = {
@@ -37,6 +38,7 @@ const categoryLabels: Record<string, string> = {
   'creed': 'Creed',
   'economic-exclusion': 'Economic Exclusion',
   'misleading-claims': 'Misleading Claims',
+  'military-status': 'Military Status',
 };
 
 function highlightTerm(context: string, term: string): React.ReactNode {

@@ -92,6 +92,7 @@ const categoryLabels: Record<ViolationCategory, string> = {
   'creed': 'Creed',
   'economic-exclusion': 'Economic Exclusion',
   'misleading-claims': 'Misleading Claims',
+  'military-status': 'Military / Veteran Status',
 };
 
 /**
