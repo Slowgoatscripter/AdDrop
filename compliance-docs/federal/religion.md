@@ -50,7 +50,7 @@ It is illegal to use language, imagery, or descriptions in housing advertising t
 ### Consequences
 - Full FHA penalty structure applies (up to $25,597 first offense, escalating)
 - Religious organizations that exceed their exemption face full liability
-- State laws may add additional protections (Montana protects religion under the Montana Human Rights Act)
+- State laws may add additional protections beyond federal requirements
 
 ## Protected Class(es)
 

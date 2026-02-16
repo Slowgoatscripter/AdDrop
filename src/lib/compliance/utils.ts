@@ -1,4 +1,4 @@
-import { CampaignKit } from '@/lib/types';
+import { CampaignKit, ProhibitedTerm } from '@/lib/types';
 
 /**
  * Extract all text fields from a CampaignKit, returning [platformLabel, text] pairs.
@@ -96,4 +96,27 @@ export function extractPlatformTexts(campaign: CampaignKit): [string, string][] 
   }
 
   return texts;
+}
+
+/**
+ * Format prohibited terms grouped by category as readable text for AI prompts.
+ * Groups terms by category and formats each as a list item with details.
+ */
+export function formatTermsForPrompt(terms: ProhibitedTerm[]): string {
+  const grouped = new Map<string, ProhibitedTerm[]>();
+  for (const t of terms) {
+    const existing = grouped.get(t.category) ?? [];
+    existing.push(t);
+    grouped.set(t.category, existing);
+  }
+
+  const sections: string[] = [];
+  for (const [category, categoryTerms] of grouped) {
+    const lines = categoryTerms.map(t =>
+      `- "${t.term}" (${t.severity}) → use "${t.suggestedAlternative}" instead [${t.law}]`
+    );
+    sections.push(`### ${category}\n${lines.join('\n')}`);
+  }
+
+  return sections.join('\n\n');
 }

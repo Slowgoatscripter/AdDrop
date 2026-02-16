@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/supabase/auth-helpers'
 import { checkComplianceWithAgent } from '@/lib/compliance/agent'
 import { getComplianceSettings } from '@/lib/compliance/compliance-settings'
-import { complianceConfigs } from '@/lib/compliance/terms/montana'
+import { complianceConfigs } from '@/lib/compliance/terms/registry'
 import type { CampaignKit } from '@/lib/types/campaign'
 
 export async function POST(req: NextRequest) {

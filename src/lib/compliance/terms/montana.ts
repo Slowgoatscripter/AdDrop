@@ -1,5 +1,4 @@
 import { MLSComplianceConfig, ProhibitedTerm } from '@/lib/types';
-import { ohioCompliance } from './ohio';
 
 // --- Steering ---
 const steeringTerms: ProhibitedTerm[] = [
@@ -1925,33 +1924,3 @@ export const montanaCompliance: MLSComplianceConfig = {
   },
 };
 
-/**
- * Format prohibited terms grouped by category as readable text for AI prompts.
- * Groups terms by category and formats each as a list item with details.
- */
-export function formatTermsForPrompt(terms: ProhibitedTerm[]): string {
-  const grouped = new Map<string, ProhibitedTerm[]>();
-  for (const t of terms) {
-    const existing = grouped.get(t.category) ?? [];
-    existing.push(t);
-    grouped.set(t.category, existing);
-  }
-
-  const sections: string[] = [];
-  for (const [category, categoryTerms] of grouped) {
-    const lines = categoryTerms.map(t =>
-      `- "${t.term}" (${t.severity}) → use "${t.suggestedAlternative}" instead [${t.law}]`
-    );
-    sections.push(`### ${category}\n${lines.join('\n')}`);
-  }
-
-  return sections.join('\n\n');
-}
-
-/**
- * Export compliance configs by state code for easy lookup.
- */
-export const complianceConfigs: Record<string, MLSComplianceConfig> = {
-  MT: montanaCompliance,
-  OH: ohioCompliance,
-};

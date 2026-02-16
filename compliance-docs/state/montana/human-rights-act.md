@@ -148,6 +148,14 @@ Montana Administrative Rules require:
 - Material changes to listings must be updated within 7 days
 - All internet advertising must comply with Fair Housing Act requirements
 
+## Federal Law Connections
+
+Montana's protections overlap with and extend federal Fair Housing Act requirements:
+
+- **Source-of-income discrimination**: Some Montana municipalities prohibit source-of-income discrimination (e.g., refusing Section 8 vouchers). While source of income is not a federally protected class, such refusals may trigger FHA disparate impact claims on race and national origin grounds.
+- **Religion**: The Montana Human Rights Act independently protects religion under MCA § 49-2-305, and further extends protection to "creed" (broader than federal religion-only coverage).
+- **Sex**: The Montana Human Rights Act independently protects sex under MCA § 49-2-305, expanded to include maternity, pregnancy, and sexual harassment — broader than the federal FHA's sex protections.
+
 ## Sources
 
 - Montana Code Annotated § 49-2-305 — Discrimination in Housing — https://archive.legmt.gov/bills/mca/title_0490/chapter_0020/part_0030/section_0050/0490-0020-0030-0050.html

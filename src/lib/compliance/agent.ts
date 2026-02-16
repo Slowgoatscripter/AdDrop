@@ -10,7 +10,7 @@ import type {
 } from '@/lib/types/compliance';
 import { extractPlatformTexts } from './utils';
 import { loadComplianceDocs } from './docs';
-import { formatTermsForPrompt } from './terms/montana';
+import { formatTermsForPrompt } from './utils';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

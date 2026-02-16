@@ -1,6 +1,7 @@
 import { MLSComplianceConfig } from '@/lib/types';
 import { getSetting } from '@/lib/settings/server';
-import { complianceConfigs, montanaCompliance } from './terms/montana';
+import { complianceConfigs } from './terms/registry';
+import { montanaCompliance } from './terms/montana';
 
 /**
  * Fetch compliance settings from the database and return a filtered config.

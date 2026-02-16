@@ -8,5 +8,7 @@ export { extractPlatformTexts } from './utils'
 export { loadComplianceDocs } from './docs'
 
 // Terms data
-export { montanaCompliance, complianceConfigs, formatTermsForPrompt } from './terms/montana'
+export { montanaCompliance } from './terms/montana'
 export { ohioCompliance } from './terms/ohio'
+export { complianceConfigs } from './terms/registry'
+export { formatTermsForPrompt } from './utils'
