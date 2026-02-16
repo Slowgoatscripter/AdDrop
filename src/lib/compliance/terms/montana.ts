@@ -886,6 +886,14 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'near dining and shopping',
   },
+  {
+    term: 'American heritage community',
+    category: 'race-color-national-origin',
+    severity: 'hard',
+    shortExplanation: 'Code for racial/ethnic exclusion',
+    law: '42 U.S.C. § 3604(c)',
+    suggestedAlternative: 'historic community',
+  },
 ];
 
 // --- Religion ---
@@ -1214,6 +1222,38 @@ const sexGenderTerms: ProhibitedTerm[] = [
     law: '42 U.S.C. § 3604(c)',
     suggestedAlternative: 'remove entirely',
   },
+  {
+    term: 'bachelor apartment for one',
+    category: 'sex-gender',
+    severity: 'hard',
+    shortExplanation: 'Implies preference for unmarried men; discriminates on sex and marital status',
+    law: 'MCA § 49-2-305 (sex, marital status)',
+    suggestedAlternative: 'studio apartment',
+  },
+  {
+    term: 'no pregnant women',
+    category: 'sex-gender',
+    severity: 'hard',
+    shortExplanation: 'Montana expands sex protection to include pregnancy and maternity',
+    law: 'MCA § 49-2-305 (sex/maternity)',
+    suggestedAlternative: 'all welcome',
+  },
+  {
+    term: 'not suitable during pregnancy',
+    category: 'sex-gender',
+    severity: 'hard',
+    shortExplanation: 'Discriminatory exclusion based on pregnancy status',
+    law: 'MCA § 49-2-305 (sex/maternity)',
+    suggestedAlternative: 'remove from ad',
+  },
+  {
+    term: 'expecting mothers only',
+    category: 'sex-gender',
+    severity: 'hard',
+    shortExplanation: 'Restricts housing to specific pregnancy/parental status',
+    law: 'MCA § 49-2-305 (sex/maternity)',
+    suggestedAlternative: 'all welcome',
+  },
 ];
 
 // --- Age (Montana-specific) ---
@@ -1337,6 +1377,30 @@ const ageTerms: ProhibitedTerm[] = [
     shortExplanation: 'Excludes retirees and younger people',
     law: 'MCA § 49-2-305',
     suggestedAlternative: 'income requirements apply',
+  },
+  {
+    term: 'retired couples only',
+    category: 'age',
+    severity: 'hard',
+    shortExplanation: 'Excludes non-retired and non-coupled applicants based on age and marital status',
+    law: 'MCA § 49-2-305 (age)',
+    suggestedAlternative: 'all welcome',
+  },
+  {
+    term: 'must be 25 or older to apply',
+    category: 'age',
+    severity: 'hard',
+    shortExplanation: 'Explicit age restriction in housing',
+    law: 'MCA § 49-2-305 (age)',
+    suggestedAlternative: 'remove age requirement',
+  },
+  {
+    term: 'recently retired? this is your dream home',
+    category: 'age',
+    severity: 'soft',
+    shortExplanation: 'Targets specific age demographic',
+    law: 'MCA § 49-2-305 (age)',
+    suggestedAlternative: 'peaceful retreat for all',
   },
 ];
 
@@ -1537,6 +1601,30 @@ const creedTerms: ProhibitedTerm[] = [
     shortExplanation: 'Creed requirement for housing (conservative compliance interpretation — creed coverage of political worldview is not explicitly established in MT housing case law)',
     law: 'MCA § 49-2-305',
     suggestedAlternative: 'energy-efficient home with solar panels',
+  },
+  {
+    term: 'traditional Montana values',
+    category: 'creed',
+    severity: 'hard',
+    shortExplanation: 'Implies creed/worldview requirement for housing (conservative compliance interpretation — creed coverage of political worldview is not explicitly established in MT housing case law)',
+    law: 'MCA § 49-2-305 (creed)',
+    suggestedAlternative: 'welcoming community',
+  },
+  {
+    term: 'shared values community',
+    category: 'creed',
+    severity: 'soft',
+    shortExplanation: 'Implies ideological conformity requirement',
+    law: 'MCA § 49-2-305 (creed)',
+    suggestedAlternative: 'active community',
+  },
+  {
+    term: 'no political signs allowed',
+    category: 'creed',
+    severity: 'soft',
+    shortExplanation: 'Restricting political expression may implicate creed protections',
+    law: 'MCA § 49-2-305 (creed)',
+    suggestedAlternative: 'remove from property advertising',
   },
 ];
 
