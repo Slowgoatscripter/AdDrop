@@ -67,6 +67,35 @@ jest.mock('@/lib/quality', () => ({
   })),
 }));
 
+// Mock compliance agent to avoid complex dependencies
+jest.mock('@/lib/compliance/agent', () => ({
+  checkComplianceWithAgent: jest.fn().mockImplementation((campaign) => {
+    // Check if campaign contains prohibited terms
+    const content = JSON.stringify(campaign);
+    const hasViolations = content.includes('exclusive neighborhood') || content.includes('family-friendly');
+
+    if (hasViolations) {
+      return Promise.resolve({
+        platforms: [{ platformId: 'twitter', verdict: 'non-compliant', violations: [{ term: 'exclusive neighborhood' }], autoFixes: [] }],
+        campaignVerdict: 'non-compliant',
+        violations: [{ term: 'exclusive neighborhood' }],
+        autoFixes: [],
+        totalViolations: 1,
+        totalAutoFixes: 0,
+      });
+    }
+
+    return Promise.resolve({
+      platforms: [],
+      campaignVerdict: 'compliant',
+      violations: [],
+      autoFixes: [],
+      totalViolations: 0,
+      totalAutoFixes: 0,
+    });
+  }),
+}));
+
 import { generateCampaign, GenerateOptions } from '../generate';
 import { scoreAllPlatformQuality } from '@/lib/quality';
 
@@ -568,5 +597,75 @@ describe('generateCampaign', () => {
 
     expect(result.twitter).toBeDefined();
     expect(result.selectedPlatforms).toEqual(['twitter']);
+  });
+
+  // --- Quality Pipeline Integration Tests ---
+
+  test('full quality pipeline executes in correct order with voice-authenticity', async () => {
+    // Import mocked quality functions to access them
+    const {
+      checkAllPlatformQuality,
+      scoreAllPlatformQuality,
+      mergeQualityResults,
+      autoFixQuality,
+    } = require('@/lib/quality');
+
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockAIResponse) } }],
+    });
+
+    const options: GenerateOptions = {
+      tone: 'professional',
+      demographic: 'investors',
+    };
+
+    const result = await generateCampaign(mockListing, options);
+
+    // 1. Verify checkAllPlatformQuality was called (regex format check)
+    expect(checkAllPlatformQuality).toHaveBeenCalledWith(
+      expect.objectContaining({
+        listing: mockListing,
+        id: expect.any(String),
+      })
+    );
+
+    // 2. Verify scoreAllPlatformQuality was called with tone parameter (AI scoring with voice-authenticity)
+    expect(scoreAllPlatformQuality).toHaveBeenCalledWith(
+      expect.objectContaining({
+        listing: mockListing,
+        id: expect.any(String),
+      }),
+      mockListing,
+      'investors', // demographic
+      'professional' // tone parameter for voice-authenticity
+    );
+
+    // 3. Verify mergeQualityResults was called with both regex and AI results
+    expect(mergeQualityResults).toHaveBeenCalledWith(
+      { platforms: [], totalIssues: 0 }, // regex result
+      { platforms: [], totalIssues: 0 }  // AI result
+    );
+
+    // 4. Verify autoFixQuality was called with the merged result
+    expect(autoFixQuality).toHaveBeenCalledWith(
+      expect.objectContaining({
+        listing: mockListing,
+        id: expect.any(String),
+      }),
+      { platforms: [], totalIssues: 0 } // merged result
+    );
+
+    // 5. Verify the final campaign has qualityResult populated
+    expect(result.qualityResult).toBeDefined();
+    expect(result.qualityResult).toEqual({ platforms: [], totalIssues: 0 });
+
+    // 6. Verify compliance check runs after quality (unchanged)
+    expect(result.complianceResult).toBeDefined();
+    expect(result.complianceResult).toHaveProperty('campaignVerdict');
+
+    // Verify call order: checkAllPlatformQuality should be called before scoreAllPlatformQuality
+    const checkCallOrder = (checkAllPlatformQuality as jest.Mock).mock.invocationCallOrder[0];
+    const scoreCallOrder = (scoreAllPlatformQuality as jest.Mock).mock.invocationCallOrder[0];
+    expect(checkCallOrder).toBeLessThan(scoreCallOrder);
   });
 });
