@@ -71,20 +71,17 @@ This mirrors the federal FHA Section 804(c) language but covers the additional M
 ### Additional State-Level Protections
 Montana agents and advertisers must comply with BOTH federal AND state law. Where Montana law is more protective (marital status, age, creed), state law controls. An ad that is legal under federal law may still violate Montana law.
 
-### Enforcement and Penalties (MCA § 49-2-510)
+### Penalties
 
-| Violation | Maximum Civil Penalty |
-|-----------|---------------------|
-| First offense (no prior adjudication) | **$10,000** |
-| One or more prior violations within 5 years | **$25,000** |
-| Two or more prior violations within 7 years | **$50,000** |
+**Montana State Penalties (Board of Realty Regulation):**
+- Discretionary, up to $1,000 per violation
 
-Additional remedies available:
-- Compensatory damages (actual losses, emotional distress)
-- Injunctive relief (requiring compliance, stopping discriminatory practices)
-- Attorney's fees and costs
-- Mandatory fair housing training
-- Monitoring and reporting requirements
+**Federal FHA Civil Penalties (2025 inflation-adjusted):**
+- First offense (no prior adjudication): up to $26,262
+- One or more prior violations within 5 years: up to $65,654
+- Two or more prior violations within 7 years: up to $131,308
+
+Plus compensatory damages, attorney's fees, and injunctive relief under both state and federal law.
 
 ### Complaint Process
 - Complaints filed with the **Montana Human Rights Bureau**

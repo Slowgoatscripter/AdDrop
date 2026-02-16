@@ -447,7 +447,7 @@ const disabilityTerms: ProhibitedTerm[] = [
     category: 'disability',
     severity: 'hard',
     shortExplanation: 'Outdated and offensive term for people with disabilities',
-    law: 'Fair Housing Act §3604(c)(f)',
+    law: '42 U.S.C. § 3604(c); 42 U.S.C. § 3604(f)',
     suggestedAlternative: 'accessible',
   },
   {
@@ -835,7 +835,7 @@ const raceColorNationalOriginTerms: ProhibitedTerm[] = [
     category: 'race-color-national-origin',
     severity: 'soft',
     shortExplanation: 'Disparate impact on race; illegal in many jurisdictions',
-    law: '42 U.S.C. § 3604(c)',
+    law: '42 U.S.C. § 3604(c) (disparate impact theory)',
     suggestedAlternative: 'remove entirely',
   },
   {
@@ -1551,19 +1551,11 @@ const creedTerms: ProhibitedTerm[] = [
 // --- Economic Exclusion ---
 const economicExclusionTerms: ProhibitedTerm[] = [
   {
-    term: 'no section 8',
-    category: 'economic-exclusion',
-    severity: 'hard',
-    shortExplanation: 'Refusing Section 8 vouchers disproportionately affects protected classes',
-    law: 'Fair Housing Act §3604(c); state/local source-of-income protections',
-    suggestedAlternative: 'income verification required',
-  },
-  {
     term: 'no vouchers',
     category: 'economic-exclusion',
-    severity: 'hard',
+    severity: 'soft',
     shortExplanation: 'Refusing housing vouchers is discriminatory in many jurisdictions',
-    law: 'Fair Housing Act §3604(c); local source-of-income protections',
+    law: '42 U.S.C. § 3604(c) (disparate impact theory)',
     suggestedAlternative: 'income verification required',
   },
   {
