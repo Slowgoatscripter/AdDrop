@@ -6,6 +6,7 @@ import type { ScanResponse } from '@/lib/types/compliance-qa'
 
 const STATES = [
   { code: 'MT', name: 'Montana' },
+  { code: 'OH', name: 'Ohio' },
 ]
 
 const PLATFORMS = [

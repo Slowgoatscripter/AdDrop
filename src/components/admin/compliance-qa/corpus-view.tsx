@@ -84,13 +84,13 @@ const RISK_CATEGORY_OPTIONS = [
 
 const INITIAL_FORM = {
   name: '',
-  state: 'MT',
+  state: '',
   risk_category: 'clean',
   is_seed: false,
   tags: '',
   street: '',
   city: '',
-  addressState: 'MT',
+  addressState: '',
   zip: '',
   price: '',
   beds: '',
