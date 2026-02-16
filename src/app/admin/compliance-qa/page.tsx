@@ -4,9 +4,9 @@ import { QATabs } from '@/components/admin/compliance-qa/qa-tabs'
 export default async function ComplianceQAPage() {
   const supabase = await createClient()
 
-  const [{ data: ads }, { data: runs }] = await Promise.all([
+  const [{ data: properties }, { data: runs }] = await Promise.all([
     supabase
-      .from('compliance_test_ads')
+      .from('compliance_test_properties')
       .select('*')
       .order('created_at', { ascending: false }),
     supabase
@@ -19,7 +19,7 @@ export default async function ComplianceQAPage() {
   return (
     <div>
       <h1 className="text-xl font-bold text-foreground mb-6">Compliance QA</h1>
-      <QATabs initialAds={ads || []} initialRuns={runs || []} />
+      <QATabs initialProperties={properties || []} initialRuns={runs || []} />
     </div>
   )
 }

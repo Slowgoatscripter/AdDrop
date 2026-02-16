@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { FlaskConical, Database, Play, BarChart3 } from 'lucide-react'
-// TODO: update for new compliance QA types (Task 12)
-import type { ComplianceTestRun } from '@/lib/types/compliance-qa'
+import type { ComplianceTestProperty, ComplianceTestRun } from '@/lib/types/compliance-qa'
 import { ScannerView } from './scanner-view'
 import { CorpusView } from './corpus-view'
 import { RunnerView } from './runner-view'
@@ -11,7 +10,7 @@ import { ScorecardView } from './scorecard-view'
 
 const tabs = [
   { id: 'scanner', label: 'Ad Hoc Scanner', icon: FlaskConical },
-  { id: 'corpus', label: 'Test Corpus', icon: Database },
+  { id: 'corpus', label: 'Properties', icon: Database },
   { id: 'runner', label: 'Suite Runner', icon: Play },
   { id: 'scorecard', label: 'Scorecard', icon: BarChart3 },
 ] as const
@@ -19,20 +18,20 @@ const tabs = [
 type TabId = (typeof tabs)[number]['id']
 
 interface QATabsProps {
-  initialAds: any[]
+  initialProperties: ComplianceTestProperty[]
   initialRuns: ComplianceTestRun[]
 }
 
-export function QATabs({ initialAds, initialRuns }: QATabsProps) {
+export function QATabs({ initialProperties, initialRuns }: QATabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>('scanner')
-  const [ads, setAds] = useState(initialAds)
+  const [properties, setProperties] = useState(initialProperties)
   const [runs, setRuns] = useState(initialRuns)
 
-  const refreshAds = async () => {
+  const refreshProperties = async () => {
     const res = await fetch('/api/admin/compliance-qa/corpus')
     if (res.ok) {
       const data = await res.json()
-      setAds(data.ads)
+      setProperties(data.properties)
     }
   }
 
@@ -65,53 +64,39 @@ export function QATabs({ initialAds, initialRuns }: QATabsProps) {
       </div>
 
       {/* Tab content */}
-      {activeTab === 'scanner' && (
-        <ScannerView
-          onSaveToCorpus={async (ad) => {
-            const res = await fetch('/api/admin/compliance-qa/corpus', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(ad),
-            })
-            if (!res.ok) throw new Error('Failed to save')
-            await refreshAds()
-          }}
-        />
-      )}
+      {activeTab === 'scanner' && <ScannerView />}
       {activeTab === 'corpus' && (
         <CorpusView
-          ads={ads}
+          properties={properties}
           onDelete={async (id) => {
             await fetch(`/api/admin/compliance-qa/corpus/${id}`, { method: 'DELETE' })
-            await refreshAds()
+            await refreshProperties()
           }}
-          onDuplicate={async (ad) => {
+          onDuplicate={async (property) => {
             await fetch('/api/admin/compliance-qa/corpus', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                state: ad.state,
-                name: `${ad.name} (copy)`,
-                text: ad.text,
-                expected_violations: ad.expected_violations,
-                is_clean: ad.is_clean,
-                tags: ad.tags,
-                source: ad.source,
+                name: `${property.name} (copy)`,
+                state: property.state,
+                listing_data: property.listing_data,
+                risk_category: property.risk_category,
+                tags: property.tags,
               }),
             })
-            await refreshAds()
+            await refreshProperties()
           }}
-          onRefresh={refreshAds}
+          onRefresh={refreshProperties}
         />
       )}
       {activeTab === 'runner' && (
         <RunnerView
-          ads={ads}
+          properties={properties}
           onRunComplete={refreshRuns}
         />
       )}
       {activeTab === 'scorecard' && (
-        <ScorecardView ads={ads} runs={runs} />
+        <ScorecardView properties={properties} runs={runs} />
       )}
     </div>
   )
