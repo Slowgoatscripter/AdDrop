@@ -8,7 +8,7 @@ export {
 } from './engine';
 
 // Re-export rules
-export { qualityRules, platformFormats } from './rules';
+export { formattingRules, platformFormats } from './rules';
 
 // Re-export server-only doc loader
 export { loadQualityDocs, buildQualityCheatSheet } from './docs';

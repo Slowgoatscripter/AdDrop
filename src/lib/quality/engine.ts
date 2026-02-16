@@ -6,7 +6,7 @@ import {
   PlatformFormat,
 } from '@/lib/types/quality';
 import { CampaignKit } from '@/lib/types/campaign';
-import { qualityRules, platformFormats } from './rules';
+import { formattingRules, platformFormats } from './rules';
 
 /**
  * Build a word-boundary regex for a quality rule pattern.
@@ -57,7 +57,7 @@ export function findQualityIssues(
     return [];
   }
 
-  const activeRules = rules || qualityRules;
+  const activeRules = rules || formattingRules;
   const issues: QualityIssue[] = [];
 
   for (const rule of activeRules) {

@@ -5,7 +5,7 @@ import {
   checkAllPlatformQuality,
   extractPlatformTexts,
 } from './engine';
-import { qualityRules, platformFormats } from './rules';
+import { formattingRules, platformFormats } from './rules';
 import { buildQualityCheatSheet } from './docs';
 import { QualityRule } from '@/lib/types/quality';
 import { CampaignKit } from '@/lib/types/campaign';
@@ -64,15 +64,19 @@ function buildMockCampaign(overrides: Partial<CampaignKit> = {}): CampaignKit {
 }
 
 // ============================
-// Quality Rules Config Tests
+// Formatting Rules Config Tests
 // ============================
-describe('Quality Rules', () => {
-  test('exports 80+ quality rules', () => {
-    expect(qualityRules.length).toBeGreaterThanOrEqual(80);
+describe('Formatting Rules', () => {
+  test('exports only formatting rules (no language rules)', () => {
+    expect(formattingRules.length).toBeGreaterThanOrEqual(4);
+    expect(formattingRules.length).toBeLessThan(10);
+    for (const rule of formattingRules) {
+      expect(rule.category).toBe('formatting');
+    }
   });
 
   test('all rules have required fields', () => {
-    for (const rule of qualityRules) {
+    for (const rule of formattingRules) {
       expect(rule.pattern).toBeTruthy();
       expect(rule.category).toBeTruthy();
       expect(['required', 'recommended']).toContain(rule.priority);
@@ -81,22 +85,23 @@ describe('Quality Rules', () => {
     }
   });
 
-  test('rules cover expected subcategories', () => {
-    const subcategories = new Set(qualityRules.map(r => r.subcategory).filter(Boolean));
-    expect(subcategories).toContain('vague-praise');
-    expect(subcategories).toContain('euphemism');
-    expect(subcategories).toContain('pressure-tactic');
-    expect(subcategories).toContain('assumption');
-    expect(subcategories).toContain('meaningless-superlative');
-    expect(subcategories).toContain('ai-slop');
-    expect(subcategories).toContain('avoid-word');
+  test('language rules are no longer exported', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const rules = require('./rules');
+    expect(rules.qualityRules).toBeUndefined();
+    expect(rules.formattingRules).toBeDefined();
+    expect(rules.platformFormats).toBeDefined();
   });
 
-  test('has both required and recommended priority rules', () => {
-    const required = qualityRules.filter(r => r.priority === 'required');
-    const recommended = qualityRules.filter(r => r.priority === 'recommended');
-    expect(required.length).toBeGreaterThan(0);
-    expect(recommended.length).toBeGreaterThan(0);
+  test('no language subcategories present in formatting rules', () => {
+    const languageSubcategories = [
+      'vague-praise', 'euphemism', 'pressure-tactic', 'assumption',
+      'meaningless-superlative', 'ai-slop', 'avoid-word', 'weak-cta',
+    ];
+    const subcategories = new Set(formattingRules.map(r => r.subcategory).filter(Boolean));
+    for (const langSub of languageSubcategories) {
+      expect(subcategories).not.toContain(langSub);
+    }
   });
 });
 
@@ -148,69 +153,6 @@ describe('findQualityIssues', () => {
     expect(findQualityIssues('   ', 'test')).toEqual([]);
   });
 
-  test('detects vague praise', () => {
-    const issues = findQualityIssues(
-      'This home has great potential for the right buyer.',
-      'instagram.professional'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-    expect(issues[0].category).toBe('anti-pattern');
-    expect(issues[0].source).toBe('regex');
-  });
-
-  test('detects euphemisms', () => {
-    const issues = findQualityIssues(
-      'A cozy cottage with rustic charm.',
-      'instagram.professional'
-    );
-    const euphemisms = issues.filter(i => i.issue.toLowerCase().includes('cozy') || i.issue.toLowerCase().includes('small'));
-    expect(euphemisms.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('detects pressure tactics', () => {
-    const issues = findQualityIssues(
-      'Act fast before this one is gone! Don\'t miss out!',
-      'facebook.casual'
-    );
-    const pressureIssues = issues.filter(i => i.suggestedFix.length > 0);
-    expect(pressureIssues.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('detects AI slop words', () => {
-    const issues = findQualityIssues(
-      'This stunning home nestled in the hills boasts panoramic views.',
-      'instagram.luxury'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('detects buyer assumptions', () => {
-    const issues = findQualityIssues(
-      'Perfect for your family, you\'ll love the spacious backyard.',
-      'facebook.casual'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('includes context snippet', () => {
-    const issues = findQualityIssues(
-      'This property has great potential with amazing possibilities.',
-      'instagram.professional'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-    expect(issues[0].context).toBeTruthy();
-    expect(issues[0].context!.length).toBeGreaterThan(0);
-  });
-
-  test('includes suggested fix', () => {
-    const issues = findQualityIssues(
-      'This is a must see to appreciate kind of home.',
-      'facebook.professional'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-    expect(issues[0].suggestedFix).toBeTruthy();
-  });
-
   test('respects platform filter on rules', () => {
     const platformRule: QualityRule = {
       pattern: 'test-platform-only',
@@ -228,12 +170,19 @@ describe('findQualityIssues', () => {
     expect(fbIssues.length).toBe(0);
   });
 
-  test('detects multiple issues in same text', () => {
-    const issues = findQualityIssues(
-      'This cozy dream home boasts endless possibilities. Act fast!',
-      'instagram.professional'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(2);
+  test('accepts custom rules', () => {
+    const customRules: QualityRule[] = [
+      {
+        pattern: 'custom test pattern',
+        category: 'anti-pattern',
+        priority: 'required',
+        shortExplanation: 'Custom test issue',
+        suggestedFix: 'Fix it',
+      },
+    ];
+    const issues = findQualityIssues('This has a custom test pattern inside.', 'instagram.professional', customRules);
+    expect(issues.length).toBe(1);
+    expect(issues[0].issue).toBe('Custom test issue');
   });
 });
 
@@ -386,21 +335,6 @@ describe('checkAllPlatformQuality', () => {
     expect(result.improvementsApplied).toBe(0);
   });
 
-  test('detects quality issues in instagram text', () => {
-    const campaign = buildMockCampaign({
-      instagram: {
-        professional: 'This stunning home nestled in the hills has great potential. Must see to appreciate!',
-        casual: 'Schedule a tour of this 3-bed home.',
-        luxury: 'Schedule a tour of this 3-bed home.',
-      },
-    });
-    const result = checkAllPlatformQuality(campaign);
-
-    const igPro = result.platforms.find(p => p.platform === 'instagram.professional');
-    expect(igPro).toBeDefined();
-    expect(igPro!.issues.length).toBeGreaterThanOrEqual(1);
-  });
-
   test('detects formatting abuse across campaign', () => {
     const campaign = buildMockCampaign({
       twitter: 'AMAZING HOME!!! BEST VIEWS EVER!!! ACT NOW!!!',
@@ -426,11 +360,7 @@ describe('checkAllPlatformQuality', () => {
 
   test('aggregates required and recommended issue counts', () => {
     const campaign = buildMockCampaign({
-      instagram: {
-        professional: 'This stunning home has great potential. Must see to appreciate! Act fast!',
-        casual: 'Schedule a tour of this 3-bed home.',
-        luxury: 'Schedule a tour of this 3-bed home.',
-      },
+      twitter: 'AMAZING HOME!!! BEST VIEWS EVER!!! ACT NOW!!!',
     });
     const result = checkAllPlatformQuality(campaign);
 
@@ -464,12 +394,10 @@ describe('checkAllPlatformQuality', () => {
 // buildQualityCheatSheet Tests
 // ============================
 describe('buildQualityCheatSheet', () => {
-  test('generates cheat sheet with subcategory sections', () => {
+  test('generates cheat sheet with formatting section', () => {
     const sheet = buildQualityCheatSheet();
     expect(sheet).toContain('Ad Quality Cheat Sheet');
-    expect(sheet).toContain('Vague Praise');
-    expect(sheet).toContain('Euphemism');
-    expect(sheet).toContain('MUST AVOID');
+    expect(sheet).toContain('Formatting');
   });
 
   test('includes demographic guidance when specified', () => {

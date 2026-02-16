@@ -4,7 +4,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { QualityRule } from '@/lib/types/quality';
-import { qualityRules } from './rules';
+import { formattingRules } from './rules';
 
 /** Doc paths organized by section */
 const qualityDocPaths = {
@@ -71,7 +71,7 @@ export function buildQualityCheatSheet(options?: {
 }): string {
   const bySubcategory = new Map<string, QualityRule[]>();
 
-  for (const rule of qualityRules) {
+  for (const rule of formattingRules) {
     const key = rule.subcategory || rule.category;
     if (!bySubcategory.has(key)) {
       bySubcategory.set(key, []);
