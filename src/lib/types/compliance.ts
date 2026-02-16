@@ -7,7 +7,7 @@ export type ViolationCategory =
   | 'sex-gender'
   | 'age'
   | 'marital-status'
-  | 'political-beliefs'
+  | 'creed'
   | 'economic-exclusion'
   | 'misleading-claims';
 

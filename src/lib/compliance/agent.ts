@@ -63,7 +63,7 @@ Return a JSON object with this exact structure:
     {
       "platform": "string",
       "term": "string (exact term found)",
-      "category": "steering" | "familial-status" | "disability" | "race-color-national-origin" | "religion" | "sex-gender" | "age" | "marital-status" | "political-beliefs" | "economic-exclusion" | "misleading-claims",
+      "category": "steering" | "familial-status" | "disability" | "race-color-national-origin" | "religion" | "sex-gender" | "age" | "marital-status" | "creed" | "economic-exclusion" | "misleading-claims",
       "severity": "hard" | "soft",
       "explanation": "string",
       "law": "string",
@@ -176,7 +176,7 @@ Return a JSON object with this exact structure:
     {
       "platform": "string",
       "term": "string (exact term found)",
-      "category": "steering" | "familial-status" | "disability" | "race-color-national-origin" | "religion" | "sex-gender" | "age" | "marital-status" | "political-beliefs" | "economic-exclusion" | "misleading-claims",
+      "category": "steering" | "familial-status" | "disability" | "race-color-national-origin" | "religion" | "sex-gender" | "age" | "marital-status" | "creed" | "economic-exclusion" | "misleading-claims",
       "severity": "hard" | "soft",
       "explanation": "string",
       "law": "string",

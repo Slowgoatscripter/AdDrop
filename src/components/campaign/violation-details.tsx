@@ -20,7 +20,7 @@ const categoryColors: Record<string, string> = {
   'sex-gender': 'bg-pink-100 text-pink-800',
   'age': 'bg-cyan-100 text-cyan-800',
   'marital-status': 'bg-violet-100 text-violet-800',
-  'political-beliefs': 'bg-gray-100 text-gray-800',
+  'creed': 'bg-gray-100 text-gray-800',
   'economic-exclusion': 'bg-yellow-100 text-yellow-800',
   'misleading-claims': 'bg-rose-100 text-rose-800',
 };
@@ -34,7 +34,7 @@ const categoryLabels: Record<string, string> = {
   'sex-gender': 'Sex / Gender',
   'age': 'Age',
   'marital-status': 'Marital Status',
-  'political-beliefs': 'Political Beliefs',
+  'creed': 'Creed',
   'economic-exclusion': 'Economic Exclusion',
   'misleading-claims': 'Misleading Claims',
 };

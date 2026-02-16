@@ -11,7 +11,7 @@ export const settingsDefaults: Record<string, unknown> = {
   'compliance.max_description_length': 1000,
   'compliance.categories': [
     'steering', 'familial-status', 'disability', 'race-color-national-origin',
-    'religion', 'sex-gender', 'age', 'marital-status', 'political-beliefs',
+    'religion', 'sex-gender', 'age', 'marital-status', 'creed',
     'economic-exclusion', 'misleading-claims',
   ],
   'landing.hero_title_prefix': 'Ad',

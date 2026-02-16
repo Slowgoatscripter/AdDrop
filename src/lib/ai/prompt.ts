@@ -89,7 +89,7 @@ const categoryLabels: Record<ViolationCategory, string> = {
   'sex-gender': 'Sex & Gender',
   'age': 'Age',
   'marital-status': 'Marital Status',
-  'political-beliefs': 'Political Beliefs',
+  'creed': 'Creed',
   'economic-exclusion': 'Economic Exclusion',
   'misleading-claims': 'Misleading Claims',
 };

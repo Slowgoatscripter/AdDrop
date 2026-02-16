@@ -13,7 +13,7 @@ const CATEGORIES = [
   { key: 'sex-gender', label: 'Sex & Gender' },
   { key: 'age', label: 'Age' },
   { key: 'marital-status', label: 'Marital Status' },
-  { key: 'political-beliefs', label: 'Political Beliefs' },
+  { key: 'creed', label: 'Creed (includes political beliefs)' },
   { key: 'economic-exclusion', label: 'Economic Exclusion' },
   { key: 'misleading-claims', label: 'Misleading Claims' },
 ] as const
