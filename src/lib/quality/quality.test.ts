@@ -5,9 +5,10 @@ import {
   checkAllPlatformQuality,
   extractPlatformTexts,
 } from './engine';
+import { autoFixTextRegex, autoFixQuality } from './auto-fix';
 import { formattingRules, platformFormats } from './rules';
 import { buildQualityCheatSheet } from './docs';
-import { QualityRule } from '@/lib/types/quality';
+import { QualityIssue, QualityRule } from '@/lib/types/quality';
 import { CampaignKit } from '@/lib/types/campaign';
 
 // Mock loadQualityDocs to avoid file system access in tests
@@ -435,6 +436,118 @@ describe('checkAllPlatformQuality', () => {
     const twitterResult = result.platforms.find(p => p.platform === 'twitter');
     expect(twitterResult!.issues.length).toBeGreaterThanOrEqual(1);
     expect(twitterResult!.issues[0].issue).toBe('Custom test issue');
+  });
+});
+
+// ============================
+// Auto-Fix Tests
+// ============================
+describe('autoFixTextRegex', () => {
+  test('converts ALL CAPS to title case', () => {
+    const issues: QualityIssue[] = [{
+      category: 'formatting',
+      issue: 'Excessive ALL CAPS usage',
+      suggestedFix: 'Use title case',
+      priority: 'required',
+      source: 'regex',
+      platform: 'test',
+    }];
+    const result = autoFixTextRegex('THIS BEAUTIFUL HOME HAS VIEWS', issues);
+    expect(result).toBe('This Beautiful Home Has Views');
+    expect(issues[0].fixedText).toBeDefined();
+  });
+
+  test('preserves common abbreviations in ALL CAPS fix', () => {
+    const issues: QualityIssue[] = [{
+      category: 'formatting',
+      issue: 'Excessive ALL CAPS usage',
+      suggestedFix: 'Use title case',
+      priority: 'required',
+      source: 'regex',
+      platform: 'test',
+    }];
+    const result = autoFixTextRegex('GREAT HOME NEAR MLS WITH HOA AND HVAC', issues);
+    expect(result).toContain('MLS');
+    expect(result).toContain('HOA');
+    expect(result).toContain('HVAC');
+  });
+
+  test('fixes excessive exclamation marks', () => {
+    const issues: QualityIssue[] = [{
+      category: 'formatting',
+      issue: 'Excessive exclamation marks',
+      suggestedFix: 'Use single exclamation',
+      priority: 'required',
+      source: 'regex',
+      platform: 'test',
+    }];
+    const result = autoFixTextRegex('Amazing home!!! Must see!!!', issues);
+    expect(result).toBe('Amazing home! Must see!');
+    expect(issues[0].fixedText).toBeDefined();
+  });
+
+  test('fixes excessive ellipsis', () => {
+    const issues: QualityIssue[] = [{
+      category: 'formatting',
+      issue: 'Excessive ellipsis usage',
+      suggestedFix: 'Use three dots',
+      priority: 'required',
+      source: 'regex',
+      platform: 'test',
+    }];
+    const result = autoFixTextRegex('Wait for it..... amazing', issues);
+    expect(result).toBe('Wait for it... amazing');
+    expect(issues[0].fixedText).toBeDefined();
+  });
+
+  test('returns text unchanged when no matching issues', () => {
+    const result = autoFixTextRegex('Clean text here.', []);
+    expect(result).toBe('Clean text here.');
+  });
+});
+
+describe('autoFixQuality', () => {
+  test('does not make any API calls', async () => {
+    const campaign = buildMockCampaign({
+      twitter: 'AMAZING HOME!!! BEST VIEWS EVER!!!',
+    });
+    const qualityResult = checkAllPlatformQuality(campaign);
+
+    // If autoFixQuality tried to call OpenAI, it would throw since there's no mock.
+    // The fact that this resolves proves no API calls are made.
+    const { campaign: fixed } = await autoFixQuality(campaign, qualityResult);
+    expect(fixed).toBeDefined();
+  });
+
+  test('applies format fixes to campaign text', async () => {
+    const campaign = buildMockCampaign({
+      twitter: 'AMAZING HOME!!! BEST VIEWS!!! Schedule a tour',
+    });
+    const qualityResult = checkAllPlatformQuality(campaign);
+
+    const { campaign: fixed, qualityResult: updatedResult } = await autoFixQuality(campaign, qualityResult);
+
+    // The twitter text should have been fixed (caps + exclamation)
+    expect((fixed as any).twitter).not.toBe(campaign.twitter);
+    expect((fixed as any).twitter).not.toContain('!!!');
+    expect(updatedResult.improvementsApplied).toBeGreaterThan(0);
+  });
+
+  test('does not mutate the original campaign', async () => {
+    const original = 'AMAZING HOME!!! Schedule a tour';
+    const campaign = buildMockCampaign({ twitter: original });
+    const qualityResult = checkAllPlatformQuality(campaign);
+
+    await autoFixQuality(campaign, qualityResult);
+    expect(campaign.twitter).toBe(original);
+  });
+});
+
+describe('autoFixTextAI is removed', () => {
+  test('auto-fix module does not export autoFixTextAI', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const autoFix = require('./auto-fix');
+    expect(autoFix.autoFixTextAI).toBeUndefined();
   });
 });
 
