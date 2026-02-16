@@ -1,18 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { FlaskConical, Database, Play, BarChart3 } from 'lucide-react'
+import { FlaskConical, Database, Play, BarChart3, History } from 'lucide-react'
 import type { ComplianceTestProperty, ComplianceTestRun } from '@/lib/types/compliance-qa'
 import { ScannerView } from './scanner-view'
 import { CorpusView } from './corpus-view'
 import { RunnerView } from './runner-view'
 import { ScorecardView } from './scorecard-view'
+import { HistoryView } from './history-view'
 
 const tabs = [
   { id: 'scanner', label: 'Ad Hoc Scanner', icon: FlaskConical },
   { id: 'corpus', label: 'Properties', icon: Database },
   { id: 'runner', label: 'Suite Runner', icon: Play },
   { id: 'scorecard', label: 'Scorecard', icon: BarChart3 },
+  { id: 'history', label: 'Run History', icon: History },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
@@ -97,6 +99,9 @@ export function QATabs({ initialProperties, initialRuns }: QATabsProps) {
       )}
       {activeTab === 'scorecard' && (
         <ScorecardView properties={properties} runs={runs} />
+      )}
+      {activeTab === 'history' && (
+        <HistoryView runs={runs} onRefresh={refreshRuns} />
       )}
     </div>
   )

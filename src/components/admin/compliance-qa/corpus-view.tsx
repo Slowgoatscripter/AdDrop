@@ -19,8 +19,13 @@ import {
   Plus,
   X,
   Loader2,
+  Zap,
+  CheckCircle,
+  XCircle,
+  Eye,
+  ChevronUp,
 } from 'lucide-react'
-import type { ComplianceTestProperty } from '@/lib/types/compliance-qa'
+import type { ComplianceTestProperty, PropertySnapshot } from '@/lib/types/compliance-qa'
 
 interface CorpusViewProps {
   properties: ComplianceTestProperty[]
@@ -109,6 +114,10 @@ export function CorpusView({ properties, onDelete, onDuplicate, onRefresh }: Cor
   const [showAddForm, setShowAddForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [form, setForm] = useState(INITIAL_FORM)
+  const [snapshots, setSnapshots] = useState<Record<string, PropertySnapshot[]>>({})
+  const [generatingSnapshot, setGeneratingSnapshot] = useState<string | null>(null)
+  const [approvingSnapshot, setApprovingSnapshot] = useState<string | null>(null)
+  const [showSnapshotText, setShowSnapshotText] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Unique values for filters
@@ -153,8 +162,67 @@ export function CorpusView({ properties, onDelete, onDuplicate, onRefresh }: Cor
   const realCount = properties.length - seedCount
 
   function toggleExpand(id: string) {
-    setExpandedId(expandedId === id ? null : id)
-    setExpandedDescription(null)
+    if (expandedId === id) {
+      setExpandedId(null)
+      setExpandedDescription(null)
+    } else {
+      setExpandedId(id)
+      setExpandedDescription(null)
+      // Load snapshots when expanding
+      if (!snapshots[id]) {
+        fetchSnapshots(id)
+      }
+    }
+  }
+
+  async function fetchSnapshots(propertyId: string) {
+    try {
+      const res = await fetch(`/api/admin/compliance-qa/snapshots/${propertyId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setSnapshots((prev) => ({ ...prev, [propertyId]: data.snapshots || [] }))
+      }
+    } catch {
+      // Silently fail — snapshot section will show empty
+    }
+  }
+
+  async function handleGenerateSnapshot(propertyId: string) {
+    setGeneratingSnapshot(propertyId)
+    try {
+      const res = await fetch(`/api/admin/compliance-qa/snapshots/${propertyId}`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to generate snapshot')
+      }
+      await fetchSnapshots(propertyId)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to generate snapshot')
+    } finally {
+      setGeneratingSnapshot(null)
+    }
+  }
+
+  async function handleApproveSnapshot(propertyId: string, snapshotId: string, approved: boolean) {
+    setApprovingSnapshot(snapshotId)
+    try {
+      const res = await fetch(`/api/admin/compliance-qa/snapshots/${propertyId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ snapshotId, approved }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to update snapshot')
+      }
+      await fetchSnapshots(propertyId)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update snapshot')
+    } finally {
+      setApprovingSnapshot(null)
+    }
   }
 
   async function handleDelete(id: string) {
@@ -908,6 +976,147 @@ export function CorpusView({ properties, onDelete, onDuplicate, onRefresh }: Cor
                               </div>
                             </div>
                           )}
+
+                          {/* Snapshots */}
+                          <div className="border-t border-border pt-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                                <Zap className="w-3 h-3" /> Snapshots
+                              </p>
+                              <button
+                                onClick={() => handleGenerateSnapshot(property.id)}
+                                disabled={generatingSnapshot === property.id}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-gold text-background hover:bg-gold/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              >
+                                {generatingSnapshot === property.id ? (
+                                  <>
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    Generating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Zap className="w-3 h-3" />
+                                    Generate Snapshot
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            {snapshots[property.id]?.length ? (
+                              <div className="space-y-2">
+                                {snapshots[property.id].map((snapshot) => (
+                                  <div
+                                    key={snapshot.id}
+                                    className={`rounded-lg border p-3 ${
+                                      snapshot.approved
+                                        ? 'border-green-500/30 bg-green-500/5'
+                                        : 'border-border bg-card'
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        {snapshot.approved ? (
+                                          <CheckCircle className="w-4 h-4 text-green-400" />
+                                        ) : (
+                                          <XCircle className="w-4 h-4 text-muted-foreground" />
+                                        )}
+                                        <span className="text-xs text-foreground">
+                                          {new Date(snapshot.created_at).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                          })}
+                                        </span>
+                                        <span
+                                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                            snapshot.approved
+                                              ? 'bg-green-400/10 text-green-400'
+                                              : 'bg-muted/50 text-muted-foreground'
+                                          }`}
+                                        >
+                                          {snapshot.approved ? 'Approved' : 'Pending'}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {Object.keys(snapshot.generated_text).length} platforms
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          onClick={() =>
+                                            setShowSnapshotText(
+                                              showSnapshotText === snapshot.id ? null : snapshot.id
+                                            )
+                                          }
+                                          className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                                          title="View generated text"
+                                        >
+                                          {showSnapshotText === snapshot.id ? (
+                                            <ChevronUp className="w-4 h-4" />
+                                          ) : (
+                                            <Eye className="w-4 h-4" />
+                                          )}
+                                        </button>
+                                        {!snapshot.approved ? (
+                                          <button
+                                            onClick={() =>
+                                              handleApproveSnapshot(property.id, snapshot.id, true)
+                                            }
+                                            disabled={approvingSnapshot === snapshot.id}
+                                            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-green-400 hover:bg-green-400/10 transition-colors disabled:opacity-40"
+                                          >
+                                            <CheckCircle className="w-3 h-3" />
+                                            Approve
+                                          </button>
+                                        ) : (
+                                          <button
+                                            onClick={() =>
+                                              handleApproveSnapshot(property.id, snapshot.id, false)
+                                            }
+                                            disabled={approvingSnapshot === snapshot.id}
+                                            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-muted-foreground hover:bg-muted/50 transition-colors disabled:opacity-40"
+                                          >
+                                            <XCircle className="w-3 h-3" />
+                                            Revoke
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Expanded snapshot text */}
+                                    {showSnapshotText === snapshot.id && (
+                                      <div className="mt-3 space-y-2 border-t border-border pt-3">
+                                        {Object.entries(snapshot.generated_text).map(
+                                          ([platform, text]) => (
+                                            <details key={platform} className="group">
+                                              <summary className="cursor-pointer list-none rounded border border-border bg-background p-2 hover:bg-muted/30 transition-colors">
+                                                <div className="flex items-center justify-between">
+                                                  <span className="text-xs font-medium text-foreground">
+                                                    {platform}
+                                                  </span>
+                                                  <ChevronRight className="w-3 h-3 text-muted-foreground group-open:rotate-90 transition-transform" />
+                                                </div>
+                                              </summary>
+                                              <div className="mt-1 rounded border border-border bg-background p-2">
+                                                <p className="text-xs text-foreground whitespace-pre-wrap">
+                                                  {text}
+                                                </p>
+                                              </div>
+                                            </details>
+                                          )
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">
+                                No snapshots yet. Generate one to enable snapshot testing.
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>
