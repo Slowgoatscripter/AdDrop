@@ -51,15 +51,28 @@ function stripToRequestedPlatforms(
   return stripped;
 }
 
+export interface GenerateOptions {
+  platforms?: PlatformId[];
+  demographic?: string;
+  tone?: 'professional' | 'casual' | 'luxury';
+}
+
 export async function generateCampaign(
   listing: ListingData,
-  platforms?: PlatformId[]
+  platformsOrOptions?: PlatformId[] | GenerateOptions
 ): Promise<CampaignKit> {
+  // Support both legacy (platforms array) and new options-object signatures
+  const opts: GenerateOptions =
+    Array.isArray(platformsOrOptions)
+      ? { platforms: platformsOrOptions }
+      : platformsOrOptions ?? {};
+  const { platforms, demographic, tone } = opts;
   // undefined platforms = generate all (backward compatible, Review Fix #5)
   const targetPlatforms = platforms ?? ALL_PLATFORMS;
 
   const prompt = await buildGenerationPrompt(listing, undefined, undefined, {
     platforms: targetPlatforms,
+    demographic,
   });
 
   const maxTokens = getMaxCompletionTokens(targetPlatforms.length);
@@ -126,7 +139,7 @@ export async function generateCampaign(
   const regexQuality = checkAllPlatformQuality(campaign);
 
   // Run AI quality scoring (async — ~2-3 sec)
-  const aiQuality = await scoreAllPlatformQuality(campaign, listing);
+  const aiQuality = await scoreAllPlatformQuality(campaign, listing, demographic, tone);
 
   // Merge regex + AI quality results
   const mergedQuality = mergeQualityResults(regexQuality, aiQuality);

@@ -67,7 +67,8 @@ jest.mock('@/lib/quality', () => ({
   })),
 }));
 
-import { generateCampaign } from '../generate';
+import { generateCampaign, GenerateOptions } from '../generate';
+import { scoreAllPlatformQuality } from '@/lib/quality';
 
 describe('generateCampaign', () => {
   const mockListing: ListingData = {
@@ -513,5 +514,59 @@ describe('generateCampaign', () => {
     // Hallucinated platforms should be stripped
     expect(result.instagram).toBeUndefined();
     expect(result.facebook).toBeUndefined();
+  });
+
+  test('passes tone and demographic to scoreAllPlatformQuality', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockAIResponse) } }],
+    });
+
+    const options: GenerateOptions = {
+      tone: 'luxury',
+      demographic: 'first-time-buyers',
+    };
+
+    await generateCampaign(mockListing, options);
+
+    expect(scoreAllPlatformQuality).toHaveBeenCalledWith(
+      expect.objectContaining({ listing: mockListing }),
+      mockListing,
+      'first-time-buyers',
+      'luxury',
+    );
+  });
+
+  test('scoreAllPlatformQuality called without tone/demographic when not provided', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockAIResponse) } }],
+    });
+
+    await generateCampaign(mockListing);
+
+    expect(scoreAllPlatformQuality).toHaveBeenCalledWith(
+      expect.objectContaining({ listing: mockListing }),
+      mockListing,
+      undefined,
+      undefined,
+    );
+  });
+
+  test('legacy platforms array signature still works', async () => {
+    const subset: PlatformId[] = ['twitter'];
+    const subsetResponse = {
+      twitter: mockAIResponse.twitter,
+      hashtags: mockAIResponse.hashtags,
+      callsToAction: mockAIResponse.callsToAction,
+      targetingNotes: mockAIResponse.targetingNotes,
+      sellingPoints: mockAIResponse.sellingPoints,
+    };
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(subsetResponse) } }],
+    });
+
+    const result = await generateCampaign(mockListing, subset);
+
+    expect(result.twitter).toBeDefined();
+    expect(result.selectedPlatforms).toEqual(['twitter']);
   });
 });
