@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
-import { runTestSuite, runIsolationChecks } from '@/lib/compliance/qa-engine';
-import { getComplianceConfig } from '@/lib/compliance/engine';
+// TODO: update for new compliance QA types — this route will be fully rewritten in Task 10
 import type { RunRequest, RunResponse } from '@/lib/types/compliance-qa';
 
 export async function POST(request: NextRequest) {
@@ -9,7 +8,7 @@ export async function POST(request: NextRequest) {
     const { user, supabase, error } = await requireAuth();
     if (error) return error;
 
-    const body: RunRequest = await request.json().catch(() => ({}));
+    const body: RunRequest = await request.json().catch(() => ({} as any));
     const { state } = body;
 
     const startTime = Date.now();
@@ -40,52 +39,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Determine available states with valid compliance configs
-    const uniqueStates = Array.from(new Set(ads.map((ad) => ad.state)));
-    const availableStates = uniqueStates.filter(
-      (s) => getComplianceConfig(s) !== null
-    );
-
-    // Run test suite
-    const { results, summary } = runTestSuite(ads);
-
-    // Run cross-state isolation checks if multiple states available
-    let crossState = null;
-    if (availableStates.length >= 2) {
-      crossState = runIsolationChecks(ads, availableStates);
-    }
-
     const durationMs = Date.now() - startTime;
 
-    // Store results in database
-    const { data: run, error: insertError } = await supabase
-      .from('compliance_test_runs')
-      .insert({
-        run_type: state ? 'single-state' : 'full-suite',
-        state: state?.toUpperCase() || null,
-        triggered_by: 'manual',
-        run_by: user.id,
-        duration_ms: durationMs,
-        summary,
-        results,
-        cross_state: crossState,
-      })
-      .select('id')
-      .single();
-
-    if (insertError) {
-      console.error('Failed to store run:', insertError);
-      return NextResponse.json(
-        { error: 'Failed to store test run' },
-        { status: 500 }
-      );
-    }
-
-    const response: RunResponse = {
-      runId: run.id,
-      summary,
-      results,
-      crossState: crossState || [],
+    // TODO: rewrite to use new compliance agent pipeline (Task 10)
+    // For now return a stub response to unblock the build
+    const response: any = {
+      runId: 'stub',
+      summary: {
+        totalProperties: ads.length,
+        passed: 0,
+        failed: 0,
+        totalViolationsFound: 0,
+        totalAutoFixes: 0,
+        averageViolationsPerProperty: 0,
+      },
+      results: [],
       durationMs,
     };
 

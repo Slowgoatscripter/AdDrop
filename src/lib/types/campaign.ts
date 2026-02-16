@@ -1,4 +1,4 @@
-import { CampaignComplianceResult } from './compliance';
+import { ComplianceAgentResult } from './compliance';
 import { CampaignQualityResult } from './quality';
 
 export type AdTone = 'professional' | 'casual' | 'luxury';
@@ -82,7 +82,7 @@ export interface CampaignKit {
   homesComTrulia?: string;
   mlsDescription?: string;
   // Metadata
-  complianceResult: CampaignComplianceResult;
+  complianceResult: ComplianceAgentResult;
   qualityResult?: CampaignQualityResult;
   selectedPlatforms?: PlatformId[];
   stateCode?: string;

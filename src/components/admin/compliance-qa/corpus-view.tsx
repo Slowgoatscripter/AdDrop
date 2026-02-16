@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, Fragment } from 'react'
 import { Search, ChevronRight, ChevronDown, Copy, Trash2, Upload, Download } from 'lucide-react'
-import type { ComplianceTestAd } from '@/lib/types/compliance-qa'
+// TODO: update for new compliance QA types (Task 15)
 
 interface CorpusViewProps {
-  ads: ComplianceTestAd[]
+  ads: any[]
   onDelete: (id: string) => Promise<void>
-  onDuplicate: (ad: ComplianceTestAd) => Promise<void>
+  onDuplicate: (ad: any) => Promise<void>
   onRefresh: () => Promise<void>
 }
 
@@ -30,7 +30,7 @@ export function CorpusView({ ads, onDelete, onDuplicate, onRefresh }: CorpusView
       search === '' ||
       ad.name.toLowerCase().includes(search.toLowerCase()) ||
       ad.text.toLowerCase().includes(search.toLowerCase()) ||
-      ad.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()))
+      ad.tags.some((tag: string) => tag.toLowerCase().includes(search.toLowerCase()))
 
     const matchesState = stateFilter === 'all' || ad.state === stateFilter
 
@@ -71,7 +71,7 @@ export function CorpusView({ ads, onDelete, onDuplicate, onRefresh }: CorpusView
     }
   }
 
-  async function handleDuplicate(ad: ComplianceTestAd) {
+  async function handleDuplicate(ad: any) {
     try {
       await onDuplicate(ad)
     } catch (err) {
@@ -86,7 +86,7 @@ export function CorpusView({ ads, onDelete, onDuplicate, onRefresh }: CorpusView
     setIsImporting(true)
     try {
       const text = await file.text()
-      const imported = JSON.parse(text) as ComplianceTestAd[]
+      const imported = JSON.parse(text) as any[]
 
       if (!Array.isArray(imported)) {
         throw new Error('Invalid format: expected array of ads')
@@ -262,9 +262,9 @@ export function CorpusView({ ads, onDelete, onDuplicate, onRefresh }: CorpusView
               const isExpanded = expandedId === ad.id
 
               return (
-                <>
+                <Fragment key={ad.id}>
                   {/* Main row */}
-                  <tr key={ad.id} className="hover:bg-muted/30 transition-colors">
+                  <tr className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <button
                         onClick={() => toggleExpand(ad.id)}
@@ -299,7 +299,7 @@ export function CorpusView({ ads, onDelete, onDuplicate, onRefresh }: CorpusView
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
-                        {ad.tags.slice(0, 2).map((tag, i) => (
+                        {ad.tags.slice(0, 2).map((tag: string, i: number) => (
                           <span
                             key={i}
                             className="rounded-full bg-gold/10 px-2 py-0.5 text-xs text-gold"
@@ -351,7 +351,7 @@ export function CorpusView({ ads, onDelete, onDuplicate, onRefresh }: CorpusView
                                 Expected Violations
                               </p>
                               <div className="flex flex-wrap gap-2">
-                                {ad.expected_violations.map((v, i) => (
+                                {ad.expected_violations.map((v: any, i: number) => (
                                   <span
                                     key={i}
                                     className={`rounded-md border px-2 py-1 text-xs font-medium ${getSeverityColor(
@@ -370,7 +370,7 @@ export function CorpusView({ ads, onDelete, onDuplicate, onRefresh }: CorpusView
                             <div>
                               <p className="text-xs font-medium text-muted-foreground mb-2">Tags</p>
                               <div className="flex flex-wrap gap-1">
-                                {ad.tags.map((tag, i) => (
+                                {ad.tags.map((tag: string, i: number) => (
                                   <span
                                     key={i}
                                     className="rounded-full bg-gold/10 px-2 py-0.5 text-xs text-gold"
@@ -385,7 +385,7 @@ export function CorpusView({ ads, onDelete, onDuplicate, onRefresh }: CorpusView
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               )
             })}
 

@@ -1,81 +1,69 @@
-import type { ViolationCategory, ViolationSeverity, ComplianceViolation } from './compliance'
+import type { ComplianceAgentResult } from './compliance'
+import type { ListingData } from './listing'
 
-// --- Database row types ---
+// --- Test Properties (replaces ComplianceTestAd) ---
 
-export interface ComplianceTestAd {
+export interface ComplianceTestProperty {
   id: string
-  state: string
   name: string
-  text: string
-  expected_violations: ExpectedViolation[]
-  is_clean: boolean
+  state: string
+  listing_data: ListingData
+  risk_category: string // e.g., 'economic-exclusion', 'religion-steering', 'clean'
+  is_seed: boolean
   tags: string[]
-  source: string
   created_at: string
-  updated_at: string
   created_by: string | null
 }
 
-export interface ExpectedViolation {
-  term: string
-  category: ViolationCategory
-  severity: ViolationSeverity
+// --- Snapshots ---
+
+export interface PropertySnapshot {
+  id: string
+  property_id: string
+  generated_text: Record<string, string> // platform -> text
+  created_at: string
+  approved: boolean
 }
+
+// --- Test Runs ---
+
+export type TestRunMode = 'snapshot' | 'full-pipeline'
 
 export interface ComplianceTestRun {
   id: string
-  run_type: 'single-state' | 'full-suite' | 'ad-hoc'
+  run_type: 'single-state' | 'full-suite'
+  run_mode: TestRunMode
   state: string | null
   triggered_by: 'manual' | 'scheduled'
   run_by: string | null
   run_at: string
-  duration_ms: number | null
+  duration_ms: number
   summary: RunSummary
-  results: AdTestResult[]
-  cross_state: CrossStateResult[] | null
+  results: PropertyTestResult[]
   created_at: string
 }
 
 export interface RunSummary {
-  totalAds: number
+  totalProperties: number
   passed: number
   failed: number
-  falsePositives: number
-  missedViolations: number
-  coverage: CategoryCoverage[]
+  totalViolationsFound: number
+  totalAutoFixes: number
+  averageViolationsPerProperty: number
 }
 
-export interface CategoryCoverage {
-  category: ViolationCategory
-  testAdCount: number
-  covered: boolean
-}
-
-export interface AdTestResult {
-  adId: string
-  adName: string
+export interface PropertyTestResult {
+  propertyId: string
+  propertyName: string
   state: string
-  passed: boolean
-  expectedViolations: ExpectedViolation[]
-  actualViolations: ComplianceViolation[]
-  mismatches: ViolationMismatch[]
+  riskCategory: string
+  passed: boolean // final output is clean after auto-fix
+  complianceResult: ComplianceAgentResult
+  generatedText?: Record<string, string> // only in full-pipeline mode
+  qualityFixesApplied?: number // only in full-pipeline mode
 }
 
-export interface ViolationMismatch {
-  type: 'false-positive' | 'missed'
-  term: string
-  category: ViolationCategory
-  severity: ViolationSeverity
-}
-
-export interface CrossStateResult {
-  adId: string
-  adName: string
-  adState: string
-  testedAgainst: string
-  stateLeaks: ComplianceViolation[]
-  passed: boolean
-}
+// --- Scanner ---
 
 export interface ScanRequest {
   text: string
@@ -84,27 +72,27 @@ export interface ScanRequest {
 }
 
 export interface ScanResponse {
-  violations: ComplianceViolation[]
+  violations: ComplianceAgentResult['violations']
+  autoFixes: ComplianceAgentResult['autoFixes']
+  verdict: ComplianceAgentResult['campaignVerdict']
   summary: {
     total: number
     hard: number
     soft: number
-  }
-  layerBreakdown: {
-    state: ComplianceViolation[]
-    federal: ComplianceViolation[]
-    industry: ComplianceViolation[]
+    autoFixed: number
   }
 }
 
+// --- API Request/Response ---
+
 export interface RunRequest {
   state?: string
+  mode: TestRunMode
 }
 
 export interface RunResponse {
   runId: string
   summary: RunSummary
-  results: AdTestResult[]
-  crossState: CrossStateResult[]
+  results: PropertyTestResult[]
   durationMs: number
 }

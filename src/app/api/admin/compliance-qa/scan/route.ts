@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
-import { scanAd } from '@/lib/compliance/qa-engine';
+import { scanTextWithAgent } from '@/lib/compliance/agent';
+import { getComplianceSettings } from '@/lib/compliance/compliance-settings';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,18 +18,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = scanAd(
-      text,
-      state.toUpperCase(),
-      platform || 'general'
-    );
-
-    if (result === null) {
-      return NextResponse.json(
-        { error: 'State configuration not found' },
-        { status: 404 }
-      );
-    }
+    // TODO: update to use state parameter properly once multi-state support is added (Task 10)
+    const { config } = await getComplianceSettings();
+    const result = await scanTextWithAgent(text, state, platform, config);
 
     return NextResponse.json(result);
   } catch (error) {

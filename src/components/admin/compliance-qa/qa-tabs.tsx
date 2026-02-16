@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { FlaskConical, Database, Play, BarChart3 } from 'lucide-react'
-import type { ComplianceTestAd, ComplianceTestRun } from '@/lib/types/compliance-qa'
+// TODO: update for new compliance QA types (Task 12)
+import type { ComplianceTestRun } from '@/lib/types/compliance-qa'
 import { ScannerView } from './scanner-view'
 import { CorpusView } from './corpus-view'
 import { RunnerView } from './runner-view'
@@ -18,7 +19,7 @@ const tabs = [
 type TabId = (typeof tabs)[number]['id']
 
 interface QATabsProps {
-  initialAds: ComplianceTestAd[]
+  initialAds: any[]
   initialRuns: ComplianceTestRun[]
 }
 

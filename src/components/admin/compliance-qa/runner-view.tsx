@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import {
   Play,
   CheckCircle,
@@ -10,22 +10,18 @@ import {
   Shield,
   Loader2,
 } from 'lucide-react'
-import type {
-  ComplianceTestAd,
-  RunResponse,
-  AdTestResult,
-  CrossStateResult,
-} from '@/lib/types/compliance-qa'
+// TODO: update for new compliance QA types (Task 14)
+// Using any for RunResponse until this view is fully rewritten
 
 interface RunnerViewProps {
-  ads: ComplianceTestAd[]
+  ads: any[]
   onRunComplete: () => Promise<void>
 }
 
 export function RunnerView({ ads, onRunComplete }: RunnerViewProps) {
   const [runningState, setRunningState] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [results, setResults] = useState<RunResponse | null>(null)
+  const [results, setResults] = useState<any | null>(null)
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [crossStateExpanded, setCrossStateExpanded] = useState(false)
 
@@ -49,7 +45,7 @@ export function RunnerView({ ads, onRunComplete }: RunnerViewProps) {
         throw new Error(data.error || 'Run failed')
       }
 
-      const data: RunResponse = await res.json()
+      const data = await res.json()
       setResults(data)
       await onRunComplete()
     } catch (err) {
@@ -208,14 +204,13 @@ export function RunnerView({ ads, onRunComplete }: RunnerViewProps) {
                 </tr>
               </thead>
               <tbody>
-                {results.results.map((result) => {
+                {results.results.map((result: any) => {
                   const hasMismatches = result.mismatches.length > 0
                   const isExpanded = expandedRows.has(result.adId)
 
                   return (
-                    <>
+                    <Fragment key={result.adId}>
                       <tr
-                        key={result.adId}
                         className={`border-b border-border ${
                           !result.passed ? 'bg-red-500/5' : ''
                         }`}
@@ -265,7 +260,7 @@ export function RunnerView({ ads, onRunComplete }: RunnerViewProps) {
                         <tr>
                           <td colSpan={7} className="px-4 py-3 bg-accent/50">
                             <div className="space-y-1.5">
-                              {result.mismatches.map((mismatch, idx) => (
+                              {result.mismatches.map((mismatch: any, idx: number) => (
                                 <div
                                   key={idx}
                                   className={`flex items-center gap-3 px-3 py-2 rounded text-sm ${
@@ -289,7 +284,7 @@ export function RunnerView({ ads, onRunComplete }: RunnerViewProps) {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   )
                 })}
               </tbody>
@@ -308,11 +303,11 @@ export function RunnerView({ ads, onRunComplete }: RunnerViewProps) {
                   <span className="font-medium text-foreground">
                     Cross-State Isolation
                   </span>
-                  {results.crossState.every((r) => r.passed) ? (
+                  {results.crossState.every((r: any) => r.passed) ? (
                     <span className="text-sm text-emerald-300">All passed</span>
                   ) : (
                     <span className="text-sm text-red-300">
-                      {results.crossState.filter((r) => !r.passed).length} leaks
+                      {results.crossState.filter((r: any) => !r.passed).length} leaks
                       detected
                     </span>
                   )}
@@ -347,7 +342,7 @@ export function RunnerView({ ads, onRunComplete }: RunnerViewProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {results.crossState.map((check, idx) => (
+                      {results.crossState.map((check: any, idx: number) => (
                         <tr
                           key={idx}
                           className={`border-b border-border ${

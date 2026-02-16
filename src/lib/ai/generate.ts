@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { ListingData, CampaignKit, PlatformId, ALL_PLATFORMS } from '@/lib/types';
-import { checkAllPlatforms } from '@/lib/compliance/engine';
+import { checkComplianceWithAgent } from '@/lib/compliance/agent';
 import { getComplianceSettings } from '@/lib/compliance/compliance-settings';
 import { buildGenerationPrompt } from './prompt';
 import {
@@ -112,7 +112,7 @@ export async function generateCampaign(
     ...(gen.homesComTrulia ? { homesComTrulia: gen.homesComTrulia } : {}),
     ...(gen.mlsDescription ? { mlsDescription: gen.mlsDescription } : {}),
     // Metadata
-    complianceResult: { platforms: [], totalChecks: 0, totalPassed: 0, hardViolations: 0, softWarnings: 0, allPassed: true },
+    complianceResult: { platforms: [], campaignVerdict: 'compliant' as const, violations: [], autoFixes: [], totalViolations: 0, totalAutoFixes: 0 },
     selectedPlatforms: targetPlatforms,
     stateCode,
     // Strategy fields — always present
@@ -121,9 +121,6 @@ export async function generateCampaign(
     targetingNotes: (generated.targetingNotes as string) ?? '',
     sellingPoints: (generated.sellingPoints as string[]) ?? [],
   };
-
-  // Run full compliance check across all platforms
-  campaign.complianceResult = checkAllPlatforms(campaign, compliance);
 
   // Run quality checks (regex layer — instant)
   const regexQuality = checkAllPlatformQuality(campaign);
@@ -139,6 +136,9 @@ export async function generateCampaign(
 
   // Apply fixed campaign and store quality result
   campaign = { ...fixedCampaign, qualityResult };
+
+  // Run compliance agent as the final gate (after quality auto-fix)
+  campaign.complianceResult = await checkComplianceWithAgent(campaign, compliance);
 
   return campaign;
 }

@@ -1,5 +1,5 @@
 // Server-only: this module uses Node.js fs/path and must not be imported from client components.
-// Import from '@/lib/compliance/engine' for client-safe functions.
+// Import from '@/lib/compliance/agent' for compliance checking functions.
 
 import { promises as fs } from 'fs';
 import path from 'path';

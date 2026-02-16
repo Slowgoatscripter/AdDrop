@@ -1,7 +1,8 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CampaignKit, PlatformComplianceResult, PlatformId } from '@/lib/types';
+import { CampaignKit, PlatformId } from '@/lib/types';
+// TODO: update card components to use PlatformComplianceVerdict from new agent types
 import { AdCard } from './ad-card';
 import { InstagramCard } from './instagram-card';
 import { FacebookCard } from './facebook-card';
@@ -32,10 +33,10 @@ interface CampaignTabsProps {
 }
 
 function findResult(
-  platforms: PlatformComplianceResult[] | undefined,
+  platforms: any[] | undefined,
   platform: string
-): PlatformComplianceResult | undefined {
-  return platforms?.find((p) => p.platform === platform);
+): any | undefined {
+  return platforms?.find((p: any) => p.platform === platform);
 }
 
 /** undefined selectedPlatforms = all platforms (backward compat for old campaigns) */

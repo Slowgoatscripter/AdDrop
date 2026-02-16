@@ -1,11 +1,12 @@
 'use client'
 
 import { CheckCircle, AlertTriangle, XCircle, Clock, TrendingUp, AlertCircle } from 'lucide-react'
-import type { ComplianceTestAd, ComplianceTestRun, RunSummary, CategoryCoverage } from '@/lib/types/compliance-qa'
+// TODO: update for new compliance QA types (Task 16)
+import type { ComplianceTestRun, RunSummary } from '@/lib/types/compliance-qa'
 import type { ViolationCategory } from '@/lib/types/compliance'
 
 interface ScorecardViewProps {
-  ads: ComplianceTestAd[]
+  ads: any[]
   runs: ComplianceTestRun[]
 }
 
@@ -104,7 +105,7 @@ export function ScorecardView({ ads, runs }: ScorecardViewProps) {
     .sort((a, b) => new Date(b.run_at).getTime() - new Date(a.run_at).getTime())[0]
 
   const fullSuitePassRate = lastFullSuiteRun
-    ? ((lastFullSuiteRun.summary as RunSummary).passed / (lastFullSuiteRun.summary as RunSummary).totalAds) * 100
+    ? ((lastFullSuiteRun.summary as RunSummary).passed / (lastFullSuiteRun.summary as RunSummary).totalProperties) * 100
     : null
 
   // Build state health data
@@ -112,9 +113,9 @@ export function ScorecardView({ ads, runs }: ScorecardViewProps) {
     if (!acc[ad.state]) acc[ad.state] = []
     acc[ad.state].push(ad)
     return acc
-  }, {} as Record<string, ComplianceTestAd[]>)
+  }, {} as Record<string, any[]>)
 
-  const stateHealthData: StateHealthData[] = Object.entries(statesByState).map(([state, stateAds]) => {
+  const stateHealthData: StateHealthData[] = (Object.entries(statesByState) as [string, any[]][]).map(([state, stateAds]) => {
     // Find most recent single-state run for this state
     const stateRuns = runs
       .filter(r => r.run_type === 'single-state' && r.state === state)
@@ -127,7 +128,7 @@ export function ScorecardView({ ads, runs }: ScorecardViewProps) {
 
     if (lastRun) {
       const summary = lastRun.summary as RunSummary
-      passRate = (summary.passed / summary.totalAds) * 100
+      passRate = (summary.passed / summary.totalProperties) * 100
 
       if (passRate >= 95) status = 'excellent'
       else if (passRate >= 80) status = 'warning'
@@ -137,7 +138,7 @@ export function ScorecardView({ ads, runs }: ScorecardViewProps) {
     // Calculate category coverage
     const allCategories = getAllCategories()
     const coveredCategories = new Set(
-      stateAds.flatMap(ad => ad.expected_violations.map(v => v.category))
+      stateAds.flatMap((ad: any) => ad.expected_violations.map((v: any) => v.category))
     )
     const categoryCoverage = `${coveredCategories.size}/${allCategories.length} categories`
 
@@ -152,12 +153,12 @@ export function ScorecardView({ ads, runs }: ScorecardViewProps) {
   }).sort((a, b) => a.state.localeCompare(b.state))
 
   // Find coverage gaps
-  const coverageGaps: Array<{ state: string; missingCategories: ViolationCategory[] }> = []
+  const coverageGaps: Array<{ state: string; missingCategories: ViolationCategory[] }> = [];
 
-  Object.entries(statesByState).forEach(([state, stateAds]) => {
+  (Object.entries(statesByState) as [string, any[]][]).forEach(([state, stateAds]) => {
     const allCategories = getAllCategories()
     const coveredCategories = new Set(
-      stateAds.flatMap(ad => ad.expected_violations.map(v => v.category))
+      stateAds.flatMap((ad: any) => ad.expected_violations.map((v: any) => v.category))
     )
 
     const missing = allCategories.filter(cat => !coveredCategories.has(cat))
@@ -168,7 +169,7 @@ export function ScorecardView({ ads, runs }: ScorecardViewProps) {
 
   // Recent runs trend (last 10 runs)
   const recentRuns = runs
-    .filter(r => r.run_type !== 'ad-hoc')
+    .filter(r => r.run_type === 'full-suite' || r.run_type === 'single-state')
     .sort((a, b) => new Date(b.run_at).getTime() - new Date(a.run_at).getTime())
     .slice(0, 10)
 
@@ -292,7 +293,7 @@ export function ScorecardView({ ads, runs }: ScorecardViewProps) {
           <div className="space-y-3">
             {recentRuns.map((run) => {
               const summary = run.summary as RunSummary
-              const passRate = (summary.passed / summary.totalAds) * 100
+              const passRate = (summary.passed / summary.totalProperties) * 100
               const style = getStatusColor(passRate)
 
               return (

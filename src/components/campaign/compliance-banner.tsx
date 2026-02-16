@@ -2,17 +2,20 @@
 
 import { Check, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CampaignComplianceResult } from '@/lib/types';
+import type { ComplianceAgentResult } from '@/lib/types/compliance';
 
 interface ComplianceBannerProps {
-  result: CampaignComplianceResult;
-  onFixAll: () => void;
+  result: ComplianceAgentResult;
+  onFixAll: () => void | Promise<void>;
+  isFixing?: boolean;
 }
 
-export function ComplianceBanner({ result, onFixAll }: ComplianceBannerProps) {
-  const hasHard = result.hardViolations > 0;
-  const hasSoft = result.softWarnings > 0;
-  const allClean = result.allPassed;
+export function ComplianceBanner({ result, onFixAll, isFixing }: ComplianceBannerProps) {
+  const hardCount = result.violations.filter(v => v.severity === 'hard').length;
+  const softCount = result.violations.filter(v => v.severity === 'soft').length;
+  const hasHard = hardCount > 0;
+  const hasSoft = softCount > 0;
+  const allClean = result.campaignVerdict === 'compliant';
 
   if (allClean) {
     return (
@@ -23,7 +26,7 @@ export function ComplianceBanner({ result, onFixAll }: ComplianceBannerProps) {
           </span>
           <div>
             <p className="text-sm font-semibold text-green-900">
-              {result.totalPassed}/{result.totalChecks} checks passed
+              All checks passed
             </p>
             <p className="text-xs text-green-700">No issues flagged by current fair housing checks</p>
           </div>
@@ -46,11 +49,11 @@ export function ComplianceBanner({ result, onFixAll }: ComplianceBannerProps) {
   const Icon = hasHard ? ShieldAlert : AlertTriangle;
 
   const parts: string[] = [];
-  if (result.hardViolations > 0) {
-    parts.push(`${result.hardViolations} violation${result.hardViolations !== 1 ? 's' : ''}`);
+  if (hardCount > 0) {
+    parts.push(`${hardCount} violation${hardCount !== 1 ? 's' : ''}`);
   }
-  if (result.softWarnings > 0) {
-    parts.push(`${result.softWarnings} warning${result.softWarnings !== 1 ? 's' : ''}`);
+  if (softCount > 0) {
+    parts.push(`${softCount} warning${softCount !== 1 ? 's' : ''}`);
   }
 
   return (
@@ -61,7 +64,7 @@ export function ComplianceBanner({ result, onFixAll }: ComplianceBannerProps) {
         </span>
         <div>
           <p className={`text-sm font-semibold ${titleColor}`}>
-            {result.totalPassed}/{result.totalChecks} checks passed &mdash; {parts.join(', ')}
+            {result.totalViolations} issue{result.totalViolations !== 1 ? 's' : ''} found &mdash; {parts.join(', ')}
           </p>
           <p className={`text-xs ${subtitleColor}`}>
             {hasHard
@@ -74,8 +77,9 @@ export function ComplianceBanner({ result, onFixAll }: ComplianceBannerProps) {
         size="sm"
         variant={hasHard ? 'destructive' : 'outline'}
         onClick={onFixAll}
+        disabled={isFixing}
       >
-        Fix All
+        {isFixing ? 'Fixing...' : 'Fix All'}
       </Button>
     </div>
   );

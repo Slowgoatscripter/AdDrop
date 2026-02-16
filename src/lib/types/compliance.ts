@@ -63,3 +63,41 @@ export interface CampaignComplianceResult {
   softWarnings: number;
   allPassed: boolean;
 }
+
+// --- Compliance Agent Types (replaces regex engine) ---
+
+export interface ComplianceAgentViolation {
+  platform: string
+  term: string
+  category: ViolationCategory
+  severity: ViolationSeverity
+  explanation: string
+  law: string
+  isContextual: boolean // true for violations regex would miss
+}
+
+export interface ComplianceAutoFix {
+  platform: string
+  before: string
+  after: string
+  violationTerm: string
+  category: ViolationCategory
+}
+
+export interface PlatformComplianceVerdict {
+  platform: string
+  verdict: 'pass' | 'fail'
+  violationCount: number
+  autoFixCount: number
+}
+
+export type CampaignVerdict = 'compliant' | 'needs-review' | 'non-compliant'
+
+export interface ComplianceAgentResult {
+  platforms: PlatformComplianceVerdict[]
+  campaignVerdict: CampaignVerdict
+  violations: ComplianceAgentViolation[]
+  autoFixes: ComplianceAutoFix[]
+  totalViolations: number
+  totalAutoFixes: number
+}

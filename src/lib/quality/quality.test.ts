@@ -54,7 +54,7 @@ function buildMockCampaign(overrides: Partial<CampaignKit> = {}): CampaignKit {
     realtorCom: 'Professional listing description for Realtor.com',
     homesComTrulia: 'Professional listing description',
     mlsDescription: 'Professional MLS description within limits',
-    complianceResult: { platforms: [], totalChecks: 0, totalPassed: 0, hardViolations: 0, softWarnings: 0, allPassed: true },
+    complianceResult: { platforms: [], campaignVerdict: 'compliant', violations: [], autoFixes: [], totalViolations: 0, totalAutoFixes: 0 },
     hashtags: ['#realestate', '#bozeman', '#montanahomes'],
     callsToAction: ['Schedule your showing'],
     targetingNotes: 'Target first-time buyers in Bozeman area',

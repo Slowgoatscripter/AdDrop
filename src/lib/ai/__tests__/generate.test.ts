@@ -186,13 +186,13 @@ describe('generateCampaign', () => {
     const result = await generateCampaign(mockListing);
 
     expect(result.complianceResult).toHaveProperty('platforms');
-    expect(result.complianceResult).toHaveProperty('totalChecks');
-    expect(result.complianceResult).toHaveProperty('totalPassed');
-    expect(result.complianceResult).toHaveProperty('hardViolations');
-    expect(result.complianceResult).toHaveProperty('softWarnings');
-    expect(result.complianceResult).toHaveProperty('allPassed');
+    expect(result.complianceResult).toHaveProperty('campaignVerdict');
+    expect(result.complianceResult).toHaveProperty('violations');
+    expect(result.complianceResult).toHaveProperty('autoFixes');
+    expect(result.complianceResult).toHaveProperty('totalViolations');
+    expect(result.complianceResult).toHaveProperty('totalAutoFixes');
     expect(result.complianceResult.platforms).toBeInstanceOf(Array);
-    expect(result.complianceResult.totalChecks).toBeGreaterThan(0);
+    expect(['compliant', 'needs-review', 'non-compliant']).toContain(result.complianceResult.campaignVerdict);
   });
 
   test('calls OpenAI with correct model and parameters', async () => {
@@ -266,8 +266,8 @@ describe('generateCampaign', () => {
     const result = await generateCampaign(mockListing);
 
     // Clean copy should pass all checks
-    expect(result.complianceResult.allPassed).toBe(true);
-    expect(result.complianceResult.hardViolations).toBe(0);
+    expect(result.complianceResult.campaignVerdict).toBe('compliant');
+    expect(result.complianceResult.totalViolations).toBe(0);
   });
 
   test('detects violations in AI-generated copy', async () => {
@@ -287,8 +287,8 @@ describe('generateCampaign', () => {
 
     const result = await generateCampaign(mockListing);
 
-    expect(result.complianceResult.allPassed).toBe(false);
-    expect(result.complianceResult.hardViolations).toBeGreaterThan(0);
+    expect(result.complianceResult.campaignVerdict).not.toBe('compliant');
+    expect(result.complianceResult.totalViolations).toBeGreaterThan(0);
   });
 
   test('throws error when OpenAI returns no content', async () => {

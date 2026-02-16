@@ -1,17 +1,11 @@
-// Re-export all client-safe engine functions
-export {
-  getComplianceConfig,
-  getDefaultCompliance,
-  findViolations,
-  checkAllPlatforms,
-  autoFixText,
-  autoFixCampaign,
-  checkCompliance,
-  buildTermRegex,
-} from './engine';
+// Compliance agent (server-only)
+export { checkComplianceWithAgent, scanTextWithAgent } from './agent'
 
-// Server-only: import getComplianceSettings directly from '@/lib/compliance/compliance-settings'
-// (uses next/headers — cannot be barrel-exported without contaminating client bundles)
+// Shared utilities
+export { extractPlatformTexts } from './utils'
 
-// Re-export server-only doc loader (uses fs, safe for Node/test but not client bundles)
-export { loadComplianceDocs } from './docs';
+// Docs loader (server-only)
+export { loadComplianceDocs } from './docs'
+
+// Terms data
+export { montanaCompliance, complianceConfigs, formatTermsForPrompt } from './terms/montana'

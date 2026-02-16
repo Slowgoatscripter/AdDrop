@@ -2,19 +2,48 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { CampaignKit } from '@/lib/types';
-import { autoFixCampaign, checkAllPlatforms, getComplianceConfig, getDefaultCompliance } from '@/lib/compliance/engine';
+import { CampaignKit, AdTone } from '@/lib/types';
+import type { ComplianceAgentResult, ComplianceAutoFix } from '@/lib/types/compliance';
 import { createClient } from '@/lib/supabase/client';
 import { PropertyHeader } from './property-header';
 import { CampaignTabs } from './campaign-tabs';
 import { ComplianceBanner } from './compliance-banner';
 import { Button } from '@/components/ui/button';
 
+function applyComplianceFix(
+  campaign: CampaignKit,
+  fix: ComplianceAutoFix
+): CampaignKit {
+  const updated = structuredClone(campaign);
+  // Apply fix.before -> fix.after replacement across all text fields
+  const replaceInString = (str: string) => str.replaceAll(fix.before, fix.after);
+
+  // Apply to each platform field
+  if (updated.instagram) {
+    for (const tone of Object.keys(updated.instagram) as AdTone[]) {
+      updated.instagram[tone] = replaceInString(updated.instagram[tone]);
+    }
+  }
+  if (updated.facebook) {
+    for (const tone of Object.keys(updated.facebook) as AdTone[]) {
+      updated.facebook[tone] = replaceInString(updated.facebook[tone]);
+    }
+  }
+  if (updated.twitter) updated.twitter = replaceInString(updated.twitter);
+  if (updated.zillow) updated.zillow = replaceInString(updated.zillow);
+  if (updated.realtorCom) updated.realtorCom = replaceInString(updated.realtorCom);
+  if (updated.homesComTrulia) updated.homesComTrulia = replaceInString(updated.homesComTrulia);
+  if (updated.mlsDescription) updated.mlsDescription = replaceInString(updated.mlsDescription);
+
+  return updated;
+}
+
 export function CampaignShell() {
   const params = useParams();
   const router = useRouter();
   const [campaign, setCampaign] = useState<CampaignKit | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFixing, setIsFixing] = useState(false);
 
   useEffect(() => {
     async function loadCampaign() {
@@ -55,23 +84,39 @@ export function CampaignShell() {
     loadCampaign();
   }, [params.id]);
 
-  const handleFixAll = useCallback(() => {
-    if (!campaign || !campaign.complianceResult) return;
+  const handleFixAll = useCallback(async () => {
+    if (!campaign || !campaign.complianceResult || isFixing) return;
+    setIsFixing(true);
 
-    const config = getComplianceConfig(campaign.stateCode ?? 'MT') ?? getDefaultCompliance();
-    const fixed = autoFixCampaign(campaign, campaign.complianceResult);
-    const newResult = checkAllPlatforms(fixed, config);
-    const updated = { ...fixed, complianceResult: newResult };
+    try {
+      const res = await fetch('/api/compliance/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaign }),
+      });
 
-    setCampaign(updated);
-    sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
-  }, [campaign]);
+      if (!res.ok) return;
+
+      const result: ComplianceAgentResult = await res.json();
+
+      // Apply auto-fixes from the compliance agent
+      let updated = structuredClone(campaign);
+      for (const fix of result.autoFixes) {
+        updated = applyComplianceFix(updated, fix);
+      }
+
+      updated.complianceResult = result;
+      setCampaign(updated);
+      sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+    } finally {
+      setIsFixing(false);
+    }
+  }, [campaign, isFixing]);
 
   const handleReplace = useCallback(
-    (platform: string, oldTerm: string, newTerm: string) => {
+    async (platform: string, oldTerm: string, newTerm: string) => {
       if (!campaign) return;
 
-      const config = getComplianceConfig(campaign.stateCode ?? 'MT') ?? getDefaultCompliance();
       const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
 
       function replaceInText(text: string): string {
@@ -137,9 +182,21 @@ export function CampaignShell() {
         replacers[root]?.();
       }
 
-      // Re-run compliance
-      const newResult = checkAllPlatforms(updated, config);
-      updated.complianceResult = newResult;
+      // Re-run compliance via the agent API
+      try {
+        const res = await fetch('/api/compliance/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaign: updated }),
+        });
+
+        if (res.ok) {
+          const result: ComplianceAgentResult = await res.json();
+          updated.complianceResult = result;
+        }
+      } catch (err) {
+        console.error('[campaign-shell] Compliance re-check failed:', err);
+      }
 
       setCampaign(updated);
       sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
@@ -200,7 +257,7 @@ export function CampaignShell() {
         </div>
 
         {campaign.complianceResult && (
-          <ComplianceBanner result={campaign.complianceResult} onFixAll={handleFixAll} />
+          <ComplianceBanner result={campaign.complianceResult} onFixAll={handleFixAll} isFixing={isFixing} />
         )}
 
         <PropertyHeader listing={campaign.listing} />

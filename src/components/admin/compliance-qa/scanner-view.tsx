@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Search, CheckCircle, AlertTriangle } from 'lucide-react'
-import type { ScanResponse } from '@/lib/types/compliance-qa'
-import type { ComplianceViolation } from '@/lib/types/compliance'
+// TODO: update for new compliance QA types (Task 13)
+// import type { ScanResponse } from '@/lib/types/compliance-qa'
 
 interface ScannerViewProps {
   onSaveToCorpus: (ad: {
@@ -25,7 +25,7 @@ export function ScannerView({ onSaveToCorpus }: ScannerViewProps) {
   const [adText, setAdText] = useState('')
   const [selectedState, setSelectedState] = useState('MT')
   const [scanning, setScanning] = useState(false)
-  const [scanResult, setScanResult] = useState<ScanResponse | null>(null)
+  const [scanResult, setScanResult] = useState<any | null>(null)
   const [showSaveForm, setShowSaveForm] = useState(false)
   const [saveName, setSaveName] = useState('')
   const [saveSource, setSaveSource] = useState('')
@@ -51,11 +51,11 @@ export function ScannerView({ onSaveToCorpus }: ScannerViewProps) {
 
       if (!res.ok) throw new Error('Scan failed')
 
-      const data: ScanResponse = await res.json()
+      const data = await res.json()
       setScanResult(data)
 
       // Initialize all violations as included
-      const allTerms = new Set(data.violations.map((v) => v.term))
+      const allTerms = new Set<string>(data.violations.map((v: any) => v.term))
       setIncludedViolations(allTerms)
     } catch (err) {
       console.error('Scan error:', err)
@@ -81,8 +81,8 @@ export function ScannerView({ onSaveToCorpus }: ScannerViewProps) {
     if (!scanResult || !saveName.trim()) return
 
     const expectedViolations = scanResult.violations
-      .filter((v) => includedViolations.has(v.term))
-      .map((v) => ({
+      .filter((v: any) => includedViolations.has(v.term))
+      .map((v: any) => ({
         term: v.term,
         category: v.category,
         severity: v.severity,
@@ -319,7 +319,7 @@ export function ScannerView({ onSaveToCorpus }: ScannerViewProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {scanResult.violations.map((violation, idx) => {
+                  {scanResult.violations.map((violation: any, idx: number) => {
                     const isIncluded = includedViolations.has(violation.term)
                     const rowOpacity = showSaveForm && !isIncluded ? 'opacity-40' : ''
 
