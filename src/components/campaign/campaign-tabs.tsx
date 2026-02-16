@@ -1,8 +1,7 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CampaignKit, PlatformId } from '@/lib/types';
-// TODO: update card components to use PlatformComplianceVerdict from new agent types
+import { CampaignKit, PlatformId, ComplianceAgentResult, ComplianceViolation, PlatformComplianceResult } from '@/lib/types';
 import { AdCard } from './ad-card';
 import { InstagramCard } from './instagram-card';
 import { FacebookCard } from './facebook-card';
@@ -32,11 +31,42 @@ interface CampaignTabsProps {
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
-function findResult(
-  platforms: any[] | undefined,
-  platform: string
-): any | undefined {
-  return platforms?.find((p: any) => p.platform === platform);
+function buildPlatformResult(
+  agentResult: ComplianceAgentResult | undefined,
+  platformPrefix: string
+): PlatformComplianceResult | undefined {
+  if (!agentResult) return undefined;
+
+  const platformVerdict = agentResult.platforms.find(p => p.platform === platformPrefix);
+  if (!platformVerdict) return undefined;
+
+  // Filter violations for this platform (exact match or dot-prefixed sub-platforms)
+  const violations: ComplianceViolation[] = agentResult.violations
+    .filter(v => v.platform === platformPrefix || v.platform.startsWith(platformPrefix + '.'))
+    .map(v => {
+      // Find matching auto-fix for suggested alternative
+      const fix = agentResult.autoFixes.find(
+        f => f.platform === v.platform && f.violationTerm === v.term
+      );
+      return {
+        platform: v.platform,
+        term: v.term,
+        category: v.category,
+        severity: v.severity,
+        explanation: v.explanation,
+        law: v.law,
+        alternative: fix?.after || 'review this term',
+        context: v.term,
+      };
+    });
+
+  return {
+    platform: platformPrefix,
+    violations,
+    passed: platformVerdict.verdict === 'pass',
+    hardCount: violations.filter(v => v.severity === 'hard').length,
+    softCount: violations.filter(v => v.severity === 'soft').length,
+  };
 }
 
 /** undefined selectedPlatforms = all platforms (backward compat for old campaigns) */
@@ -46,7 +76,7 @@ function has(selected: PlatformId[] | undefined, platform: PlatformId): boolean 
 }
 
 export function CampaignTabs({ campaign, onReplace }: CampaignTabsProps) {
-  const platforms = campaign.complianceResult?.platforms;
+  const agentResult = campaign.complianceResult;
   const photos = campaign.listing.photos;
   const listing = campaign.listing;
   const selected = campaign.selectedPlatforms;
@@ -72,13 +102,13 @@ export function CampaignTabs({ campaign, onReplace }: CampaignTabsProps) {
       {visibleCategories.some((c) => c.value === 'social') && (
         <TabsContent value="social" className="flex flex-col items-center gap-6 mt-4">
           {has(selected, 'instagram') && campaign.instagram && (
-            <InstagramCard content={campaign.instagram} photos={photos} listing={listing} complianceResult={findResult(platforms, 'instagram')} onReplace={onReplace} />
+            <InstagramCard content={campaign.instagram} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, 'instagram')} onReplace={onReplace} />
           )}
           {has(selected, 'facebook') && campaign.facebook && (
-            <FacebookCard content={campaign.facebook} photos={photos} listing={listing} complianceResult={findResult(platforms, 'facebook')} onReplace={onReplace} />
+            <FacebookCard content={campaign.facebook} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, 'facebook')} onReplace={onReplace} />
           )}
           {has(selected, 'twitter') && campaign.twitter && (
-            <AdCard title="Twitter / X Post" content={campaign.twitter} characterLimit={280} subtitle="Ultra-short, link-friendly" complianceResult={findResult(platforms, 'twitter')} onReplace={onReplace} />
+            <AdCard title="Twitter / X Post" content={campaign.twitter} characterLimit={280} subtitle="Ultra-short, link-friendly" complianceResult={buildPlatformResult(agentResult, 'twitter')} onReplace={onReplace} />
           )}
         </TabsContent>
       )}
@@ -87,10 +117,10 @@ export function CampaignTabs({ campaign, onReplace }: CampaignTabsProps) {
       {visibleCategories.some((c) => c.value === 'paid') && (
         <TabsContent value="paid" className="flex flex-col items-center gap-6 mt-4">
           {has(selected, 'googleAds') && campaign.googleAds && (
-            <GoogleAdsCard ads={campaign.googleAds} listing={listing} complianceResult={findResult(platforms, 'googleAds')} onReplace={onReplace} />
+            <GoogleAdsCard ads={campaign.googleAds} listing={listing} complianceResult={buildPlatformResult(agentResult, 'googleAds')} onReplace={onReplace} />
           )}
           {has(selected, 'metaAd') && campaign.metaAd && (
-            <MetaAdCard content={{ professional: campaign.metaAd }} photos={photos} listing={listing} complianceResult={findResult(platforms, 'metaAd')} onReplace={onReplace} />
+            <MetaAdCard content={{ professional: campaign.metaAd }} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, 'metaAd')} onReplace={onReplace} />
           )}
         </TabsContent>
       )}
@@ -99,13 +129,13 @@ export function CampaignTabs({ campaign, onReplace }: CampaignTabsProps) {
       {visibleCategories.some((c) => c.value === 'print') && (
         <TabsContent value="print" className="flex flex-col items-center gap-6 mt-4">
           {has(selected, 'magazineFullPage') && campaign.magazineFullPage && (
-            <PrintAdCard title="Magazine — Full Page" content={campaign.magazineFullPage} photos={photos} listing={listing} variant="full-page" complianceResult={findResult(platforms, 'magazineFullPage')} onReplace={onReplace} />
+            <PrintAdCard title="Magazine — Full Page" content={campaign.magazineFullPage} photos={photos} listing={listing} variant="full-page" complianceResult={buildPlatformResult(agentResult, 'magazineFullPage')} onReplace={onReplace} />
           )}
           {has(selected, 'magazineHalfPage') && campaign.magazineHalfPage && (
-            <PrintAdCard title="Magazine — Half Page" content={campaign.magazineHalfPage} photos={photos} listing={listing} variant="half-page" complianceResult={findResult(platforms, 'magazineHalfPage')} onReplace={onReplace} />
+            <PrintAdCard title="Magazine — Half Page" content={campaign.magazineHalfPage} photos={photos} listing={listing} variant="half-page" complianceResult={buildPlatformResult(agentResult, 'magazineHalfPage')} onReplace={onReplace} />
           )}
           {has(selected, 'postcard') && campaign.postcard && (
-            <PostcardCard content={campaign.postcard} photos={photos} listing={listing} complianceResult={findResult(platforms, 'postcard')} onReplace={onReplace} />
+            <PostcardCard content={campaign.postcard} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, 'postcard')} onReplace={onReplace} />
           )}
         </TabsContent>
       )}
@@ -114,13 +144,13 @@ export function CampaignTabs({ campaign, onReplace }: CampaignTabsProps) {
       {visibleCategories.some((c) => c.value === 'listings') && (
         <TabsContent value="listings" className="flex flex-col items-center gap-6 mt-4">
           {has(selected, 'zillow') && campaign.zillow && (
-            <AdCard title="Zillow Description" content={campaign.zillow} subtitle="Optimized for Zillow format and search SEO" complianceResult={findResult(platforms, 'zillow')} onReplace={onReplace} />
+            <AdCard title="Zillow Description" content={campaign.zillow} subtitle="Optimized for Zillow format and search SEO" complianceResult={buildPlatformResult(agentResult, 'zillow')} onReplace={onReplace} />
           )}
           {has(selected, 'realtorCom') && campaign.realtorCom && (
-            <AdCard title="Realtor.com Description" content={campaign.realtorCom} subtitle="Tuned to Realtor.com tone and format" complianceResult={findResult(platforms, 'realtorCom')} onReplace={onReplace} />
+            <AdCard title="Realtor.com Description" content={campaign.realtorCom} subtitle="Tuned to Realtor.com tone and format" complianceResult={buildPlatformResult(agentResult, 'realtorCom')} onReplace={onReplace} />
           )}
           {has(selected, 'homesComTrulia') && campaign.homesComTrulia && (
-            <AdCard title="Homes.com / Trulia Description" content={campaign.homesComTrulia} subtitle="Platform-specific variation" complianceResult={findResult(platforms, 'homesComTrulia')} onReplace={onReplace} />
+            <AdCard title="Homes.com / Trulia Description" content={campaign.homesComTrulia} subtitle="Platform-specific variation" complianceResult={buildPlatformResult(agentResult, 'homesComTrulia')} onReplace={onReplace} />
           )}
         </TabsContent>
       )}
@@ -129,7 +159,7 @@ export function CampaignTabs({ campaign, onReplace }: CampaignTabsProps) {
       {visibleCategories.some((c) => c.value === 'mls') && (
         <TabsContent value="mls" className="mt-4">
           {has(selected, 'mlsDescription') && campaign.mlsDescription && (
-            <MlsCard description={campaign.mlsDescription} complianceResult={findResult(platforms, 'mlsDescription')} onReplace={onReplace} />
+            <MlsCard description={campaign.mlsDescription} complianceResult={buildPlatformResult(agentResult, 'mlsDescription')} onReplace={onReplace} />
           )}
         </TabsContent>
       )}
@@ -142,10 +172,10 @@ export function CampaignTabs({ campaign, onReplace }: CampaignTabsProps) {
           callsToAction={campaign.callsToAction}
           targetingNotes={campaign.targetingNotes}
           complianceResults={{
-            hashtags: findResult(platforms, 'hashtags'),
-            callsToAction: findResult(platforms, 'callsToAction'),
-            targetingNotes: findResult(platforms, 'targetingNotes'),
-            sellingPoints: findResult(platforms, 'sellingPoints'),
+            hashtags: buildPlatformResult(agentResult, 'hashtags'),
+            callsToAction: buildPlatformResult(agentResult, 'callsToAction'),
+            targetingNotes: buildPlatformResult(agentResult, 'targetingNotes'),
+            sellingPoints: buildPlatformResult(agentResult, 'sellingPoints'),
           }}
           onReplace={onReplace}
         />
