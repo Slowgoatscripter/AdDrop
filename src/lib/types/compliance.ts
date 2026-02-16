@@ -9,7 +9,8 @@ export type ViolationCategory =
   | 'marital-status'
   | 'creed'
   | 'economic-exclusion'
-  | 'misleading-claims';
+  | 'misleading-claims'
+  | 'military-status';
 
 export type ViolationSeverity = 'hard' | 'soft';
 
