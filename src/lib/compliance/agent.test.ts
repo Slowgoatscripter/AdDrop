@@ -12,6 +12,7 @@ jest.mock('openai', () => {
 
 import { checkComplianceWithAgent, scanTextWithAgent } from './agent';
 import { montanaCompliance } from './terms/montana';
+import { ohioCompliance } from './terms/ohio';
 import type { CampaignKit } from '@/lib/types/campaign';
 
 // Helper: build minimal mock campaign
@@ -598,5 +599,133 @@ describe('Montana compliance audit fixes', () => {
     );
 
     expect(result.violations.some(v => v.term === 'no pregnant women')).toBe(true);
+  });
+});
+
+describe('Ohio compliance agent', () => {
+  beforeEach(() => {
+    mockCreate.mockClear();
+  });
+
+  it('detects military-status violations in Ohio', async () => {
+    mockCreate.mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            platforms: [{ platform: 'zillow', verdict: 'fail', violationCount: 1, autoFixCount: 0 }],
+            campaignVerdict: 'non-compliant',
+            violations: [{
+              platform: 'zillow',
+              term: 'no veterans',
+              category: 'military-status',
+              severity: 'hard',
+              explanation: 'Excludes based on military status',
+              law: 'ORC §4112.02(H)',
+              isContextual: false,
+            }],
+            autoFixes: [],
+            totalViolations: 1,
+            totalAutoFixes: 0,
+          }),
+        },
+      }],
+    });
+
+    const campaign = buildMockCampaign({ zillow: 'No veterans allowed in this building', stateCode: 'OH' });
+    const result = await checkComplianceWithAgent(campaign, ohioCompliance);
+
+    expect(result.violations).toHaveLength(1);
+    expect(result.violations[0].category).toBe('military-status');
+    expect(result.campaignVerdict).toBe('non-compliant');
+  });
+
+  it('does NOT flag creed/political-beliefs for Ohio', async () => {
+    mockCreate.mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            platforms: [{ platform: 'zillow', verdict: 'pass', violationCount: 0, autoFixCount: 0 }],
+            campaignVerdict: 'compliant',
+            violations: [],
+            autoFixes: [],
+            totalViolations: 0,
+            totalAutoFixes: 0,
+          }),
+        },
+      }],
+    });
+
+    const campaign = buildMockCampaign({ zillow: 'Conservative neighborhood', stateCode: 'OH' });
+    const result = await checkComplianceWithAgent(campaign, ohioCompliance);
+
+    expect(result.violations).toHaveLength(0);
+    expect(result.campaignVerdict).toBe('compliant');
+  });
+
+  it('auto-fixes Ohio soft military-status violations', async () => {
+    mockCreate.mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            platforms: [{ platform: 'zillow', verdict: 'pass', violationCount: 0, autoFixCount: 1 }],
+            campaignVerdict: 'needs-review',
+            violations: [],
+            autoFixes: [{
+              platform: 'zillow',
+              before: 'near military base',
+              after: 'near Wright-Patterson Air Force Base',
+              violationTerm: 'near military base',
+              category: 'military-status',
+            }],
+            totalViolations: 0,
+            totalAutoFixes: 1,
+          }),
+        },
+      }],
+    });
+
+    const campaign = buildMockCampaign({ zillow: 'Located near military base in Dayton', stateCode: 'OH' });
+    const result = await checkComplianceWithAgent(campaign, ohioCompliance);
+
+    expect(result.autoFixes).toHaveLength(1);
+    expect(result.autoFixes[0].category).toBe('military-status');
+    expect(result.campaignVerdict).toBe('needs-review');
+  });
+});
+
+describe('Montana regression', () => {
+  beforeEach(() => {
+    mockCreate.mockClear();
+  });
+
+  it('still detects creed violations for Montana', async () => {
+    mockCreate.mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            platforms: [{ platform: 'zillow', verdict: 'fail', violationCount: 1, autoFixCount: 0 }],
+            campaignVerdict: 'non-compliant',
+            violations: [{
+              platform: 'zillow',
+              term: 'conservative values',
+              category: 'creed',
+              severity: 'hard',
+              explanation: 'Discriminates based on political beliefs',
+              law: 'MCA § 49-2-305',
+              isContextual: false,
+            }],
+            autoFixes: [],
+            totalViolations: 1,
+            totalAutoFixes: 0,
+          }),
+        },
+      }],
+    });
+
+    const campaign = buildMockCampaign({ zillow: 'Conservative values neighborhood', stateCode: 'MT' });
+    const result = await checkComplianceWithAgent(campaign, montanaCompliance);
+
+    expect(result.violations).toHaveLength(1);
+    expect(result.violations[0].category).toBe('creed');
   });
 });
