@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
-import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,10 +8,10 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const state = searchParams.get('state');
-    const is_clean = searchParams.get('is_clean');
+    const is_seed = searchParams.get('is_seed');
 
     let query = supabase
-      .from('compliance_test_ads')
+      .from('compliance_test_properties')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -20,8 +19,8 @@ export async function GET(request: NextRequest) {
       query = query.eq('state', state.toUpperCase());
     }
 
-    if (is_clean !== null) {
-      query = query.eq('is_clean', is_clean === 'true');
+    if (is_seed !== null) {
+      query = query.eq('is_seed', is_seed === 'true');
     }
 
     const { data, error: queryError } = await query;
@@ -37,7 +36,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Fetch corpus error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch test ads' },
+      { error: 'Failed to fetch test properties' },
       { status: 500 }
     );
   }
@@ -49,24 +48,24 @@ export async function POST(request: NextRequest) {
     if (error) return error;
 
     const body = await request.json();
-    const { state, name, text, is_clean, platform, expected_violations } = body;
+    const { name, state, listing_data, risk_category, is_seed, tags } = body;
 
-    if (!state || !name || !text) {
+    if (!name || !state || !listing_data || !risk_category) {
       return NextResponse.json(
-        { error: 'state, name, and text are required' },
+        { error: 'name, state, listing_data, and risk_category are required' },
         { status: 400 }
       );
     }
 
     const { data, error: insertError } = await supabase
-      .from('compliance_test_ads')
+      .from('compliance_test_properties')
       .insert({
-        state: state.toUpperCase(),
         name,
-        text,
-        is_clean: is_clean || false,
-        platform: platform || 'general',
-        expected_violations: expected_violations || null,
+        state: state.toUpperCase(),
+        listing_data,
+        risk_category,
+        is_seed: is_seed || false,
+        tags: tags || [],
         created_by: user.id,
       })
       .select()
@@ -81,9 +80,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error('Create test ad error:', error);
+    console.error('Create test property error:', error);
     return NextResponse.json(
-      { error: 'Failed to create test ad' },
+      { error: 'Failed to create test property' },
       { status: 500 }
     );
   }
