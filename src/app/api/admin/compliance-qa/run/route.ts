@@ -56,7 +56,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { config } = await getComplianceSettings();
     const results: PropertyTestResult[] = [];
     let totalViolations = 0;
     let totalAutoFixes = 0;
@@ -205,6 +204,9 @@ export async function POST(request: NextRequest) {
 
           const snapshot = snapshots[0] as PropertySnapshot;
           const generatedText = snapshot.generated_text;
+
+          // Get state-specific compliance config for this property
+          const { config } = await getComplianceSettings(property.state);
 
           // Scan each platform text with agent
           const allViolations = [];

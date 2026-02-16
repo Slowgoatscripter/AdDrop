@@ -337,7 +337,8 @@ export function HistoryView({ runs, onRefresh }: HistoryViewProps) {
                           const resultKey = `${run.id}-${result.propertyId}`
                           const hasDetails =
                             result.complianceResult.violations.length > 0 ||
-                            result.complianceResult.autoFixes.length > 0
+                            result.complianceResult.autoFixes.length > 0 ||
+                            !!result.generatedText
                           const isResultExpanded = expandedResults.has(resultKey)
 
                           return (
@@ -495,8 +496,8 @@ export function HistoryView({ runs, onRefresh }: HistoryViewProps) {
                                         </div>
                                       )}
 
-                                      {/* Generated text (full-pipeline mode only) */}
-                                      {run.run_mode === 'full-pipeline' && result.generatedText && (
+                                      {/* Generated text */}
+                                      {result.generatedText && (
                                         <div>
                                           <h4 className="text-sm font-medium text-foreground mb-2">
                                             Generated Text

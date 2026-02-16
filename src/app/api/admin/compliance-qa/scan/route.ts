@@ -18,8 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: update to use state parameter properly once multi-state support is added (Task 10)
-    const { config } = await getComplianceSettings();
+    const { config } = await getComplianceSettings(state);
     const result = await scanTextWithAgent(text, state, platform, config);
 
     return NextResponse.json(result);

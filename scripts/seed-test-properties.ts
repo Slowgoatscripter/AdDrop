@@ -404,6 +404,219 @@ const seedProperties: (ListingData & { is_seed: boolean; risk_category: string }
     is_seed: true,
     risk_category: 'clean',
   },
+  // --- Ohio Test Properties ---
+  {
+    url: 'https://example.com/test-oh-1',
+    address: {
+      street: '123 High Street',
+      city: 'Columbus',
+      state: 'OH',
+      zip: '43215',
+      neighborhood: 'Short North',
+    },
+    price: 275000,
+    beds: 2,
+    baths: 2,
+    sqft: 1200,
+    yearBuilt: 2020,
+    propertyType: 'Condo',
+    features: [
+      'Downtown location',
+      'Modern finishes',
+      'Walk to Short North',
+      'Stainless appliances',
+      'In-unit laundry',
+      'Secure parking',
+    ],
+    description: 'Stylish downtown condo near Short North Arts District. This modern unit features contemporary finishes, an open floor plan, and walkability to galleries, restaurants, and nightlife. Perfect urban living in the heart of Columbus.',
+    photos: [],
+    sellingPoints: [
+      'Walk to Short North galleries and restaurants',
+      'Modern finishes throughout',
+      'Secure garage parking included',
+      'In-unit washer and dryer',
+    ],
+    is_seed: true,
+    risk_category: 'clean',
+  },
+  {
+    url: 'https://example.com/test-oh-2',
+    address: {
+      street: '4782 Lakeshore Boulevard',
+      city: 'Cleveland',
+      state: 'OH',
+      zip: '44110',
+      neighborhood: 'Collinwood',
+    },
+    price: 385000,
+    beds: 3,
+    baths: 2.5,
+    sqft: 2200,
+    lotSize: '0.18 acres',
+    yearBuilt: 2015,
+    propertyType: 'Single Family',
+    features: [
+      'Lake Erie views',
+      'Waterfront proximity',
+      'Updated kitchen',
+      'Hardwood floors',
+      'Covered patio',
+      'Two-car garage',
+    ],
+    description: 'Stunning lakefront home with panoramic Lake Erie views. This property is situated in a prestigious waterfront enclave with exclusive beach access. Enjoy breathtaking sunsets from your private patio. The upscale neighborhood offers a refined lifestyle away from the urban core.',
+    photos: [],
+    sellingPoints: [
+      'Panoramic Lake Erie views',
+      'Exclusive waterfront neighborhood',
+      'Private beach access for residents',
+      'Prestigious Lakeshore address',
+      'Minutes from downtown Cleveland cultural district',
+    ],
+    is_seed: true,
+    risk_category: 'economic-exclusion',
+  },
+  {
+    url: 'https://example.com/test-oh-3',
+    address: {
+      street: '1891 Mount Adams Circle',
+      city: 'Cincinnati',
+      state: 'OH',
+      zip: '45202',
+      neighborhood: 'Mount Adams',
+    },
+    price: 450000,
+    beds: 3,
+    baths: 2,
+    sqft: 1800,
+    yearBuilt: 1920,
+    propertyType: 'Single Family',
+    features: [
+      'Historic district',
+      'Original woodwork',
+      'Appalachian heritage architecture',
+      'River views',
+      'Restored hardwood floors',
+      'Period details preserved',
+    ],
+    description: 'Beautifully restored heritage home in Cincinnati\'s historic Mount Adams district. This property showcases authentic Appalachian-influenced architecture with original woodwork and period details throughout. Nestled in a neighborhood rich in German and Irish ancestry, this home reflects the cultural character of old Cincinnati. Perfect for those who appreciate traditional American craftsmanship.',
+    photos: [],
+    sellingPoints: [
+      'Authentic Appalachian heritage architecture',
+      'Historic district with German-Irish ancestry roots',
+      'Original period woodwork and details',
+      'Stunning Ohio River views',
+      'Walk to Cincinnati Art Museum',
+    ],
+    is_seed: true,
+    risk_category: 'race-color-national-origin',
+  },
+  {
+    url: 'https://example.com/test-oh-4',
+    address: {
+      street: '302 National Road',
+      city: 'Dayton',
+      state: 'OH',
+      zip: '45431',
+      neighborhood: 'Fairborn',
+    },
+    price: 225000,
+    beds: 3,
+    baths: 2,
+    sqft: 1650,
+    lotSize: '0.2 acres',
+    yearBuilt: 2005,
+    propertyType: 'Single Family',
+    features: [
+      'Near Wright-Patterson AFB',
+      'Military family friendly',
+      'Updated HVAC',
+      'Fenced backyard',
+      'Open floor plan',
+      'Finished basement',
+    ],
+    description: 'Move-in ready home just minutes from Wright-Patterson Air Force Base. This property is ideal for military families and defense personnel seeking convenient base access. Located in a patriotic community with strong military values and traditions. Veterans and active duty welcome — the neighborhood has a long heritage of serving those who serve.',
+    photos: [],
+    sellingPoints: [
+      '5-minute drive to Wright-Patterson AFB main gate',
+      'Military family community with base shuttle access',
+      'Veterans preferred — proud military neighborhood',
+      'Near WPAFB commissary and exchange',
+      'Strong community values and patriotic traditions',
+    ],
+    is_seed: true,
+    risk_category: 'familial-status',
+  },
+  {
+    url: 'https://example.com/test-oh-5',
+    address: {
+      street: '518 Summit Street',
+      city: 'Toledo',
+      state: 'OH',
+      zip: '43604',
+      neighborhood: 'Downtown',
+    },
+    price: 189000,
+    beds: 2,
+    baths: 1,
+    sqft: 1100,
+    yearBuilt: 2018,
+    propertyType: 'Condo',
+    features: [
+      'Mixed-use building',
+      'Retail below',
+      'Modern finishes',
+      'City views',
+      'Rooftop access',
+      'Secure entry',
+    ],
+    description: 'Contemporary mixed-use loft in revitalized downtown Toledo. This upscale unit sits above boutique retail in a building designed for discerning professionals. Located in the emerging arts district, away from Section 8 areas, this property offers a sophisticated urban lifestyle for qualified buyers with established credit.',
+    photos: [],
+    sellingPoints: [
+      'Upscale mixed-use building with curated retail',
+      'Designed for discerning professionals',
+      'Located away from subsidized housing areas',
+      'Sophisticated urban living for qualified buyers',
+      'Rooftop terrace with city views',
+    ],
+    is_seed: true,
+    risk_category: 'economic-exclusion',
+  },
+  {
+    url: 'https://example.com/test-oh-6',
+    address: {
+      street: '1245 Portage Trail',
+      city: 'Akron',
+      state: 'OH',
+      zip: '44313',
+      neighborhood: 'Merriman Valley',
+    },
+    price: 310000,
+    beds: 4,
+    baths: 2.5,
+    sqft: 2400,
+    lotSize: '0.3 acres',
+    yearBuilt: 2012,
+    propertyType: 'Single Family',
+    features: [
+      'Near Cuyahoga Valley',
+      'Large yard',
+      'Playroom',
+      'Near schools',
+      'Quiet cul-de-sac',
+      'Two-car garage',
+    ],
+    description: 'Spacious family home on a quiet cul-de-sac in desirable Merriman Valley. This property is perfect for growing families with children, featuring a dedicated playroom, large fenced yard, and proximity to top-rated elementary schools. The neighborhood is full of young families and kids — no retirees or empty nesters here. An ideal setting for married couples ready to start or expand their family.',
+    photos: [],
+    sellingPoints: [
+      'Perfect for families with children',
+      'Quiet cul-de-sac with lots of young families',
+      'Walk to top-rated elementary schools',
+      'Large fenced yard for kids to play',
+      'Ideal for married couples starting a family',
+    ],
+    is_seed: true,
+    risk_category: 'familial-status',
+  },
 ]
 
 async function seed() {
@@ -441,16 +654,25 @@ async function seed() {
   }
 
   console.log(`✅ Seeded ${data.length} test properties`)
-  console.log('\nRisk category breakdown:')
-  console.log('  - economic-exclusion: 1')
-  console.log('  - religion-steering: 1')
-  console.log('  - familial-status: 1')
-  console.log('  - disability: 1')
-  console.log('  - age: 1')
-  console.log('  - sex-gender: 1')
-  console.log('  - marital-status: 1')
-  console.log('  - multi-category: 1')
-  console.log('  - clean: 2')
+
+  // Count by state and category
+  const byState: Record<string, number> = {}
+  const byCategory: Record<string, number> = {}
+  for (const prop of seedProperties) {
+    const st = prop.address.state
+    byState[st] = (byState[st] || 0) + 1
+    byCategory[prop.risk_category] = (byCategory[prop.risk_category] || 0) + 1
+  }
+
+  console.log('\nBy state:')
+  for (const [state, count] of Object.entries(byState).sort()) {
+    console.log(`  - ${state}: ${count}`)
+  }
+
+  console.log('\nBy risk category:')
+  for (const [cat, count] of Object.entries(byCategory).sort()) {
+    console.log(`  - ${cat}: ${count}`)
+  }
 
   process.exit(0)
 }
