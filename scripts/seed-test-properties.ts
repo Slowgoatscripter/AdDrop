@@ -25,8 +25,29 @@ try {
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
+
+// Sign in if using anon key (RLS requires authenticated admin)
+async function ensureAuthenticated() {
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) return // service role bypasses RLS
+
+  const email = process.argv[2]
+  const password = process.argv[3]
+
+  if (!email || !password) {
+    console.error('Usage: npx tsx scripts/seed-test-properties.ts <email> <password>')
+    console.error('  (Required when SUPABASE_SERVICE_ROLE_KEY is not set)')
+    process.exit(1)
+  }
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) {
+    console.error('Auth failed:', error.message)
+    process.exit(1)
+  }
+  console.log('Authenticated as', email)
+}
 
 const seedProperties: (ListingData & { is_seed: boolean; risk_category: string })[] = [
   {
@@ -386,6 +407,7 @@ const seedProperties: (ListingData & { is_seed: boolean; risk_category: string }
 ]
 
 async function seed() {
+  await ensureAuthenticated()
   console.log('Seeding test properties...')
 
   // Delete existing seed data first
