@@ -29,6 +29,8 @@ export interface MLSComplianceConfig {
   requiredDisclosures: string[];
   prohibitedTerms: ProhibitedTerm[];
   maxDescriptionLength?: number;
+  lastUpdated?: string;
+  version?: string;
   docPaths?: {
     federal: string[];
     state: string[];

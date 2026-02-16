@@ -1814,7 +1814,7 @@ const misleadingClaimsTerms: ProhibitedTerm[] = [
     term: 'waterfront',
     category: 'misleading-claims',
     severity: 'hard',
-    shortExplanation: 'Deceptive property description if no water access',
+    shortExplanation: 'Deceptive property description if no water access. Only flag if property is not actually waterfront',
     law: 'FTC Act § 5; NAR Art. 12',
     suggestedAlternative: 'water views',
   },
@@ -1854,7 +1854,7 @@ const misleadingClaimsTerms: ProhibitedTerm[] = [
     term: 'brand new',
     category: 'misleading-claims',
     severity: 'soft',
-    shortExplanation: 'Misrepresentation if built 3+ years ago',
+    shortExplanation: 'Misrepresentation if built 3+ years ago. Only flag if property is not actually new construction',
     law: 'FTC Act § 5; NAR Art. 12',
     suggestedAlternative: 'built in [year]',
   },
@@ -1878,6 +1878,8 @@ const allProhibitedTerms: ProhibitedTerm[] = [
 export const montanaCompliance: MLSComplianceConfig = {
   state: 'Montana',
   mlsName: 'Montana Regional MLS',
+  lastUpdated: '2026-02-15',
+  version: '2.0',
   rules: [
     'Must include listing broker name',
     'Must include MLS number if available',
@@ -1897,7 +1899,7 @@ export const montanaCompliance: MLSComplianceConfig = {
     'Equal Housing Opportunity',
   ],
   prohibitedTerms: allProhibitedTerms,
-  maxDescriptionLength: 1000,
+  maxDescriptionLength: 1000, // Conservative default — verify against actual Montana MLS limits
   docPaths: {
     federal: [
       'compliance-docs/federal/fair-housing-overview.md',

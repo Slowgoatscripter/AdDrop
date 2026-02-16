@@ -140,6 +140,14 @@ Resort towns like Whitefish, Big Sky, and Red Lodge have seasonal workforce hous
 ### Native American Communities
 Montana has seven Indian reservations and one state-recognized tribe. Advertising that references or excludes tribal communities, or uses language that signals racial preferences in areas near reservations, requires particular sensitivity under both state and federal law.
 
+### Internet Advertising Rules (ARM 24.210.430)
+
+Montana Administrative Rules require:
+- Licensee identification must appear on every viewable page of web advertising, or be accessible via a link
+- Creation date and last-update date must be displayed on web advertisements
+- Material changes to listings must be updated within 7 days
+- All internet advertising must comply with Fair Housing Act requirements
+
 ## Sources
 
 - Montana Code Annotated § 49-2-305 — Discrimination in Housing — https://archive.legmt.gov/bills/mca/title_0490/chapter_0020/part_0030/section_0050/0490-0020-0030-0050.html
