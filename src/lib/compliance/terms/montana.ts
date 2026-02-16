@@ -1,4 +1,5 @@
 import { MLSComplianceConfig, ProhibitedTerm } from '@/lib/types';
+import { ohioCompliance } from './ohio';
 
 // --- Steering ---
 const steeringTerms: ProhibitedTerm[] = [
@@ -1952,4 +1953,5 @@ export function formatTermsForPrompt(terms: ProhibitedTerm[]): string {
  */
 export const complianceConfigs: Record<string, MLSComplianceConfig> = {
   MT: montanaCompliance,
+  OH: ohioCompliance,
 };
