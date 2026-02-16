@@ -14,6 +14,7 @@ import type {
 
 const FULL_PIPELINE_CONCURRENCY = 3;
 const SNAPSHOT_CONCURRENCY = 5;
+const SCAN_CONCURRENCY = 3; // Max concurrent platform scans per property
 
 async function runWithConcurrency<T>(
   items: T[],
@@ -226,13 +227,21 @@ export async function POST(request: NextRequest) {
 
             const { config } = await getComplianceSettings(property.state);
 
-            // Scan all platform texts in parallel within this property
+            // Scan platform texts with concurrency limit to avoid rate limits
             const platformEntries = Object.entries(generatedText);
-            const scanResults = await Promise.all(
-              platformEntries.map(([platform, text]) =>
-                scanTextWithAgent(text, property.state, platform, config)
-              )
-            );
+            const scanResults: Awaited<ReturnType<typeof scanTextWithAgent>>[] = [];
+            const scanExecuting = new Set<Promise<void>>();
+
+            for (const [index, [platform, text]] of platformEntries.entries()) {
+              const p = scanTextWithAgent(text, property.state, platform, config)
+                .then((result) => { scanResults[index] = result; })
+                .then(() => { scanExecuting.delete(p); });
+              scanExecuting.add(p);
+              if (scanExecuting.size >= SCAN_CONCURRENCY) {
+                await Promise.race(scanExecuting);
+              }
+            }
+            await Promise.all(scanExecuting);
 
             const allViolations = scanResults.flatMap(r => r.violations);
             const allAutoFixes = scanResults.flatMap(r => r.autoFixes);

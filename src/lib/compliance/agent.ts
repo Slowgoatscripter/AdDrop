@@ -11,6 +11,7 @@ import type {
 import { extractPlatformTexts } from './utils';
 import { loadComplianceDocs } from './docs';
 import { formatTermsForPrompt } from './utils';
+import { callWithRetry } from '@/lib/utils/retry';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -105,15 +106,17 @@ ${textsFormatted}
 Analyze all texts for Fair Housing violations. Return JSON with violations, auto-fixes, and verdict.`;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-5.2',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0,
-      response_format: { type: 'json_object' },
-    });
+    const response = await callWithRetry(() =>
+      openai.chat.completions.create({
+        model: 'gpt-5.2',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0,
+        response_format: { type: 'json_object' },
+      })
+    );
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
@@ -214,15 +217,17 @@ Text: ${text}
 Analyze this text for Fair Housing violations. Return JSON with violations, auto-fixes, and verdict.`;
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-5.2',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0,
-      response_format: { type: 'json_object' },
-    });
+    const response = await callWithRetry(() =>
+      openai.chat.completions.create({
+        model: 'gpt-5.2',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0,
+        response_format: { type: 'json_object' },
+      })
+    );
 
     const content = response.choices[0]?.message?.content;
     if (!content) {

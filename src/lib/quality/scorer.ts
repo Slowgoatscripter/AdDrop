@@ -10,6 +10,7 @@ import {
 import { CampaignKit } from '@/lib/types/campaign';
 import { ListingData } from '@/lib/types/listing';
 import { extractPlatformTexts } from './engine';
+import { callWithRetry } from '@/lib/utils/retry';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -237,19 +238,21 @@ export async function scoreAllPlatformQuality(
   const prompt = buildScoringPrompt(propertyContext, platformTextBlock, demographic, tone);
 
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-5.2',
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are a real estate ad copy quality analyst. Always respond with valid JSON only. No markdown, no code fences, no explanatory text.',
-        },
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' },
-    });
+    const response = await callWithRetry(() =>
+      openai.chat.completions.create({
+        model: 'gpt-5.2',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a real estate ad copy quality analyst. Always respond with valid JSON only. No markdown, no code fences, no explanatory text.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
+      })
+    );
 
     const content = response.choices[0]?.message?.content;
     if (!content) return emptyResult;
