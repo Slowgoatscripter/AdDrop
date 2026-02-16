@@ -16,6 +16,7 @@ const CATEGORIES = [
   { key: 'creed', label: 'Creed (includes political beliefs)' },
   { key: 'economic-exclusion', label: 'Economic Exclusion' },
   { key: 'misleading-claims', label: 'Misleading Claims' },
+  { key: 'military-status', label: 'Military / Veteran Status' },
 ] as const
 
 interface ComplianceSettingsFormProps {
@@ -108,8 +109,9 @@ export function ComplianceSettingsForm({ settings }: ComplianceSettingsFormProps
           <label className={labelClass}>State</label>
           <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)}>
             <option value="MT">Montana</option>
+            <option value="OH">Ohio</option>
           </select>
-          <p className="text-xs text-muted-foreground mt-1">More states coming soon.</p>
+          <p className="text-xs text-muted-foreground mt-1">Select the state where your brokerage operates.</p>
         </div>
 
         {/* Max Description Length */}
