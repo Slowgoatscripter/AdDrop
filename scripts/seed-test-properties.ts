@@ -420,9 +420,19 @@ async function seed() {
     console.error('Failed to clear existing seed data:', deleteError.message)
   }
 
+  // Transform flat seed data into DB row shape
+  const rows = seedProperties.map(({ is_seed, risk_category, ...listing }) => ({
+    name: `${listing.address.city} ${listing.propertyType} - ${risk_category}`,
+    state: listing.address.state,
+    listing_data: listing,
+    risk_category,
+    is_seed,
+    tags: [risk_category, listing.propertyType.toLowerCase().replace(/\s+/g, '-')],
+  }))
+
   const { data, error } = await supabase
     .from('compliance_test_properties')
-    .insert(seedProperties)
+    .insert(rows)
     .select()
 
   if (error) {
