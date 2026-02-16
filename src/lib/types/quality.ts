@@ -12,7 +12,8 @@ export type QualityCategory =
   | 'platform-optimization'
   | 'demographic-fit'
   | 'property-type-fit'
-  | 'emotional-triggers';
+  | 'emotional-triggers'
+  | 'voice-authenticity';
 
 export type QualityPriority = 'required' | 'recommended';
 

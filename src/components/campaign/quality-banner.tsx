@@ -22,6 +22,7 @@ const categoryLabels: Record<QualityCategory, string> = {
   'demographic-fit': 'audience adjustments',
   'property-type-fit': 'property type fixes',
   'emotional-triggers': 'emotional enhancements',
+  'voice-authenticity': 'voice improvements',
 };
 
 function buildBreakdown(result: CampaignQualityResult): string | null {
