@@ -14,6 +14,24 @@ import { QualitySuggestionsPanel } from './quality-suggestions-panel';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+async function persistCampaignAds(id: string, generatedAds: CampaignKit) {
+  try {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('campaigns')
+      .update({ generated_ads: generatedAds })
+      .eq('id', id);
+
+    if (error) {
+      console.error('[campaign-shell] Supabase persist failed:', error);
+      toast.error('Changes saved locally but failed to sync.');
+    }
+  } catch (err) {
+    console.error('[campaign-shell] Supabase persist error:', err);
+    toast.error('Changes saved locally but failed to sync.');
+  }
+}
+
 export function CampaignShell() {
   const params = useParams();
   const router = useRouter();
@@ -148,6 +166,7 @@ export function CampaignShell() {
 
       setCampaign(updated);
       sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+      persistCampaignAds(updated.id, updated);
     },
     [campaign]
   );
@@ -338,6 +357,7 @@ export function CampaignShell() {
 
         setCampaign(updated);
         sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+        persistCampaignAds(updated.id, updated);
       } finally {
         setApplyingId(null);
       }
@@ -349,16 +369,14 @@ export function CampaignShell() {
   const handleDismissSuggestion = useCallback(
     (suggestionId: string) => {
       if (!campaign) return;
-      setCampaign((prev) =>
-        prev
-          ? {
-              ...prev,
-              qualitySuggestions: prev.qualitySuggestions?.filter(
-                (s) => s.id !== suggestionId,
-              ),
-            }
-          : null,
-      );
+      const updated: CampaignKit = {
+        ...campaign,
+        qualitySuggestions: campaign.qualitySuggestions?.filter(
+          (s) => s.id !== suggestionId,
+        ),
+      };
+      setCampaign(updated);
+      persistCampaignAds(updated.id, updated);
     },
     [campaign],
   );
