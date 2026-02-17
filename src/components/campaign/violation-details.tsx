@@ -136,7 +136,9 @@ function ViolationItem({
 }
 
 export function ViolationDetails({ violations, onReplace }: ViolationDetailsProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(
+    violations.some((v) => v.severity === 'hard')
+  );
 
   if (violations.length === 0) return null;
 
