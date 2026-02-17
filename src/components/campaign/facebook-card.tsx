@@ -42,6 +42,7 @@ export function FacebookCard({
   const tones = Object.keys(content);
   const [selectedTone, setSelectedTone] = useState<string>(tones[0] || 'professional');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
 
   const currentContent = content[selectedTone] || '';
 
@@ -53,14 +54,36 @@ export function FacebookCard({
 
   const pageName = listing?.listingAgent || 'Your Brand';
 
-  /** Truncate post text at ~3 lines (~180 chars) with "See More" */
+  /** Truncate post text at ~3 lines (~180 chars) with interactive "See More" / "See Less" */
   const truncatePost = (text: string) => {
     const limit = 180;
-    if (text.length <= limit) return <span>{text}</span>;
+    if (expanded || text.length <= limit) {
+      return (
+        <span>
+          {text}
+          {expanded && text.length > limit && (
+            <>
+              {' '}
+              <button
+                onClick={() => setExpanded(false)}
+                className="text-[#385898] bg-transparent border-none cursor-pointer p-0"
+              >
+                See Less
+              </button>
+            </>
+          )}
+        </span>
+      );
+    }
     return (
       <>
         {text.slice(0, limit)}...{' '}
-        <span className="text-[#385898] cursor-pointer">See More</span>
+        <button
+          onClick={() => setExpanded(true)}
+          className="text-[#385898] bg-transparent border-none cursor-pointer p-0"
+        >
+          See More
+        </button>
       </>
     );
   };
