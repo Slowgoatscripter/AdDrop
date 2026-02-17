@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { CopyButton } from '@/components/copy-button';
 import { ComplianceBadge } from './compliance-badge';
 import { QualityBadge } from './quality-badge';
@@ -10,7 +10,7 @@ import { PlatformComplianceResult, ComplianceViolation } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
 import type { QualityIssue } from '@/lib/types/quality';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, RefreshCw } from 'lucide-react';
 
 interface AdCardWrapperProps {
   platform: string;
@@ -24,6 +24,9 @@ interface AdCardWrapperProps {
   violations?: ComplianceViolation[];
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   onRevert?: (issue: QualityIssue) => void;
+  onRegenerate?: (tone: string) => void;
+  toneOptions?: string[];
+  isRegenerating?: boolean;
 }
 
 export function AdCardWrapper({
@@ -38,7 +41,12 @@ export function AdCardWrapper({
   violations,
   onReplace,
   onRevert,
+  onRegenerate,
+  toneOptions,
+  isRegenerating,
 }: AdCardWrapperProps) {
+  const [showToneSelector, setShowToneSelector] = useState(false);
+
   return (
     <div className="bg-card border rounded-xl overflow-hidden">
       {/* Header */}
@@ -53,6 +61,36 @@ export function AdCardWrapper({
         <div className="flex items-center gap-1.5">
           {complianceResult && <ComplianceBadge result={complianceResult} />}
           {qualityResult && <QualityBadge result={qualityResult} />}
+          {onRegenerate && (
+            <div className="relative">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs gap-1.5"
+                onClick={() => setShowToneSelector((prev) => !prev)}
+                disabled={isRegenerating}
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isRegenerating ? 'animate-spin' : ''}`} />
+                Regenerate
+              </Button>
+              {showToneSelector && toneOptions && (
+                <div className="absolute right-0 top-full mt-1 z-10 bg-popover border rounded-md shadow-md py-1 min-w-[140px]">
+                  {toneOptions.map((tone) => (
+                    <button
+                      key={tone}
+                      className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent"
+                      onClick={() => {
+                        onRegenerate?.(tone);
+                        setShowToneSelector(false);
+                      }}
+                    >
+                      {tone.charAt(0).toUpperCase() + tone.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
