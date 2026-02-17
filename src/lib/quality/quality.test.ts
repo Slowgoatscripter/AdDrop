@@ -106,7 +106,7 @@ describe('Formatting Rules', () => {
   });
 
   test('language rules are no longer exported', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const rules = require('./rules');
     expect(rules.qualityRules).toBeUndefined();
     expect(rules.formattingRules).toBeDefined();
@@ -564,7 +564,7 @@ describe('autoFixQuality', () => {
 
 describe('autoFixTextAI is removed', () => {
   test('auto-fix module does not export autoFixTextAI', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const autoFix = require('./auto-fix');
     expect(autoFix.autoFixTextAI).toBeUndefined();
   });
@@ -609,7 +609,7 @@ describe('Scorer: AI_CATEGORIES and model', () => {
   let scorerSource: string;
 
   beforeAll(() => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const fs = require('fs');
     const path = require('path');
     scorerSource = fs.readFileSync(
@@ -665,7 +665,7 @@ describe('Scorer: AI_CATEGORIES and model', () => {
 
 describe('Scorer: scoreAllPlatformQuality signature', () => {
   test('accepts tone parameter', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const fs = require('fs');
     const path = require('path');
     const source = fs.readFileSync(
@@ -680,7 +680,7 @@ describe('Scorer: scoreAllPlatformQuality signature', () => {
   });
 
   test('passes tone through to buildScoringPrompt', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const fs = require('fs');
     const path = require('path');
     const source = fs.readFileSync(
