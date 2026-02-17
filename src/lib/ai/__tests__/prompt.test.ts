@@ -240,6 +240,16 @@ describe('buildGenerationPrompt', () => {
     expect(prompt).toContain('"sellingPoints"');
   });
 
+  test('compliance section appears after quality section in prompt', async () => {
+    const prompt = await buildGenerationPrompt(mockListing);
+    const qualityIndex = prompt.indexOf('## Ad Quality Standards');
+    const complianceIndex = prompt.indexOf('## Fair Housing Compliance');
+    const rulesIndex = prompt.indexOf('IMPORTANT RULES:');
+    // Compliance should come AFTER quality, and important rules at the very end
+    expect(complianceIndex).toBeGreaterThan(qualityIndex);
+    expect(rulesIndex).toBeGreaterThan(complianceIndex);
+  });
+
   test('instructs AI not to add extra platforms', async () => {
     const subset: PlatformId[] = ['instagram'];
     const prompt = await buildGenerationPrompt(mockListing, undefined, undefined, {
