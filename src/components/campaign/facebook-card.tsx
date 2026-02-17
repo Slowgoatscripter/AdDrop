@@ -16,6 +16,7 @@ import {
   Share2,
   MoreHorizontal,
 } from 'lucide-react';
+import { EditableText } from './editable-text';
 
 interface FacebookCardProps {
   content: Record<string, string>;
@@ -24,6 +25,7 @@ interface FacebookCardProps {
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -34,14 +36,16 @@ export function FacebookCard({
   qualityResult,
   onReplace,
   onRevert,
+  onEditText,
   listing,
 }: FacebookCardProps) {
   const tones = Object.keys(content);
   const [selectedTone, setSelectedTone] = useState<string>(tones[0] || 'professional');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const [editedContent, setEditedContent] = useState<Record<string, string>>({});
 
-  const currentContent = content[selectedTone] || '';
+  const currentContent = editedContent[selectedTone] ?? content[selectedTone] ?? '';
 
   // Stable engagement numbers derived from listing price
   const seed = listing?.price ?? 350000;
@@ -133,9 +137,21 @@ export function FacebookCard({
 
             {/* Post Text */}
             <div className="px-4 pb-3">
-              <p className="text-[15px] leading-[20px] whitespace-pre-wrap">
-                {truncatePost(currentContent)}
-              </p>
+              {onEditText ? (
+                <EditableText
+                  value={currentContent}
+                  onChange={(val) => setEditedContent((prev) => ({ ...prev, [selectedTone]: val }))}
+                  onSave={(val) => {
+                    setEditedContent((prev) => ({ ...prev, [selectedTone]: val }));
+                    onEditText('facebook', selectedTone, val);
+                  }}
+                  className="text-[15px] leading-[20px] whitespace-pre-wrap"
+                />
+              ) : (
+                <p className="text-[15px] leading-[20px] whitespace-pre-wrap">
+                  {truncatePost(currentContent)}
+                </p>
+              )}
             </div>
 
             {/* Image Area */}

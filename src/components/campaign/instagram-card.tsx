@@ -10,6 +10,7 @@ import { AdTone, PlatformComplianceResult, ListingData } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
 import type { QualityIssue } from '@/lib/types/quality';
 import { seededRandom } from '@/lib/utils/seeded-random';
+import { EditableText } from './editable-text';
 import {
   Heart,
   MessageCircle,
@@ -25,6 +26,7 @@ interface InstagramCardProps {
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -35,6 +37,7 @@ export function InstagramCard({
   qualityResult,
   onReplace,
   onRevert,
+  onEditText,
   listing,
 }: InstagramCardProps) {
   const tones = Object.keys(content) as AdTone[];
@@ -180,10 +183,22 @@ export function InstagramCard({
 
             {/* Caption */}
             <div className="px-3 pt-1">
-              <p className="text-sm leading-[18px]">
-                <span className="font-semibold">{username}</span>{' '}
-                {truncateCaption(currentCaption, 125)}
-              </p>
+              {onEditText ? (
+                <div className="text-sm leading-[18px]">
+                  <span className="font-semibold">{username}</span>{' '}
+                  <EditableText
+                    value={currentCaption}
+                    onChange={() => {}}
+                    onSave={(newValue) => onEditText('instagram', selectedTone, newValue)}
+                    maxLength={2200}
+                  />
+                </div>
+              ) : (
+                <p className="text-sm leading-[18px]">
+                  <span className="font-semibold">{username}</span>{' '}
+                  {truncateCaption(currentCaption, 125)}
+                </p>
+              )}
             </div>
 
             {/* View comments */}
