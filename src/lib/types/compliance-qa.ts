@@ -60,7 +60,10 @@ export interface PropertyTestResult {
   passed: boolean // final output is clean after auto-fix
   complianceResult: ComplianceAgentResult
   generatedText?: Record<string, string> // only in full-pipeline mode
+  /** @deprecated Use qualitySuggestionsCount instead */
   qualityFixesApplied?: number // only in full-pipeline mode
+  qualitySuggestionsCount?: number;
+  regexFindingsCount?: number;
 }
 
 // --- Scanner ---

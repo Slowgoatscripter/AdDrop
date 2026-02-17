@@ -84,6 +84,10 @@ export interface CampaignKit {
   // Metadata
   complianceResult: ComplianceAgentResult;
   qualityResult?: CampaignQualityResult;
+  /** Advisory quality suggestions -- user applies via UI (replaces auto-fix) */
+  qualitySuggestions?: import('./quality').QualitySuggestion[];
+  /** Auto-enforced hard constraints (char limits, disclosures) */
+  qualityConstraints?: import('./quality').QualityConstraintViolation[];
   selectedPlatforms?: PlatformId[];
   stateCode?: string;
   // Strategy fields — always generated

@@ -103,4 +103,8 @@ export interface ComplianceAgentResult {
   autoFixes: ComplianceAutoFix[]
   totalViolations: number
   totalAutoFixes: number
+  /** false if Phase 2 compliance rewrite failed -- output may be non-compliant */
+  complianceRewriteApplied?: boolean;
+  /** Distinguishes Phase 2 rewrite results from standalone scan results */
+  source?: 'rewrite' | 'scan';
 }
