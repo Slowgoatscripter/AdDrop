@@ -94,7 +94,7 @@ export function HomesTruliaCard({
       {/* Property photo with price overlay */}
       <div className="relative">
         <MockupImage
-          src={photos[selectedPhotoIndex] ?? '/placeholder.jpg'}
+          src={photos[selectedPhotoIndex] ?? ''}
           alt="Property photo"
           aspectRatio="aspect-[16/9]"
           sizes="(max-width: 448px) 100vw, 448px"
