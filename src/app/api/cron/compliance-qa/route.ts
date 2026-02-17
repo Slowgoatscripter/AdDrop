@@ -111,7 +111,8 @@ export async function GET(req: NextRequest) {
         passed,
         complianceResult,
         generatedText,
-        qualityFixesApplied: campaign.qualityResult?.improvementsApplied || 0,
+        qualityFixesApplied: 0,
+        qualitySuggestionsCount: campaign.qualitySuggestions?.length ?? 0,
       })
     } catch (error) {
       console.error(`Cron: Error processing property ${property.id}:`, error)

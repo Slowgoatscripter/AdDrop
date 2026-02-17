@@ -163,7 +163,8 @@ export async function POST(request: NextRequest) {
               passed,
               complianceResult,
               generatedText,
-              qualityFixesApplied: campaign.qualityResult?.improvementsApplied || 0,
+              qualityFixesApplied: 0,
+              qualitySuggestionsCount: campaign.qualitySuggestions?.length ?? 0,
             });
           } catch (error) {
             console.error(`Error processing property ${property.id}:`, error);
