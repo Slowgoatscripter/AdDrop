@@ -10,7 +10,7 @@ jest.mock('openai', () => {
   }));
 });
 
-import { checkComplianceWithAgent, scanTextWithAgent } from './agent';
+import { checkComplianceWithAgent, scanTextWithAgent, rewriteForCompliance } from './agent';
 import { montanaCompliance } from './terms/montana';
 import { ohioCompliance } from './terms/ohio';
 import type { CampaignKit } from '@/lib/types/campaign';
@@ -727,5 +727,170 @@ describe('Montana regression', () => {
 
     expect(result.violations).toHaveLength(1);
     expect(result.violations[0].category).toBe('creed');
+  });
+});
+
+describe('rewriteForCompliance', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('returns rewritten campaign and compliance result on success', async () => {
+    const rewriteResponse = {
+      rewrittenTexts: {
+        'twitter': 'This home has a spacious layout',
+        'instagram.casual': 'Beautiful home with great views',
+      },
+      complianceResult: {
+        platforms: [
+          { platform: 'twitter', verdict: 'pass', violationCount: 1, autoFixCount: 1 },
+          { platform: 'instagram.casual', verdict: 'pass', violationCount: 1, autoFixCount: 1 },
+        ],
+        campaignVerdict: 'needs-review' as const,
+        violations: [{
+          platform: 'twitter',
+          term: 'perfect for families',
+          category: 'familial-status',
+          severity: 'soft',
+          explanation: 'Targets household type',
+          law: 'Fair Housing Act §3604(c)',
+          isContextual: true,
+        }],
+        autoFixes: [{
+          platform: 'twitter',
+          before: 'perfect for families',
+          after: 'spacious layout',
+          violationTerm: 'perfect for families',
+          category: 'familial-status',
+        }],
+        totalViolations: 1,
+        totalAutoFixes: 1,
+      },
+    };
+
+    mockCreate.mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify(rewriteResponse),
+        },
+      }],
+    });
+
+    const campaign = buildMockCampaign({
+      twitter: 'This home is perfect for families',
+      instagram: { professional: 'Clean text', casual: 'Exclusive neighborhood vibes', luxury: 'Clean text' },
+    });
+
+    const regexFindings = [{
+      platform: 'instagram.casual',
+      term: 'exclusive neighborhood',
+      category: 'steering',
+      severity: 'soft' as const,
+      matchedText: 'Exclusive neighborhood',
+      position: 0,
+    }];
+
+    const result = await rewriteForCompliance(campaign, montanaCompliance, regexFindings);
+
+    // Campaign text should be merged
+    expect(result.campaign.twitter).toBe('This home has a spacious layout');
+    expect(result.campaign.instagram!.casual).toBe('Beautiful home with great views');
+    // complianceRewriteApplied should be true
+    expect(result.complianceResult.complianceRewriteApplied).toBe(true);
+    expect(result.complianceResult.source).toBe('rewrite');
+    expect(result.complianceResult.campaignVerdict).toBe('needs-review');
+  });
+
+  test('returns original campaign with needs-review on API failure', async () => {
+    mockCreate.mockRejectedValue(new Error('API timeout'));
+
+    const campaign = buildMockCampaign({
+      twitter: 'This home is perfect for families',
+    });
+
+    const regexFindings = [{
+      platform: 'twitter',
+      term: 'perfect for families',
+      category: 'familial-status',
+      severity: 'soft' as const,
+      matchedText: 'perfect for families',
+      position: 13,
+    }];
+
+    const result = await rewriteForCompliance(campaign, montanaCompliance, regexFindings);
+
+    // Campaign should be unchanged
+    expect(result.campaign.twitter).toBe('This home is perfect for families');
+    // Verdict should be needs-review
+    expect(result.complianceResult.campaignVerdict).toBe('needs-review');
+    expect(result.complianceResult.complianceRewriteApplied).toBe(false);
+  });
+
+  test('excludes strategy fields from texts sent to AI', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            rewrittenTexts: {},
+            complianceResult: {
+              platforms: [],
+              campaignVerdict: 'compliant',
+              violations: [],
+              autoFixes: [],
+              totalViolations: 0,
+              totalAutoFixes: 0,
+            },
+          }),
+        },
+      }],
+    });
+
+    const campaign = buildMockCampaign({
+      hashtags: ['#realestate', '#familyfriendly'],
+      targetingNotes: 'Target family-oriented buyers',
+      sellingPoints: ['Great for families'],
+      callsToAction: ['Call now for exclusive access'],
+    });
+
+    await rewriteForCompliance(campaign, montanaCompliance, []);
+
+    const callArgs = mockCreate.mock.calls[0][0];
+    const userMessage = callArgs.messages.find((m: any) => m.role === 'user');
+    // Should not contain strategy field labels
+    expect(userMessage.content).not.toContain('hashtags');
+    expect(userMessage.content).not.toContain('targetingNotes');
+    expect(userMessage.content).not.toContain('sellingPoints');
+    expect(userMessage.content).not.toContain('callsToAction');
+  });
+
+  test('uses temperature 0 for deterministic output', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            rewrittenTexts: {},
+            complianceResult: {
+              platforms: [],
+              campaignVerdict: 'compliant',
+              violations: [],
+              autoFixes: [],
+              totalViolations: 0,
+              totalAutoFixes: 0,
+            },
+          }),
+        },
+      }],
+    });
+
+    const campaign = buildMockCampaign();
+    await rewriteForCompliance(campaign, montanaCompliance, []);
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        temperature: 0,
+        response_format: { type: 'json_object' },
+        model: 'gpt-5.2',
+      })
+    );
   });
 });
