@@ -60,6 +60,7 @@ export function HomesTruliaCard({
   listing,
 }: HomesTruliaCardProps) {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
 
   const formattedPrice = listing?.price
     ? `$${listing.price.toLocaleString()}`
@@ -155,9 +156,20 @@ export function HomesTruliaCard({
                 className="text-xs text-muted-foreground leading-relaxed"
               />
             ) : (
-              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-4">
-                {content}
-              </p>
+              <>
+                <p className={`text-xs text-muted-foreground leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>
+                  {content}
+                </p>
+                {content.length > 200 && (
+                  <button
+                    onClick={() => setExpanded(!expanded)}
+                    className="text-xs font-medium mt-1"
+                    style={{ color: HOMES_TEAL }}
+                  >
+                    {expanded ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </>
             )}
             <span className="mt-1.5 inline-block text-[10px] text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
               {content.length} chars

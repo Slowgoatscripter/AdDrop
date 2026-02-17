@@ -69,9 +69,6 @@ function buildPlatformResult(
 ): PlatformComplianceResult | undefined {
   if (!agentResult) return undefined;
 
-  const platformVerdict = agentResult.platforms.find(p => p.platform === platformPrefix);
-  if (!platformVerdict) return undefined;
-
   // Filter violations for this platform (exact match or dot-prefixed sub-platforms)
   const violations: ComplianceViolation[] = agentResult.violations
     .filter(v => v.platform === platformPrefix || v.platform.startsWith(platformPrefix + '.'))
@@ -92,10 +89,16 @@ function buildPlatformResult(
       };
     });
 
+  // Check for explicit verdict; if platform is missing from verdict list, infer from violations
+  const platformVerdict = agentResult.platforms.find(p => p.platform === platformPrefix);
+  const passed = platformVerdict
+    ? platformVerdict.verdict === 'pass'
+    : violations.length === 0;
+
   return {
     platform: platformPrefix,
     violations,
-    passed: platformVerdict.verdict === 'pass',
+    passed,
     hardCount: violations.filter(v => v.severity === 'hard').length,
     softCount: violations.filter(v => v.severity === 'soft').length,
   };

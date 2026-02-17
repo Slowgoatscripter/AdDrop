@@ -33,6 +33,7 @@ export function ZillowCard({
   listing,
 }: ZillowCardProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
 
   const platformIcon = (
     <div
@@ -168,9 +169,20 @@ export function ZillowCard({
                 className="text-sm text-[#444] leading-relaxed"
               />
             ) : (
-              <p className="text-sm text-[#444] leading-relaxed line-clamp-5">
-                {content}
-              </p>
+              <>
+                <p className={`text-sm text-[#444] leading-relaxed ${!expanded ? 'line-clamp-5' : ''}`}>
+                  {content}
+                </p>
+                {content.length > 200 && (
+                  <button
+                    onClick={() => setExpanded(!expanded)}
+                    className="text-xs font-medium mt-1"
+                    style={{ color: ZILLOW_BLUE }}
+                  >
+                    {expanded ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </>
             )}
           </div>
 

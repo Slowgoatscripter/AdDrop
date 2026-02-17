@@ -41,6 +41,7 @@ export function RealtorCard({
   listing,
 }: RealtorCardProps) {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
 
   const photo = photos[selectedPhotoIndex] ?? photos[0] ?? '';
 
@@ -108,7 +109,18 @@ export function RealtorCard({
               className="text-sm text-gray-700 leading-relaxed"
             />
           ) : (
-            <p className="text-sm text-gray-700 leading-relaxed line-clamp-4">{content}</p>
+            <>
+              <p className={`text-sm text-gray-700 leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>{content}</p>
+              {content.length > 200 && (
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="text-xs font-medium mt-1"
+                  style={{ color: '#D92228' }}
+                >
+                  {expanded ? 'Show less' : 'Read more'}
+                </button>
+              )}
+            </>
           )}
           <p className="text-xs text-muted-foreground mt-2">{content.length} characters</p>
         </div>
