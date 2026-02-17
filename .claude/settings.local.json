@@ -63,7 +63,14 @@
       "Bash(node -e:*)",
       "Bash(powershell -Command:*)",
       "Bash(npm test:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(git stash:*)",
+      "Bash(curl:*)",
+      "Bash(node scripts/compare-terms.mjs:*)",
+      "Bash(1)",
+      "Bash(echo:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

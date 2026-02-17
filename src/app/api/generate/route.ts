@@ -23,7 +23,7 @@ const ListingSchema = z.object({
   lotSize: z.string().max(50).optional(),
   yearBuilt: z.number().int().min(1600).max(2100).optional(),
   photos: z.array(z.string().url().max(2000)).max(25).optional(),
-  url: z.string().url().max(2000).optional(),
+  url: z.string().max(2000).optional().refine(val => !val || z.string().url().safeParse(val).success, { message: 'Invalid URL' }),
   mlsNumber: z.string().max(20).regex(/^[a-zA-Z0-9]*$/).optional(),
   listingAgent: z.string().max(200).optional(),
   broker: z.string().max(200).optional(),
