@@ -82,9 +82,8 @@ export function PrintAdCard({
       >
         {/* Physical paper effect: rotation + layered shadow */}
         <div
-          className="bg-white overflow-hidden"
+          className="bg-white overflow-hidden relative"
           style={{
-            transform: 'rotate(1.5deg)',
             boxShadow: '0 1px 4px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.08)',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           }}
