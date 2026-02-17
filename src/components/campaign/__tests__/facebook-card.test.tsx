@@ -15,7 +15,7 @@ test('renders EditableText for post text when onEditText is provided', async () 
       onEditText={onEditText}
     />
   );
-  const postText = screen.getByText(/My post/);
-  await user.click(postText);
+  const postTexts = screen.getAllByText(/My post/);
+  await user.click(postTexts[0]);
   expect(screen.getByRole('textbox')).toBeInTheDocument();
 });

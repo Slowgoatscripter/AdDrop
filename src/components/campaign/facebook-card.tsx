@@ -16,6 +16,8 @@ import {
   Share2,
   MoreHorizontal,
 } from 'lucide-react';
+import { CardLayoutWrapper } from './card-layout-wrapper';
+import { CardEditPanel } from './card-edit-panel';
 import { EditableText } from './editable-text';
 
 interface FacebookCardProps {
@@ -95,107 +97,142 @@ export function FacebookCard({
     </div>
   );
 
+  const mockupContent = (
+    <PhoneFrame>
+      {/* Facebook mockup interior */}
+      <div className="bg-white text-[#050505]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }}>
+        {/* FB Post Header */}
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-lg">f</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-[15px] leading-tight">{pageName}</div>
+            <div className="text-[13px] text-[#65676B]">Just now · 🌐</div>
+          </div>
+          <MoreHorizontal aria-label="More options" className="w-5 h-5 text-[#65676B] flex-shrink-0" />
+        </div>
+
+        {/* Post Text — mobile: editable, desktop: read-only with See More */}
+        <div className="px-4 pb-3">
+          <div className="lg:hidden">
+            {onEditText ? (
+              <EditableText
+                value={currentContent}
+                onChange={(val) => setEditedContent((prev) => ({ ...prev, [selectedTone]: val }))}
+                onSave={(val) => {
+                  setEditedContent((prev) => ({ ...prev, [selectedTone]: val }));
+                  onEditText('facebook', selectedTone, val);
+                }}
+                className="text-[15px] leading-[20px] whitespace-pre-wrap"
+              />
+            ) : (
+              <p className="text-[15px] leading-[20px] whitespace-pre-wrap">
+                {truncatePost(currentContent)}
+              </p>
+            )}
+          </div>
+          <div className="hidden lg:block">
+            <p className="text-[15px] leading-[20px] whitespace-pre-wrap">
+              {truncatePost(currentContent)}
+            </p>
+          </div>
+        </div>
+
+        {/* Image Area */}
+        <MockupImage
+          src={photos[selectedImageIndex] || ''}
+          alt="Facebook post image"
+          aspectRatio="aspect-[1.91/1]"
+          sizes="(max-width: 448px) 100vw, 448px"
+          photos={photos}
+          selectedIndex={selectedImageIndex}
+          onImageSelect={setSelectedImageIndex}
+        />
+
+        {/* Engagement Row */}
+        <div className="px-4 py-2 flex justify-between items-center text-[15px] text-[#65676B] border-b border-slate-200">
+          <div className="flex items-center gap-1">
+            <span className="flex -space-x-1">
+              <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-blue-500 text-white text-[10px] relative z-30">👍</span>
+              <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] relative z-20">❤️</span>
+              <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-yellow-400 text-white text-[10px] relative z-10">😮</span>
+            </span>
+            <span className="ml-1">{reactionCount}</span>
+          </div>
+          <span>{fbCommentCount} Comments · {shareCount} Shares</span>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="px-2 py-1 flex justify-around">
+          <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
+            <ThumbsUp aria-hidden="true" className="w-5 h-5" />
+            <span>Like</span>
+          </button>
+          <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
+            <MessageCircle aria-hidden="true" className="w-5 h-5" />
+            <span>Comment</span>
+          </button>
+          <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
+            <Share2 aria-hidden="true" className="w-5 h-5" />
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
+    </PhoneFrame>
+  );
+
+  const previewPanel = (
+    <AdCardWrapper
+      platform="Facebook"
+      platformIcon={platformIcon}
+      dimensionLabel="1200 × 628"
+      complianceResult={complianceResult}
+      qualityResult={qualityResult}
+      copyText={currentContent}
+      violations={complianceResult?.violations}
+      onReplace={onReplace}
+      onRevert={onRevert}
+      toneSwitcher={
+        <div className="space-y-2">
+          <ToneSwitcher
+            tones={tones}
+            selected={selectedTone}
+            onSelect={setSelectedTone}
+          />
+          <Badge variant="outline" className="text-xs">
+            {currentContent.length} characters
+          </Badge>
+        </div>
+      }
+    >
+      {mockupContent}
+    </AdCardWrapper>
+  );
+
+  const editPanel = (
+    <CardEditPanel
+      platform="Facebook"
+      platformIcon={platformIcon}
+      content={currentContent}
+      onEditText={onEditText ? (platform, field, val) => {
+        setEditedContent((prev) => ({ ...prev, [selectedTone]: val }));
+        onEditText('facebook', selectedTone, val);
+      } : undefined}
+      platformId="facebook"
+      fieldName={selectedTone}
+      complianceResult={complianceResult}
+      qualityResult={qualityResult}
+    >
+      <ToneSwitcher
+        tones={tones}
+        selected={selectedTone}
+        onSelect={setSelectedTone}
+      />
+    </CardEditPanel>
+  );
+
   return (
-    <div className="w-full max-w-md mx-auto">
-      <AdCardWrapper
-        platform="Facebook"
-        platformIcon={platformIcon}
-        dimensionLabel="1200 × 628"
-        complianceResult={complianceResult}
-        qualityResult={qualityResult}
-        copyText={currentContent}
-        violations={complianceResult?.violations}
-        onReplace={onReplace}
-        onRevert={onRevert}
-        toneSwitcher={
-          <div className="space-y-2">
-            <ToneSwitcher
-              tones={tones}
-              selected={selectedTone}
-              onSelect={setSelectedTone}
-            />
-            <Badge variant="outline" className="text-xs">
-              {currentContent.length} characters
-            </Badge>
-          </div>
-        }
-      >
-        <PhoneFrame>
-          {/* Facebook mockup interior */}
-          <div className="bg-white text-[#050505]" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }}>
-            {/* FB Post Header */}
-            <div className="flex items-center gap-3 px-4 py-3">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-lg">f</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-[15px] leading-tight">{pageName}</div>
-                <div className="text-[13px] text-[#65676B]">Just now · 🌐</div>
-              </div>
-              <MoreHorizontal aria-label="More options" className="w-5 h-5 text-[#65676B] flex-shrink-0" />
-            </div>
-
-            {/* Post Text */}
-            <div className="px-4 pb-3">
-              {onEditText ? (
-                <EditableText
-                  value={currentContent}
-                  onChange={(val) => setEditedContent((prev) => ({ ...prev, [selectedTone]: val }))}
-                  onSave={(val) => {
-                    setEditedContent((prev) => ({ ...prev, [selectedTone]: val }));
-                    onEditText('facebook', selectedTone, val);
-                  }}
-                  className="text-[15px] leading-[20px] whitespace-pre-wrap"
-                />
-              ) : (
-                <p className="text-[15px] leading-[20px] whitespace-pre-wrap">
-                  {truncatePost(currentContent)}
-                </p>
-              )}
-            </div>
-
-            {/* Image Area */}
-            <MockupImage
-              src={photos[selectedImageIndex] || ''}
-              alt="Facebook post image"
-              aspectRatio="aspect-[1.91/1]"
-              sizes="(max-width: 448px) 100vw, 448px"
-              photos={photos}
-              selectedIndex={selectedImageIndex}
-              onImageSelect={setSelectedImageIndex}
-            />
-
-            {/* Engagement Row */}
-            <div className="px-4 py-2 flex justify-between items-center text-[15px] text-[#65676B] border-b border-slate-200">
-              <div className="flex items-center gap-1">
-                <span className="flex -space-x-1">
-                  <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-blue-500 text-white text-[10px] relative z-30">👍</span>
-                  <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] relative z-20">❤️</span>
-                  <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-yellow-400 text-white text-[10px] relative z-10">😮</span>
-                </span>
-                <span className="ml-1">{reactionCount}</span>
-              </div>
-              <span>{fbCommentCount} Comments · {shareCount} Shares</span>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="px-2 py-1 flex justify-around">
-              <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
-                <ThumbsUp aria-hidden="true" className="w-5 h-5" />
-                <span>Like</span>
-              </button>
-              <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
-                <MessageCircle aria-hidden="true" className="w-5 h-5" />
-                <span>Comment</span>
-              </button>
-              <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
-                <Share2 aria-hidden="true" className="w-5 h-5" />
-                <span>Share</span>
-              </button>
-            </div>
-          </div>
-        </PhoneFrame>
-      </AdCardWrapper>
-    </div>
+    <CardLayoutWrapper editPanel={editPanel} previewPanel={previewPanel} />
   );
 }

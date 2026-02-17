@@ -26,7 +26,7 @@ describe('InstagramCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText(/My caption text here/)).toBeInTheDocument();
+    expect(screen.getAllByText(/My caption text here/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders 2200-character badge', () => {
@@ -37,7 +37,7 @@ describe('InstagramCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText(/\/ 2200 characters/)).toBeInTheDocument();
+    expect(screen.getAllByText(/\/ 2200 characters/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders EditableText for caption when onEditText is provided', async () => {
@@ -50,9 +50,9 @@ describe('InstagramCard', () => {
         onEditText={onEditText}
       />
     );
-    // Caption text should be clickable for editing
-    const caption = screen.getByText(/My caption/);
-    await user.click(caption);
+    // Caption text should be clickable for editing (appears in both mobile and desktop + edit panel)
+    const captions = screen.getAllByText(/My caption/);
+    await user.click(captions[0]);
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
@@ -78,8 +78,8 @@ describe('InstagramCard', () => {
         listing={mockListing}
       />
     );
-    const caption = screen.getByText(/Original caption/);
-    await user.click(caption);
+    const captions = screen.getAllByText(/Original caption/);
+    await user.click(captions[0]);
     const textbox = screen.getByRole('textbox');
     await user.clear(textbox);
     await user.type(textbox, 'Updated caption');
