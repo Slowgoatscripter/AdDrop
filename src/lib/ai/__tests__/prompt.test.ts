@@ -29,6 +29,14 @@ jest.mock('@/lib/compliance/compliance-settings', () => ({
           law: 'Fair Housing Act §3604(c)',
           suggestedAlternative: 'welcoming community',
         },
+        {
+          term: 'walking distance to church',
+          category: 'religion',
+          severity: 'soft',
+          shortExplanation: 'May imply religious preference',
+          law: '42 U.S.C. § 3604',
+          suggestedAlternative: 'near local amenities',
+        },
       ],
     },
   }),
@@ -118,6 +126,14 @@ describe('buildGenerationPrompt', () => {
     expect(prompt).toContain('exclusive neighborhood');
     expect(prompt).toContain('Say instead:');
     expect(prompt).toContain('desirable location');
+  });
+
+  test('cheat sheet includes severity labels and law citations', async () => {
+    const prompt = await buildGenerationPrompt(mockListing);
+    // Hard violations should show (hard) and law citation
+    expect(prompt).toMatch(/\(hard\)/);
+    expect(prompt).toMatch(/\(soft\)/);
+    expect(prompt).toMatch(/42 U\.S\.C\. . 3604/);
   });
 
   test('includes MLS compliance rules', async () => {

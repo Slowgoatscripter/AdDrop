@@ -120,16 +120,16 @@ function buildCheatSheet(config: MLSComplianceConfig): string {
     sheet += `### ${label}\n`;
 
     if (hardTerms.length > 0) {
-      sheet += '**PROHIBITED (hard violations - illegal):**\n';
+      sheet += '**PROHIBITED (hard violations -- illegal):**\n';
       for (const t of hardTerms) {
-        sheet += `- "${t.term}" -- ${t.shortExplanation}. Say instead: "${t.suggestedAlternative}"\n`;
+        sheet += `- "${t.term}" (hard) -- ${t.shortExplanation}. Say instead: "${t.suggestedAlternative}" [${t.law}]\n`;
       }
     }
 
     if (softTerms.length > 0) {
-      sheet += '**AVOID (soft warnings - risky):**\n';
+      sheet += '**AVOID (soft warnings -- risky):**\n';
       for (const t of softTerms) {
-        sheet += `- "${t.term}" -- ${t.shortExplanation}. Say instead: "${t.suggestedAlternative}"\n`;
+        sheet += `- "${t.term}" (soft) -- ${t.shortExplanation}. Say instead: "${t.suggestedAlternative}" [${t.law}]\n`;
       }
     }
 
