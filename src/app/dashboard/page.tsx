@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, FileText } from 'lucide-react'
+import { Plus, FileText, ChevronRight } from 'lucide-react'
 import { getCampaignUsage } from '@/lib/usage/campaign-limits'
 import { BetaUsageCard } from '@/components/dashboard/beta-usage-card'
 import { WelcomeCard } from '@/components/dashboard/welcome-card'
@@ -71,7 +71,11 @@ export default async function DashboardPage({
           ) : (
             <div className="grid gap-4">
               {campaigns.map((campaign) => (
-                <div key={campaign.id} className="p-4 border border-border rounded-lg bg-muted/30">
+                <Link
+                  key={campaign.id}
+                  href={`/campaign/${campaign.id}`}
+                  className="block p-4 border border-border rounded-lg bg-muted/30 hover:border-gold/50 transition-colors cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium text-foreground">{campaign.name}</h3>
@@ -81,11 +85,14 @@ export default async function DashboardPage({
                         {new Date(campaign.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-gold/10 text-gold font-medium capitalize">
-                      {campaign.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gold/10 text-gold font-medium capitalize">
+                        {campaign.status}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
