@@ -43,6 +43,7 @@ export function InstagramCard({
   const tones = Object.keys(content) as AdTone[];
   const [selectedTone, setSelectedTone] = useState<AdTone>(tones[0]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
 
   const currentCaption = content[selectedTone] || '';
   const characterCount = currentCaption.length;
@@ -57,11 +58,30 @@ export function InstagramCard({
   const location = listing ? `${listing.address.city}, ${listing.address.state}` : '';
 
   const truncateCaption = (text: string, limit: number) => {
-    if (text.length <= limit) return text;
+    if (expanded || text.length <= limit) {
+      return (
+        <>
+          {text}
+          {expanded && text.length > limit && (
+            <button
+              onClick={() => setExpanded(false)}
+              className="text-[#8e8e8e] bg-transparent border-none cursor-pointer p-0 ml-1"
+            >
+              less
+            </button>
+          )}
+        </>
+      );
+    }
     return (
       <>
         {text.slice(0, limit)}
-        <span className="text-[#8e8e8e]">... more</span>
+        <button
+          onClick={() => setExpanded(true)}
+          className="text-[#8e8e8e] bg-transparent border-none cursor-pointer p-0"
+        >
+          ... more
+        </button>
       </>
     );
   };
