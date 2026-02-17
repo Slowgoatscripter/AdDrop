@@ -19,6 +19,7 @@ export function CampaignShell() {
   const router = useRouter();
   const [campaign, setCampaign] = useState<CampaignKit | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   useEffect(() => {
     async function loadCampaign() {
       const id = params.id as string;
@@ -380,18 +381,33 @@ export function CampaignShell() {
   }
 
   async function handleExport(format: 'pdf' | 'csv') {
-    const res = await fetch('/api/export', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ campaignId: campaign!.id, format }),
-    });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `campaign-${campaign!.id}.${format}`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setExporting(true);
+    try {
+      const res = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId: campaign!.id, format }),
+      });
+
+      if (!res.ok) {
+        toast.error('Export failed — please try again.');
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `campaign-${campaign!.id}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Downloaded!');
+    } catch (err) {
+      console.error('[campaign-shell] Export failed:', err);
+      toast.error('Export failed — please try again.');
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -401,8 +417,8 @@ export function CampaignShell() {
           <h1 className="text-2xl font-bold text-foreground">Campaign Kit</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/create')}>New Campaign</Button>
-            <Button variant="outline" onClick={() => handleExport('csv')}>Export CSV</Button>
-            <Button onClick={() => handleExport('pdf')}>Export PDF</Button>
+            <Button variant="outline" onClick={() => handleExport('csv')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export CSV'}</Button>
+            <Button onClick={() => handleExport('pdf')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export PDF'}</Button>
           </div>
         </div>
 
