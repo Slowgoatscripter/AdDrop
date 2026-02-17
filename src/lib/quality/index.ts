@@ -18,3 +18,6 @@ export { scoreAllPlatformQuality, mergeQualityResults } from './scorer';
 
 // Re-export auto-fix
 export { autoFixQuality, autoFixTextRegex } from './auto-fix';
+
+// Re-export suggestions
+export { buildQualitySuggestions } from './suggestions';

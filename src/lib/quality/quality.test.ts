@@ -9,6 +9,7 @@ import { autoFixTextRegex, autoFixQuality } from './auto-fix';
 import { formattingRules, platformFormats } from './rules';
 import { buildQualityCheatSheet } from './docs';
 import { mergeQualityResults } from './scorer';
+import { buildQualitySuggestions } from './index';
 import { QualityIssue, QualityRule } from '@/lib/types/quality';
 import { CampaignKit } from '@/lib/types/campaign';
 
@@ -752,5 +753,56 @@ describe('mergeQualityResults', () => {
     expect(merged.requiredIssues).toBe(1);
     expect(merged.recommendedIssues).toBe(1);
     expect(merged.overallScore).toBe(6);
+  });
+});
+
+// ============================
+// buildQualitySuggestions Tests
+// ============================
+describe('buildQualitySuggestions', () => {
+  test('converts quality issues to suggestions', () => {
+    const qualityResult = {
+      platforms: [{
+        platform: 'instagram', tone: 'casual', checks: [], score: 7,
+        issues: [{
+          platform: 'instagram.casual', category: 'filler-words' as any,
+          priority: 'recommended' as const, source: 'regex' as const,
+          issue: 'Contains filler words', suggestedFix: 'Remove filler',
+          originalText: 'This is a very nice home', fixedText: 'This home stands out',
+        }],
+        passed: true,
+      }],
+      totalChecks: 1, totalPassed: 0, requiredIssues: 0, recommendedIssues: 1,
+      allPassed: false, improvementsApplied: 0,
+    };
+
+    const suggestions = buildQualitySuggestions(qualityResult);
+    expect(suggestions).toHaveLength(1);
+    expect(suggestions[0].platform).toBe('instagram.casual');
+    expect(suggestions[0].category).toBe('filler-words');
+    expect(suggestions[0].severity).toBe('medium');
+    expect(suggestions[0].id).toBeDefined();
+  });
+
+  test('returns empty array when no issues', () => {
+    const qualityResult = {
+      platforms: [], totalChecks: 0, totalPassed: 0,
+      requiredIssues: 0, recommendedIssues: 0, allPassed: true, improvementsApplied: 0,
+    };
+    expect(buildQualitySuggestions(qualityResult)).toHaveLength(0);
+  });
+
+  test('maps required priority to high severity', () => {
+    const qualityResult = {
+      platforms: [{
+        platform: 'twitter', checks: [], score: 5,
+        issues: [{ platform: 'twitter', category: 'weak-hook' as any, priority: 'required' as const, source: 'ai' as const, issue: 'Weak hook', suggestedFix: 'Fix hook' }],
+        passed: false,
+      }],
+      totalChecks: 1, totalPassed: 0, requiredIssues: 1, recommendedIssues: 0,
+      allPassed: false, improvementsApplied: 0,
+    };
+    const suggestions = buildQualitySuggestions(qualityResult);
+    expect(suggestions[0].severity).toBe('high');
   });
 });
