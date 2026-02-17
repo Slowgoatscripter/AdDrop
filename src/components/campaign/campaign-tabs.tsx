@@ -34,6 +34,8 @@ interface CampaignTabsProps {
   onRevert?: (issue: QualityIssue) => void;
   qualitySuggestions?: QualitySuggestion[];
   qualityConstraints?: QualityConstraintViolation[];
+  onApplySuggestion?: (suggestion: QualitySuggestion) => void;
+  onDismissSuggestion?: (suggestionId: string) => void;
 }
 
 function extractContext(term: string, platformTexts: Map<string, string>, platformPrefix: string): string {
@@ -143,7 +145,7 @@ function has(selected: PlatformId[] | undefined, platform: PlatformId): boolean 
   return selected.includes(platform);
 }
 
-export function CampaignTabs({ campaign, onReplace, onRevert, qualitySuggestions, qualityConstraints }: CampaignTabsProps) {
+export function CampaignTabs({ campaign, onReplace, onRevert, qualitySuggestions, qualityConstraints, onApplySuggestion, onDismissSuggestion }: CampaignTabsProps) {
   const agentResult = campaign.complianceResult;
   const photos = campaign.listing.photos;
   const listing = campaign.listing;

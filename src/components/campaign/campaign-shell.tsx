@@ -8,8 +8,6 @@ import type { QualitySuggestion } from '@/lib/types/quality';
 import { createClient } from '@/lib/supabase/client';
 import { PropertyHeader } from './property-header';
 import { CampaignTabs } from './campaign-tabs';
-import { ComplianceBanner } from './compliance-banner';
-import { QualityBanner } from './quality-banner';
 import { QualitySuggestionsPanel } from './quality-suggestions-panel';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -448,28 +446,38 @@ export function CampaignShell() {
           </div>
         </div>
 
-        {campaign.complianceResult && (
-          <ComplianceBanner result={campaign.complianceResult} />
+        {campaign.complianceResult && campaign.complianceResult.violations?.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+            <span className="font-medium">
+              {campaign.complianceResult.violations.length} compliance {campaign.complianceResult.violations.length === 1 ? 'issue' : 'issues'} found
+            </span>
+            <span className="text-amber-600">— View issues below each ad card</span>
+          </div>
         )}
 
-        {/* Quality Suggestions Panel -- new pipeline (suggestions + constraints) */}
-        {(campaign.qualitySuggestions?.length || campaign.qualityConstraints?.length) ? (
+        {/* Constraints section — keep full panel since these are auto-enforced and campaign-level */}
+        {campaign.qualityConstraints && campaign.qualityConstraints.length > 0 && (
           <QualitySuggestionsPanel
-            suggestions={campaign.qualitySuggestions || []}
-            constraints={campaign.qualityConstraints || []}
+            suggestions={[]}
+            constraints={campaign.qualityConstraints}
             onApply={handleApplySuggestion}
             onDismiss={handleDismissSuggestion}
             applyingId={applyingId}
           />
-        ) : null}
+        )}
 
-        {/* Quality Banner -- backward compat for old campaigns with qualityResult */}
-        {campaign.qualityResult && !campaign.qualitySuggestions && (
-          <QualityBanner result={campaign.qualityResult} />
+        {/* Quality suggestions summary — details now live per-card */}
+        {campaign.qualitySuggestions && campaign.qualitySuggestions.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+            <span className="font-medium">
+              {campaign.qualitySuggestions.length} quality {campaign.qualitySuggestions.length === 1 ? 'suggestion' : 'suggestions'}
+            </span>
+            <span className="text-amber-600">— Review below each ad card</span>
+          </div>
         )}
 
         <PropertyHeader listing={campaign.listing} />
-        <CampaignTabs campaign={campaign} onReplace={handleReplace} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} />
+        <CampaignTabs campaign={campaign} onReplace={handleReplace} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} onApplySuggestion={handleApplySuggestion} onDismissSuggestion={handleDismissSuggestion} />
       </div>
     </div>
   );
