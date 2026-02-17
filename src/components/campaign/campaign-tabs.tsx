@@ -4,13 +4,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CampaignKit, PlatformId, ComplianceAgentResult, ComplianceViolation, PlatformComplianceResult } from '@/lib/types';
 import { extractPlatformTexts } from '@/lib/compliance/utils';
 import type { QualitySuggestion, QualityConstraintViolation, QualityIssue, PlatformQualityResult } from '@/lib/types/quality';
-import { AdCard } from './ad-card';
 import { InstagramCard } from './instagram-card';
 import { FacebookCard } from './facebook-card';
+import { TwitterCard } from './twitter-card';
 import { GoogleAdsCard } from './google-ads-card';
 import { MetaAdCard } from './meta-ad-card';
 import { PrintAdCard } from './print-ad-card';
 import { PostcardCard } from './postcard-card';
+import { ZillowCard } from './zillow-card';
+import { RealtorCard } from './realtor-card';
+import { HomesTruliaCard } from './homes-trulia-card';
 import { MlsCard } from './mls-card';
 import { MarketingCard } from './marketing-card';
 
@@ -181,7 +184,7 @@ export function CampaignTabs({ campaign, onReplace, onRevert, qualitySuggestions
             <FacebookCard content={campaign.facebook} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'facebook')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'facebook')} onReplace={onReplace} onRevert={onRevert} />
           )}
           {has(selected, 'twitter') && campaign.twitter && (
-            <AdCard title="Twitter / X Post" content={campaign.twitter} characterLimit={280} subtitle="Ultra-short, link-friendly" complianceResult={buildPlatformResult(agentResult, platformTexts, 'twitter')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'twitter')} onReplace={onReplace} onRevert={onRevert} />
+            <TwitterCard content={campaign.twitter} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'twitter')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'twitter')} onReplace={onReplace} />
           )}
         </TabsContent>
       )}
@@ -217,13 +220,13 @@ export function CampaignTabs({ campaign, onReplace, onRevert, qualitySuggestions
       {visibleCategories.some((c) => c.value === 'listings') && (
         <TabsContent value="listings" className="flex flex-col items-center gap-6 mt-4">
           {has(selected, 'zillow') && campaign.zillow && (
-            <AdCard title="Zillow Description" content={campaign.zillow} subtitle="Optimized for Zillow format and search SEO" complianceResult={buildPlatformResult(agentResult, platformTexts, 'zillow')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'zillow')} onReplace={onReplace} onRevert={onRevert} />
+            <ZillowCard content={campaign.zillow} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'zillow')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'zillow')} onReplace={onReplace} />
           )}
           {has(selected, 'realtorCom') && campaign.realtorCom && (
-            <AdCard title="Realtor.com Description" content={campaign.realtorCom} subtitle="Tuned to Realtor.com tone and format" complianceResult={buildPlatformResult(agentResult, platformTexts, 'realtorCom')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'realtorCom')} onReplace={onReplace} onRevert={onRevert} />
+            <RealtorCard content={campaign.realtorCom} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'realtorCom')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'realtorCom')} onReplace={onReplace} />
           )}
           {has(selected, 'homesComTrulia') && campaign.homesComTrulia && (
-            <AdCard title="Homes.com / Trulia Description" content={campaign.homesComTrulia} subtitle="Platform-specific variation" complianceResult={buildPlatformResult(agentResult, platformTexts, 'homesComTrulia')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'homesComTrulia')} onReplace={onReplace} onRevert={onRevert} />
+            <HomesTruliaCard content={campaign.homesComTrulia} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'homesComTrulia')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'homesComTrulia')} onReplace={onReplace} />
           )}
         </TabsContent>
       )}
@@ -232,7 +235,7 @@ export function CampaignTabs({ campaign, onReplace, onRevert, qualitySuggestions
       {visibleCategories.some((c) => c.value === 'mls') && (
         <TabsContent value="mls" className="mt-4">
           {has(selected, 'mlsDescription') && campaign.mlsDescription && (
-            <MlsCard description={campaign.mlsDescription} complianceResult={buildPlatformResult(agentResult, platformTexts, 'mlsDescription')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'mlsDescription')} onReplace={onReplace} onRevert={onRevert} />
+            <MlsCard description={campaign.mlsDescription} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'mlsDescription')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'mlsDescription')} onReplace={onReplace} />
           )}
         </TabsContent>
       )}
