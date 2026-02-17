@@ -4,10 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CampaignKit } from '@/lib/types';
 import type { ComplianceAgentResult } from '@/lib/types/compliance';
+import type { QualitySuggestion } from '@/lib/types/quality';
 import { createClient } from '@/lib/supabase/client';
 import { PropertyHeader } from './property-header';
 import { CampaignTabs } from './campaign-tabs';
 import { ComplianceBanner } from './compliance-banner';
+import { QualityBanner } from './quality-banner';
+import { QualitySuggestionsPanel } from './quality-suggestions-panel';
 import { Button } from '@/components/ui/button';
 
 export function CampaignShell() {
@@ -145,6 +148,208 @@ export function CampaignShell() {
     [campaign]
   );
 
+  /**
+   * Apply a quality suggestion: replace the text in the campaign, re-check
+   * compliance, and update state. If the new text introduces a compliance
+   * violation, revert and alert the user.
+   */
+  const handleApplySuggestion = useCallback(
+    async (suggestion: QualitySuggestion) => {
+      if (!campaign || !suggestion.suggestedRewrite) return;
+
+      // Deep-clone so we can revert if needed
+      const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
+
+      // Use the same platform-keyed replacement logic as handleReplace,
+      // but swap the exact currentText → suggestedRewrite instead of regex.
+      const parts = suggestion.platform.split('.');
+      const root = parts[0];
+
+      /**
+       * Navigate into the campaign object based on the dot-notation platform
+       * path and replace `currentText` with `suggestedRewrite`.
+       */
+      function applyTextSwap(obj: CampaignKit): boolean {
+        // Simple string fields
+        const simpleStringFields = [
+          'twitter', 'zillow', 'realtorCom', 'homesComTrulia',
+          'mlsDescription', 'targetingNotes',
+        ] as const;
+
+        if (simpleStringFields.includes(root as typeof simpleStringFields[number])) {
+          const key = root as keyof CampaignKit;
+          const val = obj[key];
+          if (typeof val === 'string') {
+            (obj as unknown as Record<string, unknown>)[root] = val.replace(
+              suggestion.currentText,
+              suggestion.suggestedRewrite!,
+            );
+            return true;
+          }
+          return false;
+        }
+
+        // Tone-keyed social platforms (instagram.casual, facebook.formal, etc.)
+        if ((root === 'instagram' || root === 'facebook') && parts[1]) {
+          const platformObj = obj[root] as Record<string, string> | undefined;
+          if (platformObj && typeof platformObj[parts[1]] === 'string') {
+            platformObj[parts[1]] = platformObj[parts[1]].replace(
+              suggestion.currentText,
+              suggestion.suggestedRewrite!,
+            );
+            return true;
+          }
+          return false;
+        }
+
+        // metaAd (metaAd.primaryText, metaAd.headline, etc.)
+        if (root === 'metaAd' && parts[1] && obj.metaAd) {
+          const field = parts[1] as keyof typeof obj.metaAd;
+          if (typeof obj.metaAd[field] === 'string') {
+            (obj.metaAd as unknown as Record<string, string>)[parts[1]] = (
+              obj.metaAd[field] as string
+            ).replace(suggestion.currentText, suggestion.suggestedRewrite!);
+            return true;
+          }
+          return false;
+        }
+
+        // Google Ads indexed: googleAds[0].headline
+        if (root.startsWith('googleAds') && obj.googleAds) {
+          const match = root.match(/googleAds\[(\d+)\]/);
+          if (match) {
+            const idx = parseInt(match[1]);
+            const field = parts[1] as 'headline' | 'description';
+            if (obj.googleAds[idx] && typeof obj.googleAds[idx][field] === 'string') {
+              obj.googleAds[idx][field] = obj.googleAds[idx][field].replace(
+                suggestion.currentText,
+                suggestion.suggestedRewrite!,
+              );
+              return true;
+            }
+          }
+          return false;
+        }
+
+        // Array fields (hashtags, callsToAction, sellingPoints)
+        const arrayFields = ['hashtags', 'callsToAction', 'sellingPoints'] as const;
+        if (arrayFields.includes(root as typeof arrayFields[number])) {
+          const arr = obj[root as keyof CampaignKit] as string[] | undefined;
+          if (arr) {
+            const arrIdx = arr.findIndex((item) => item.includes(suggestion.currentText));
+            if (arrIdx !== -1) {
+              arr[arrIdx] = arr[arrIdx].replace(
+                suggestion.currentText,
+                suggestion.suggestedRewrite!,
+              );
+              return true;
+            }
+          }
+          return false;
+        }
+
+        // Magazine / postcard — same nested approach
+        if ((root === 'magazineFullPage' || root === 'magazineHalfPage') && parts[1] && parts[2]) {
+          const printData = obj[root] as Record<string, { headline: string; body: string; cta: string }> | undefined;
+          if (printData && printData[parts[1]]) {
+            const field = parts[2] as 'headline' | 'body' | 'cta';
+            printData[parts[1]][field] = printData[parts[1]][field].replace(
+              suggestion.currentText,
+              suggestion.suggestedRewrite!,
+            );
+            return true;
+          }
+          return false;
+        }
+
+        if (root === 'postcard' && parts[1]) {
+          const postcardData = obj[root] as Record<string, { front: { headline: string; body: string; cta: string }; back: string }> | undefined;
+          if (postcardData && postcardData[parts[1]]) {
+            if (parts[2] === 'front' && parts[3]) {
+              const field = parts[3] as 'headline' | 'body' | 'cta';
+              postcardData[parts[1]].front[field] = postcardData[parts[1]].front[field].replace(
+                suggestion.currentText,
+                suggestion.suggestedRewrite!,
+              );
+              return true;
+            }
+            if (parts[2] === 'back') {
+              postcardData[parts[1]].back = postcardData[parts[1]].back.replace(
+                suggestion.currentText,
+                suggestion.suggestedRewrite!,
+              );
+              return true;
+            }
+          }
+          return false;
+        }
+
+        return false;
+      }
+
+      const applied = applyTextSwap(updated);
+      if (!applied) {
+        console.warn('[campaign-shell] Could not apply suggestion to platform path:', suggestion.platform);
+        return;
+      }
+
+      // Re-check compliance on the modified campaign
+      try {
+        const res = await fetch('/api/compliance/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaign: updated }),
+        });
+
+        if (res.ok) {
+          const result: ComplianceAgentResult = await res.json();
+
+          // If the new text introduces a compliance violation, revert
+          if (result.violations && result.violations.length > 0) {
+            alert(
+              'This suggestion introduces a compliance violation and was not applied:\n\n' +
+              result.violations.map((v) => `- ${v.term}: ${v.explanation}`).join('\n'),
+            );
+            return;
+          }
+
+          updated.complianceResult = result;
+        }
+      } catch (err) {
+        console.error('[campaign-shell] Compliance re-check failed after suggestion apply:', err);
+        // If compliance check fails, still apply the text change but warn
+        console.warn('[campaign-shell] Applying suggestion without compliance verification');
+      }
+
+      // Remove the applied suggestion from the list
+      updated.qualitySuggestions = updated.qualitySuggestions?.filter(
+        (s) => s.id !== suggestion.id,
+      );
+
+      setCampaign(updated);
+      sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+    },
+    [campaign],
+  );
+
+  /** Dismiss a quality suggestion without applying it */
+  const handleDismissSuggestion = useCallback(
+    (suggestionId: string) => {
+      if (!campaign) return;
+      setCampaign((prev) =>
+        prev
+          ? {
+              ...prev,
+              qualitySuggestions: prev.qualitySuggestions?.filter(
+                (s) => s.id !== suggestionId,
+              ),
+            }
+          : null,
+      );
+    },
+    [campaign],
+  );
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -199,6 +404,21 @@ export function CampaignShell() {
 
         {campaign.complianceResult && (
           <ComplianceBanner result={campaign.complianceResult} />
+        )}
+
+        {/* Quality Suggestions Panel -- new pipeline (suggestions + constraints) */}
+        {(campaign.qualitySuggestions?.length || campaign.qualityConstraints?.length) ? (
+          <QualitySuggestionsPanel
+            suggestions={campaign.qualitySuggestions || []}
+            constraints={campaign.qualityConstraints || []}
+            onApply={handleApplySuggestion}
+            onDismiss={handleDismissSuggestion}
+          />
+        ) : null}
+
+        {/* Quality Banner -- backward compat for old campaigns with qualityResult */}
+        {campaign.qualityResult && !campaign.qualitySuggestions && (
+          <QualityBanner result={campaign.qualityResult} />
         )}
 
         <PropertyHeader listing={campaign.listing} />
