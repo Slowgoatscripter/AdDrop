@@ -465,6 +465,13 @@ export function RunnerView({ properties, onRunComplete }: RunnerViewProps) {
                                 </div>
                               )}
 
+                              {/* Regex pre-scan findings */}
+                              {result.regexFindingsCount != null && result.regexFindingsCount > 0 && (
+                                <span className="text-xs text-muted-foreground">
+                                  ({result.regexFindingsCount} regex pre-scan findings)
+                                </span>
+                              )}
+
                               {/* Auto-fixes */}
                               {result.complianceResult.autoFixes.length > 0 && (
                                 <div>
@@ -523,12 +530,11 @@ export function RunnerView({ properties, onRunComplete }: RunnerViewProps) {
                                 <div>
                                   <h4 className="text-sm font-medium text-foreground mb-2">
                                     Generated Text
-                                    {result.qualityFixesApplied !== undefined &&
-                                      result.qualityFixesApplied > 0 && (
-                                        <span className="text-xs text-muted-foreground ml-2">
-                                          ({result.qualityFixesApplied} quality fixes applied)
-                                        </span>
-                                      )}
+                                    {(result.qualitySuggestionsCount ?? result.qualityFixesApplied ?? 0) > 0 && (
+                                      <span className="text-xs text-muted-foreground ml-2">
+                                        ({result.qualitySuggestionsCount ?? result.qualityFixesApplied ?? 0} quality {result.qualitySuggestionsCount ? 'suggestions' : 'fixes applied'})
+                                      </span>
+                                    )}
                                   </h4>
                                   <div className="space-y-2">
                                     {Object.entries(result.generatedText).map(
