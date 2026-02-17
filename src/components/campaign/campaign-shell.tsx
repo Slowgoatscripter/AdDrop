@@ -142,6 +142,7 @@ export function CampaignShell() {
         }
       } catch (err) {
         console.error('[campaign-shell] Compliance re-check failed:', err);
+        toast.warning('Changes applied but compliance status may be outdated.');
       }
 
       setCampaign(updated);

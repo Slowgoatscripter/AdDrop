@@ -8,7 +8,7 @@ import { ComplianceViolation } from '@/lib/types';
 
 interface ViolationDetailsProps {
   violations: ComplianceViolation[];
-  onReplace: (platform: string, oldTerm: string, newTerm: string) => void;
+  onReplace: (platform: string, oldTerm: string, newTerm: string) => void | Promise<void>;
 }
 
 const categoryColors: Record<string, string> = {
@@ -63,17 +63,25 @@ function ViolationItem({
   onReplace,
 }: {
   violation: ComplianceViolation;
-  onReplace: (platform: string, oldTerm: string, newTerm: string) => void;
+  onReplace: (platform: string, oldTerm: string, newTerm: string) => void | Promise<void>;
 }) {
   const [showMore, setShowMore] = useState(false);
   const [fixed, setFixed] = useState(false);
+  const [replacing, setReplacing] = useState(false);
 
   const colorClass = categoryColors[violation.category] || 'bg-slate-100 text-slate-800';
   const label = categoryLabels[violation.category] || violation.category;
 
-  function handleReplace() {
-    onReplace(violation.platform, violation.term, violation.alternative);
-    setFixed(true);
+  async function handleReplace() {
+    setReplacing(true);
+    try {
+      await Promise.resolve(onReplace(violation.platform, violation.term, violation.alternative));
+      setFixed(true);
+    } catch {
+      // Parent handles toast
+    } finally {
+      setReplacing(false);
+    }
   }
 
   if (fixed) {
@@ -100,8 +108,8 @@ function ViolationItem({
             {label}
           </Badge>
         </div>
-        <Button size="sm" variant="outline" className="text-xs flex-shrink-0 h-7" onClick={handleReplace}>
-          Replace
+        <Button size="sm" variant="outline" className="text-xs flex-shrink-0 h-7" onClick={handleReplace} disabled={replacing}>
+          {replacing ? 'Replacing...' : 'Replace'}
         </Button>
       </div>
 
