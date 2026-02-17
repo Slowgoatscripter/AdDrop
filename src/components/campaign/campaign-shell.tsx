@@ -37,6 +37,7 @@ export function CampaignShell() {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [regeneratingPlatform, setRegeneratingPlatform] = useState<string | null>(null);
   useEffect(() => {
     async function loadCampaign() {
       const id = params.id as string;
@@ -165,6 +166,106 @@ export function CampaignShell() {
       setCampaign(updated);
       sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
       persistCampaignAds(updated.id, updated);
+    },
+    [campaign]
+  );
+
+  const handleEditText = useCallback(
+    async (platform: string, field: string, newValue: string) => {
+      if (!campaign) return;
+
+      const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
+
+      // Simple string platforms
+      const simpleStringFields: Record<string, keyof CampaignKit> = {
+        twitter: 'twitter',
+        zillow: 'zillow',
+        realtorCom: 'realtorCom',
+        homesComTrulia: 'homesComTrulia',
+        mlsDescription: 'mlsDescription',
+      };
+
+      if (simpleStringFields[platform]) {
+        (updated as unknown as Record<string, unknown>)[platform] = newValue;
+      }
+
+      // Tone-keyed platforms: field = tone name
+      if (platform === 'instagram' || platform === 'facebook') {
+        const platformObj = updated[platform] as Record<string, string> | undefined;
+        if (platformObj) {
+          platformObj[field] = newValue;
+        }
+      }
+
+      // metaAd: field = primaryText | headline | description
+      if (platform === 'metaAd' && updated.metaAd) {
+        (updated.metaAd as unknown as Record<string, string>)[field] = newValue;
+      }
+
+      // Google Ads: platform = googleAds[idx], field = headline | description
+      const googleMatch = platform.match(/googleAds\[(\d+)\]/);
+      if (googleMatch && updated.googleAds) {
+        const idx = parseInt(googleMatch[1]);
+        (updated.googleAds[idx] as unknown as Record<string, string>)[field] = newValue;
+      }
+
+      setCampaign(updated);
+      sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+
+      // Persist to Supabase (fire and forget)
+      try {
+        const supabase = createClient();
+        await supabase
+          .from('campaigns')
+          .update({ generated_ads: updated })
+          .eq('id', updated.id);
+      } catch (err) {
+        console.error('[campaign-shell] Failed to persist edit to Supabase:', err);
+      }
+    },
+    [campaign]
+  );
+
+  const handleRegenerate = useCallback(
+    async (platform: string, tone: string) => {
+      if (!campaign) return;
+      setRegeneratingPlatform(platform);
+
+      try {
+        const res = await fetch('/api/regenerate-platform', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            campaignId: campaign.id,
+            platform,
+            tone,
+            listingData: campaign.listing,
+          }),
+        });
+
+        if (!res.ok) throw new Error('Regeneration failed');
+
+        const { copy } = await res.json();
+        const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
+
+        const simpleFields = ['twitter', 'zillow', 'realtorCom', 'homesComTrulia', 'mlsDescription'];
+        if (simpleFields.includes(platform)) {
+          (updated as unknown as Record<string, unknown>)[platform] = copy;
+        }
+
+        setCampaign(updated);
+        sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+
+        // Persist
+        try {
+          const supabase = createClient();
+          await supabase.from('campaigns').update({ generated_ads: updated }).eq('id', updated.id);
+        } catch {}
+      } catch (err) {
+        console.error('[campaign-shell] Regeneration failed:', err);
+      } finally {
+        setRegeneratingPlatform(null);
+      }
     },
     [campaign]
   );
@@ -477,7 +578,7 @@ export function CampaignShell() {
         )}
 
         <PropertyHeader listing={campaign.listing} />
-        <CampaignTabs campaign={campaign} onReplace={handleReplace} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} onApplySuggestion={handleApplySuggestion} onDismissSuggestion={handleDismissSuggestion} />
+        <CampaignTabs campaign={campaign} onReplace={handleReplace} onEditText={handleEditText} onRegenerate={handleRegenerate} regeneratingPlatform={regeneratingPlatform} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} onApplySuggestion={handleApplySuggestion} onDismissSuggestion={handleDismissSuggestion} />
       </div>
     </div>
   );
