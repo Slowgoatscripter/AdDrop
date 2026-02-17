@@ -6,6 +6,7 @@ import { MockupImage } from './mockup-image';
 import { PlatformComplianceResult } from '@/lib/types';
 import type { PlatformQualityResult, QualityIssue } from '@/lib/types/quality';
 import type { ListingData } from '@/lib/types/listing';
+import { EditableText } from './editable-text';
 
 interface RealtorCardProps {
   content: string;
@@ -14,6 +15,7 @@ interface RealtorCardProps {
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -35,6 +37,7 @@ export function RealtorCard({
   qualityResult,
   onReplace,
   onRevert,
+  onEditText,
   listing,
 }: RealtorCardProps) {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
@@ -97,7 +100,16 @@ export function RealtorCard({
 
         {/* Generated description */}
         <div className="px-3 py-3 bg-white">
-          <p className="text-sm text-gray-700 leading-relaxed line-clamp-4">{content}</p>
+          {onEditText ? (
+            <EditableText
+              value={content}
+              onChange={() => {}}
+              onSave={(val) => onEditText('realtorCom', 'description', val)}
+              className="text-sm text-gray-700 leading-relaxed"
+            />
+          ) : (
+            <p className="text-sm text-gray-700 leading-relaxed line-clamp-4">{content}</p>
+          )}
           <p className="text-xs text-muted-foreground mt-2">{content.length} characters</p>
         </div>
 

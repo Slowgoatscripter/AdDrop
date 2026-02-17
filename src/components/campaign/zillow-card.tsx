@@ -7,6 +7,7 @@ import { MockupImage } from './mockup-image';
 import { PlatformComplianceResult, ListingData } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
 import type { QualityIssue } from '@/lib/types/quality';
+import { EditableText } from './editable-text';
 
 interface ZillowCardProps {
   content: string;
@@ -15,6 +16,7 @@ interface ZillowCardProps {
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -27,6 +29,7 @@ export function ZillowCard({
   qualityResult,
   onReplace,
   onRevert,
+  onEditText,
   listing,
 }: ZillowCardProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -157,9 +160,18 @@ export function ZillowCard({
 
           {/* Description / generated content */}
           <div className="px-3 py-2">
-            <p className="text-sm text-[#444] leading-relaxed line-clamp-5">
-              {content}
-            </p>
+            {onEditText ? (
+              <EditableText
+                value={content}
+                onChange={() => {}}
+                onSave={(val) => onEditText('zillow', 'description', val)}
+                className="text-sm text-[#444] leading-relaxed"
+              />
+            ) : (
+              <p className="text-sm text-[#444] leading-relaxed line-clamp-5">
+                {content}
+              </p>
+            )}
           </div>
 
           {/* Agent info footer */}

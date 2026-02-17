@@ -5,6 +5,7 @@ import { MockupImage } from './mockup-image';
 import { PlatformComplianceResult, ListingData } from '@/lib/types';
 import type { PlatformQualityResult, QualityIssue } from '@/lib/types/quality';
 import { useState } from 'react';
+import { EditableText } from './editable-text';
 
 interface MlsCardProps {
   description: string;
@@ -13,6 +14,7 @@ interface MlsCardProps {
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
 }
 
 function MlsIcon() {
@@ -44,6 +46,7 @@ export function MlsCard({
   qualityResult,
   onReplace,
   onRevert,
+  onEditText,
 }: MlsCardProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -141,9 +144,18 @@ export function MlsCard({
           <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1.5">
             Public Remarks
           </p>
-          <p className="font-mono text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">
-            {description}
-          </p>
+          {onEditText ? (
+            <EditableText
+              value={description}
+              onChange={() => {}}
+              onSave={(val) => onEditText('mlsDescription', 'description', val)}
+              className="font-mono text-sm text-slate-800"
+            />
+          ) : (
+            <p className="font-mono text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">
+              {description}
+            </p>
+          )}
         </div>
 
         {/* Character count badge + range note */}

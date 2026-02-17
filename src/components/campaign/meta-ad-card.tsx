@@ -10,6 +10,7 @@ import { PlatformQualityResult } from '@/lib/types/quality';
 import type { QualityIssue } from '@/lib/types/quality';
 import { seededRandom } from '@/lib/utils/seeded-random';
 import { Globe, MoreHorizontal } from 'lucide-react';
+import { EditableText } from './editable-text';
 
 interface MetaAdCardProps {
   content: Record<string, MetaAd>;
@@ -18,6 +19,7 @@ interface MetaAdCardProps {
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -28,6 +30,7 @@ export function MetaAdCard({
   qualityResult,
   onReplace,
   onRevert,
+  onEditText,
   listing,
 }: MetaAdCardProps) {
   const tones = Object.keys(content);
@@ -104,7 +107,16 @@ export function MetaAdCard({
 
           {/* Primary Text */}
           <div className="px-4 pb-3">
-            <p className="text-[15px] leading-[20px]">{ad.primaryText}</p>
+            {onEditText ? (
+              <EditableText
+                value={ad.primaryText}
+                onChange={() => {}}
+                onSave={(val) => onEditText('metaAd', 'primaryText', val)}
+                className="text-[15px] leading-[20px]"
+              />
+            ) : (
+              <p className="text-[15px] leading-[20px]">{ad.primaryText}</p>
+            )}
           </div>
 
           {/* Image Area */}
@@ -124,8 +136,28 @@ export function MetaAdCard({
               <p className="text-[12px] text-[#65676B] uppercase tracking-wide truncate">
                 www.yoursite.com
               </p>
-              <p className="font-semibold text-[16px] text-[#050505] truncate">{ad.headline}</p>
-              <p className="text-[14px] text-[#65676B] truncate">{ad.description}</p>
+              {onEditText ? (
+                <EditableText
+                  value={ad.headline}
+                  onChange={() => {}}
+                  onSave={(val) => onEditText('metaAd', 'headline', val)}
+                  multiline={false}
+                  className="font-semibold text-[16px] text-[#050505]"
+                />
+              ) : (
+                <p className="font-semibold text-[16px] text-[#050505] truncate">{ad.headline}</p>
+              )}
+              {onEditText ? (
+                <EditableText
+                  value={ad.description}
+                  onChange={() => {}}
+                  onSave={(val) => onEditText('metaAd', 'description', val)}
+                  multiline={false}
+                  className="text-[14px] text-[#65676B]"
+                />
+              ) : (
+                <p className="text-[14px] text-[#65676B] truncate">{ad.description}</p>
+              )}
             </div>
             <button className="flex-shrink-0 text-[14px] font-semibold text-[#050505] border border-[#BEC3C9] rounded px-4 py-2 hover:bg-white/50 transition-colors">
               Learn More

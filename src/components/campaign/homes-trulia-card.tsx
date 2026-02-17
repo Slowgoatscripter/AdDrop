@@ -5,6 +5,7 @@ import { AdCardWrapper } from './ad-card-wrapper';
 import { MockupImage } from './mockup-image';
 import { PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import { EditableText } from './editable-text';
 
 interface ListingAddress {
   street: string;
@@ -34,6 +35,7 @@ interface HomesTruliaCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -54,6 +56,7 @@ export function HomesTruliaCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onEditText,
   listing,
 }: HomesTruliaCardProps) {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
@@ -144,9 +147,18 @@ export function HomesTruliaCard({
 
           {/* Generated description */}
           <div className="px-3 pb-2.5">
-            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-4">
-              {content}
-            </p>
+            {onEditText ? (
+              <EditableText
+                value={content}
+                onChange={() => {}}
+                onSave={(val) => onEditText('homesComTrulia', 'description', val)}
+                className="text-xs text-muted-foreground leading-relaxed"
+              />
+            ) : (
+              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-4">
+                {content}
+              </p>
+            )}
             <span className="mt-1.5 inline-block text-[10px] text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
               {content.length} chars
             </span>

@@ -17,6 +17,7 @@ import {
   Share,
   MoreHorizontal,
 } from 'lucide-react';
+import { EditableText } from './editable-text';
 
 interface TwitterCardProps {
   content: string; // Single string, not tone-keyed
@@ -25,6 +26,7 @@ interface TwitterCardProps {
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -35,6 +37,7 @@ export function TwitterCard({
   qualityResult,
   onReplace,
   onRevert,
+  onEditText,
   listing,
 }: TwitterCardProps) {
   const characterCount = content.length;
@@ -103,9 +106,18 @@ export function TwitterCard({
                   </div>
 
                   {/* Post text */}
-                  <p className="text-[15px] leading-5 mt-0.5 whitespace-pre-wrap">
-                    {content}
-                  </p>
+                  {onEditText ? (
+                    <EditableText
+                      value={content}
+                      onChange={() => {}}
+                      onSave={(val) => onEditText('twitter', 'text', val)}
+                      className="text-[15px] leading-5 mt-0.5"
+                    />
+                  ) : (
+                    <p className="text-[15px] leading-5 mt-0.5 whitespace-pre-wrap">
+                      {content}
+                    </p>
+                  )}
 
                   {/* Image */}
                   {photos.length > 0 && (
