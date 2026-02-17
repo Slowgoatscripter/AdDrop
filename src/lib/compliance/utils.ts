@@ -120,3 +120,13 @@ export function formatTermsForPrompt(terms: ProhibitedTerm[]): string {
 
   return sections.join('\n\n');
 }
+
+const STRATEGY_LABELS = new Set(['hashtags', 'callsToAction', 'targetingNotes', 'sellingPoints']);
+
+/**
+ * Extract ad copy texts only -- excludes strategy fields (hashtags, CTAs, targeting, selling points).
+ * Used by the compliance regex scanner and Phase 2 rewrite to avoid scanning internal strategy metadata.
+ */
+export function extractAdCopyTexts(campaign: CampaignKit): [string, string][] {
+  return extractPlatformTexts(campaign).filter(([label]) => !STRATEGY_LABELS.has(label));
+}
