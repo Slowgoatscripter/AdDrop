@@ -27,8 +27,8 @@ export function MockupImage({
   selectedIndex,
 }: MockupImageProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const isLocal = src.startsWith('/') || src.startsWith('/_next');
+  const [hasError, setHasError] = useState(!src);
+  const isLocal = src && (src.startsWith('/') || src.startsWith('/_next'));
 
   return (
     <div className={`relative ${aspectRatio} overflow-hidden bg-slate-100 ${className ?? ''}`}>
