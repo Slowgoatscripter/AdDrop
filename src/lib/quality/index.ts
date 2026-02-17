@@ -21,3 +21,6 @@ export { autoFixQuality, autoFixTextRegex } from './auto-fix';
 
 // Re-export suggestions
 export { buildQualitySuggestions } from './suggestions';
+
+// Re-export constraint enforcement
+export { enforceConstraints } from './constraints';
