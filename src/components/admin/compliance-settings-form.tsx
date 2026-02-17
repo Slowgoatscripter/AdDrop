@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { saveSettings, resetSettings } from '@/app/admin/settings/actions'
+import { complianceConfigs } from '@/lib/compliance/terms/registry'
 
 const CATEGORIES = [
   { key: 'steering', label: 'Steering' },
@@ -108,8 +109,11 @@ export function ComplianceSettingsForm({ settings }: ComplianceSettingsFormProps
         <div className="mb-6">
           <label className={labelClass}>State</label>
           <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)}>
-            <option value="MT">Montana</option>
-            <option value="OH">Ohio</option>
+            {Object.keys(complianceConfigs).map(code => (
+              <option key={code} value={code}>
+                {complianceConfigs[code].state}
+              </option>
+            ))}
           </select>
           <p className="text-xs text-muted-foreground mt-1">Select the state where your brokerage operates.</p>
         </div>
