@@ -1,13 +1,16 @@
 import OpenAI from 'openai';
 import { ListingData, CampaignKit, PlatformId, ALL_PLATFORMS } from '@/lib/types';
-import { checkComplianceWithAgent } from '@/lib/compliance/agent';
+import { rewriteForCompliance } from '@/lib/compliance/agent';
+import { scanForProhibitedTerms } from '@/lib/compliance/regex-scan';
+import { extractAdCopyTexts } from '@/lib/compliance/utils';
 import { getComplianceSettings } from '@/lib/compliance/compliance-settings';
 import { buildGenerationPrompt } from './prompt';
 import {
   checkAllPlatformQuality,
   scoreAllPlatformQuality,
   mergeQualityResults,
-  autoFixQuality,
+  buildQualitySuggestions,
+  enforceConstraints,
 } from '@/lib/quality';
 
 const openai = new OpenAI({
@@ -101,7 +104,7 @@ export async function generateCampaign(
   // Strip hallucinated platforms — only keep requested + strategy (Review Fix #4)
   const generated = stripToRequestedPlatforms(rawGenerated, targetPlatforms);
 
-  const { config: compliance, stateCode } = await getComplianceSettings();
+  const { config, stateCode } = await getComplianceSettings();
   const campaignId = crypto.randomUUID();
 
   // Build campaign with only requested platform fields
@@ -135,23 +138,41 @@ export async function generateCampaign(
     sellingPoints: (generated.sellingPoints as string[]) ?? [],
   };
 
-  // Run quality checks (regex layer — instant)
+  // --- Constraint Enforcement (instant) ---
+  const { campaign: constrainedCampaign, constraints } = enforceConstraints(campaign, config);
+  campaign = constrainedCampaign;
+
+  // --- Compliance Regex Pre-Scan ---
+  const adCopyTexts = extractAdCopyTexts(campaign);
+  const regexFindings = scanForProhibitedTerms(adCopyTexts, config);
+
+  // --- Phase 2: Compliance Rewrite ---
+  try {
+    const { campaign: compliantCampaign, complianceResult } =
+      await rewriteForCompliance(campaign, config, regexFindings);
+    campaign = compliantCampaign;
+    campaign.complianceResult = { ...complianceResult, complianceRewriteApplied: true, source: 'rewrite' };
+  } catch (error) {
+    console.error('Phase 2 compliance rewrite failed:', error);
+    campaign.complianceResult = {
+      platforms: [], campaignVerdict: 'needs-review',
+      violations: [], autoFixes: [],
+      totalViolations: regexFindings.length, totalAutoFixes: 0,
+      complianceRewriteApplied: false, source: 'rewrite',
+    };
+  }
+
+  // --- Quality Check (read-only — suggestions only) ---
   const regexQuality = checkAllPlatformQuality(campaign);
-
-  // Run AI quality scoring (async — ~2-3 sec)
   const aiQuality = await scoreAllPlatformQuality(campaign, listing, demographic, tone);
-
-  // Merge regex + AI quality results
   const mergedQuality = mergeQualityResults(regexQuality, aiQuality);
+  const qualitySuggestions = buildQualitySuggestions(mergedQuality);
 
-  // Auto-fix quality issues (regex fixes + AI rewrites)
-  const { campaign: fixedCampaign, qualityResult } = await autoFixQuality(campaign, mergedQuality);
-
-  // Apply fixed campaign and store quality result
-  campaign = { ...fixedCampaign, qualityResult };
-
-  // Run compliance agent as the final gate (after quality auto-fix)
-  campaign.complianceResult = await checkComplianceWithAgent(campaign, compliance);
+  // --- Return with new fields ---
+  campaign.qualityConstraints = constraints;
+  campaign.qualitySuggestions = qualitySuggestions;
+  // Backward compatibility: keep qualityResult for transition period
+  campaign.qualityResult = mergedQuality;
 
   return campaign;
 }
