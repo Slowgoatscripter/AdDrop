@@ -12,6 +12,7 @@ import { ComplianceBanner } from './compliance-banner';
 import { QualityBanner } from './quality-banner';
 import { QualitySuggestionsPanel } from './quality-suggestions-panel';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export function CampaignShell() {
   const params = useParams();
@@ -293,6 +294,8 @@ export function CampaignShell() {
         return;
       }
 
+      const beforeViolationCount = campaign.complianceResult?.violations?.length ?? 0;
+
       // Re-check compliance on the modified campaign
       try {
         const res = await fetch('/api/compliance/check', {
@@ -305,10 +308,11 @@ export function CampaignShell() {
           const result: ComplianceAgentResult = await res.json();
 
           // If the new text introduces a compliance violation, revert
-          if (result.violations && result.violations.length > 0) {
-            alert(
-              'This suggestion introduces a compliance violation and was not applied:\n\n' +
-              result.violations.map((v) => `- ${v.term}: ${v.explanation}`).join('\n'),
+          if (result.violations && result.violations.length > beforeViolationCount) {
+            const newViolations = result.violations.slice(beforeViolationCount);
+            toast.error(
+              'This suggestion introduces a compliance violation and was not applied: ' +
+              newViolations.map((v) => `${v.term}: ${v.explanation}`).join('; '),
             );
             return;
           }
