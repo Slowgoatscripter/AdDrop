@@ -2,13 +2,10 @@
 
 import { useState } from 'react';
 import { Check, AlertTriangle, ShieldAlert, ChevronDown, ChevronRight, Wrench } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import type { ComplianceAgentResult } from '@/lib/types/compliance';
 
 interface ComplianceBannerProps {
   result: ComplianceAgentResult;
-  onFixAll: () => void | Promise<void>;
-  isFixing?: boolean;
 }
 
 function AutoFixSummary({ result }: { result: ComplianceAgentResult }) {
@@ -28,7 +25,7 @@ function AutoFixSummary({ result }: { result: ComplianceAgentResult }) {
           </span>
           <div className="text-left">
             <p className="text-sm font-semibold text-blue-900">
-              {result.totalAutoFixes} compliance issue{result.totalAutoFixes !== 1 ? 's were' : ' was'} automatically resolved
+              {result.totalAutoFixes} compliance rewrite{result.totalAutoFixes !== 1 ? 's' : ''} applied
             </p>
             <p className="text-xs text-blue-700">Click to review what was changed</p>
           </div>
@@ -72,16 +69,40 @@ function AutoFixSummary({ result }: { result: ComplianceAgentResult }) {
   );
 }
 
-export function ComplianceBanner({ result, onFixAll, isFixing }: ComplianceBannerProps) {
+export function ComplianceBanner({ result }: ComplianceBannerProps) {
   const hardCount = result.violations.filter(v => v.severity === 'hard').length;
   const softCount = result.violations.filter(v => v.severity === 'soft').length;
   const hasHard = hardCount > 0;
   const allClean = result.campaignVerdict === 'compliant';
 
+  // Phase 2 rewrite failed — show a warning to manually review
+  if (result.complianceRewriteApplied === false) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center rounded-xl border border-amber-200 bg-amber-50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-600">
+              <AlertTriangle className="w-5 h-5" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-amber-900">
+                Compliance review could not be completed
+              </p>
+              <p className="text-xs text-amber-700">
+                This campaign should be manually reviewed before use.
+              </p>
+            </div>
+          </div>
+        </div>
+        <AutoFixSummary result={result} />
+      </div>
+    );
+  }
+
   if (allClean) {
     return (
       <div className="space-y-3">
-        <div className="flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-6 py-4">
+        <div className="flex items-center rounded-xl border border-green-200 bg-green-50 px-6 py-4">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600">
               <Check className="w-5 h-5" />
@@ -122,7 +143,7 @@ export function ComplianceBanner({ result, onFixAll, isFixing }: ComplianceBanne
 
   return (
     <div className="space-y-3">
-      <div className={`flex items-center justify-between rounded-xl border px-6 py-4 ${bgClass}`}>
+      <div className={`flex items-center rounded-xl border px-6 py-4 ${bgClass}`}>
         <div className="flex items-center gap-3">
           <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${iconBgClass}`}>
             <Icon className="w-5 h-5" />
@@ -138,14 +159,6 @@ export function ComplianceBanner({ result, onFixAll, isFixing }: ComplianceBanne
             </p>
           </div>
         </div>
-        <Button
-          size="sm"
-          variant={hasHard ? 'destructive' : 'outline'}
-          onClick={onFixAll}
-          disabled={isFixing}
-        >
-          {isFixing ? 'Fixing...' : 'Fix All'}
-        </Button>
       </div>
       <AutoFixSummary result={result} />
     </div>
