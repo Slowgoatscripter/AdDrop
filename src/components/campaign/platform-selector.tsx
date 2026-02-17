@@ -149,10 +149,10 @@ export function PlatformSelector({ selected, onChange }: PlatformSelectorProps) 
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">
+        <h2 className="text-lg font-semibold text-foreground">
           Choose Your Platforms
         </h2>
-        <span className="text-sm text-slate-500 tabular-nums">
+        <span className="text-sm text-muted-foreground tabular-nums">
           {selected.length}/{ALL_PLATFORMS.length} selected
         </span>
       </div>
@@ -168,10 +168,10 @@ export function PlatformSelector({ selected, onChange }: PlatformSelectorProps) 
               onClick={() => applyPreset(preset)}
               className={cn(
                 'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 active
-                  ? 'bg-blue-50 border-blue-300 text-blue-700'
-                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  ? 'bg-primary/10 border-primary/40 text-primary'
+                  : 'bg-card border-border text-muted-foreground hover:bg-muted'
               )}
             >
               {preset.label}
@@ -187,7 +187,7 @@ export function PlatformSelector({ selected, onChange }: PlatformSelectorProps) 
           if (platforms.length === 0) return null;
           return (
             <div key={category}>
-              <h3 className="text-xs font-medium uppercase tracking-wider text-slate-400 mb-2">
+              <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
                 {CATEGORY_LABELS[category]}
               </h3>
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -202,20 +202,20 @@ export function PlatformSelector({ selected, onChange }: PlatformSelectorProps) 
                       onClick={() => toggle(platform.id)}
                       className={cn(
                         'relative flex flex-col items-center justify-center gap-1 rounded-lg border p-3 min-h-[60px] min-w-0 transition-all',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                         isSelected
-                          ? 'border-blue-400 bg-blue-50 text-blue-700 shadow-sm'
-                          : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                          ? 'border-primary/50 bg-primary/10 text-primary shadow-sm'
+                          : 'border-border bg-card text-muted-foreground hover:border-border/80 hover:bg-muted'
                       )}
                     >
                       {isSelected && (
                         <span className="absolute top-1 right-1">
-                          <Check className="h-3 w-3 text-blue-500" />
+                          <Check className="h-3 w-3 text-primary" />
                         </span>
                       )}
                       <PlatformIcon
                         platformId={platform.id}
-                        className={isSelected ? 'text-blue-600' : 'text-slate-400'}
+                        className={isSelected ? 'text-primary' : 'text-muted-foreground'}
                       />
                       <span className="text-[11px] font-medium leading-tight text-center truncate w-full">
                         {platform.label}
@@ -230,7 +230,7 @@ export function PlatformSelector({ selected, onChange }: PlatformSelectorProps) 
       </div>
 
       {/* Strategy note */}
-      <p className="text-xs text-slate-400 italic">
+      <p className="text-xs text-muted-foreground italic">
         Strategy toolkit (hashtags, CTAs, targeting) is always included.
       </p>
     </div>

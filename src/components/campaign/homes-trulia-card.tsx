@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { AdCardWrapper } from './ad-card-wrapper';
 import { MockupImage } from './mockup-image';
+import { CardLayoutWrapper } from './card-layout-wrapper';
+import { CardEditPanel } from './card-edit-panel';
 import { PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
 import { EditableText } from './editable-text';
@@ -73,132 +75,156 @@ export function HomesTruliaCard({
 
   const violations = complianceResult?.violations ?? [];
 
-  return (
-    <div className="w-full max-w-md mx-auto">
-      <AdCardWrapper
-        platform="Homes.com"
-        platformIcon={<PlatformIcon />}
-        dimensionLabel="Listing Detail"
-        complianceResult={complianceResult}
-        qualityResult={qualityResult}
-        copyText={content}
-        violations={violations}
-        onReplace={onReplace}
+  const platformIcon = <PlatformIcon />;
+
+  const mockupContent = (
+    <div className="rounded-lg overflow-hidden border border-border/60 text-sm">
+      {/* Homes.com header bar */}
+      <div
+        className="px-3 py-2 flex items-center gap-2"
+        style={{ backgroundColor: HOMES_TEAL }}
       >
-        {/* Listing mockup */}
-        <div className="rounded-lg overflow-hidden border border-border/60 text-sm">
-          {/* Homes.com header bar */}
-          <div
-            className="px-3 py-2 flex items-center gap-2"
-            style={{ backgroundColor: HOMES_TEAL }}
-          >
-            <PlatformIcon />
-            <span className="text-white font-semibold text-sm tracking-wide" aria-hidden="true">
-              homes
-            </span>
-            <span className="text-white/70 text-xs">.com</span>
+        <PlatformIcon />
+        <span className="text-white font-semibold text-sm tracking-wide" aria-hidden="true">
+          homes
+        </span>
+        <span className="text-white/70 text-xs">.com</span>
+      </div>
+
+      {/* Property photo with price overlay */}
+      <div className="relative">
+        <MockupImage
+          src={photos[selectedPhotoIndex] ?? '/placeholder.jpg'}
+          alt="Property photo"
+          aspectRatio="aspect-[16/9]"
+          sizes="(max-width: 448px) 100vw, 448px"
+          photos={photos}
+          selectedIndex={selectedPhotoIndex}
+          onImageSelect={setSelectedPhotoIndex}
+        />
+        {formattedPrice && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+            <span className="text-white font-bold text-lg">{formattedPrice}</span>
           </div>
+        )}
+      </div>
 
-          {/* Property photo with price overlay */}
-          <div className="relative">
-            <MockupImage
-              src={photos[selectedPhotoIndex] ?? '/placeholder.jpg'}
-              alt="Property photo"
-              aspectRatio="aspect-[16/9]"
-              sizes="(max-width: 448px) 100vw, 448px"
-              photos={photos}
-              selectedIndex={selectedPhotoIndex}
-              onImageSelect={setSelectedPhotoIndex}
-            />
-            {formattedPrice && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
-                <span className="text-white font-bold text-lg">{formattedPrice}</span>
-              </div>
-            )}
-          </div>
+      {/* Address */}
+      {fullAddress && (
+        <div className="px-3 pt-2.5 pb-0">
+          <p className="font-semibold text-foreground text-sm leading-snug">
+            {address!.street}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {address!.city}, {address!.state} {address!.zip}
+          </p>
+        </div>
+      )}
 
-          {/* Address */}
-          {fullAddress && (
-            <div className="px-3 pt-2.5 pb-0">
-              <p className="font-semibold text-foreground text-sm leading-snug">
-                {address!.street}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {address!.city}, {address!.state} {address!.zip}
-              </p>
-            </div>
-          )}
-
-          {/* Stats bar */}
-          {listing && (
-            <div className="flex items-center gap-3 px-3 py-2 text-xs text-foreground">
-              <span className="font-medium">{listing.beds} bd</span>
+      {/* Stats bar */}
+      {listing && (
+        <div className="flex items-center gap-3 px-3 py-2 text-xs text-foreground">
+          <span className="font-medium">{listing.beds} bd</span>
+          <span className="text-border">|</span>
+          <span className="font-medium">{listing.baths} ba</span>
+          <span className="text-border">|</span>
+          <span className="font-medium">{listing.sqft.toLocaleString()} sqft</span>
+          {listing.propertyType && (
+            <>
               <span className="text-border">|</span>
-              <span className="font-medium">{listing.baths} ba</span>
-              <span className="text-border">|</span>
-              <span className="font-medium">{listing.sqft.toLocaleString()} sqft</span>
-              {listing.propertyType && (
-                <>
-                  <span className="text-border">|</span>
-                  <span className="text-muted-foreground">{listing.propertyType}</span>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Generated description */}
-          <div className="px-3 pb-2.5">
-            {onEditText ? (
-              <EditableText
-                value={content}
-                onChange={() => {}}
-                onSave={(val) => onEditText('homesComTrulia', 'description', val)}
-                className="text-xs text-muted-foreground leading-relaxed"
-              />
-            ) : (
-              <>
-                <p className={`text-xs text-muted-foreground leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>
-                  {content}
-                </p>
-                {content.length > 200 && (
-                  <button
-                    onClick={() => setExpanded(!expanded)}
-                    className="text-xs font-medium mt-1"
-                    style={{ color: HOMES_TEAL }}
-                  >
-                    {expanded ? 'Show less' : 'Read more'}
-                  </button>
-                )}
-              </>
-            )}
-            <span className="mt-1.5 inline-block text-[10px] text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
-              {content.length} chars
-            </span>
-          </div>
-
-          {/* Agent footer */}
-          {(listing?.listingAgent || listing?.broker) && (
-            <div className="border-t border-border/50 px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[9px] font-bold"
-                style={{ backgroundColor: HOMES_TEAL }}
-              >
-                {listing.listingAgent?.charAt(0) ?? 'A'}
-              </div>
-              <div className="min-w-0">
-                {listing.listingAgent && (
-                  <p className="font-medium text-foreground truncate">
-                    {listing.listingAgent}
-                  </p>
-                )}
-                {listing.broker && (
-                  <p className="truncate">{listing.broker}</p>
-                )}
-              </div>
-            </div>
+              <span className="text-muted-foreground">{listing.propertyType}</span>
+            </>
           )}
         </div>
-      </AdCardWrapper>
+      )}
+
+      {/* Generated description */}
+      <div className="px-3 pb-2.5">
+        {/* Mobile: editable; Desktop: read-only */}
+        <div className="lg:hidden">
+          {onEditText ? (
+            <EditableText
+              value={content}
+              onChange={() => {}}
+              onSave={(val) => onEditText('homesComTrulia', 'description', val)}
+              className="text-xs text-muted-foreground leading-relaxed"
+            />
+          ) : (
+            <p className="text-xs text-muted-foreground leading-relaxed">{content}</p>
+          )}
+        </div>
+        <div className="hidden lg:block">
+          <p className={`text-xs text-muted-foreground leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>
+            {content}
+          </p>
+          {content.length > 200 && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs font-medium mt-1"
+              style={{ color: HOMES_TEAL }}
+            >
+              {expanded ? 'Show less' : 'Read more'}
+            </button>
+          )}
+        </div>
+        <span className="mt-1.5 inline-block text-[10px] text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
+          {content.length} chars
+        </span>
+      </div>
+
+      {/* Agent footer */}
+      {(listing?.listingAgent || listing?.broker) && (
+        <div className="border-t border-border/50 px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <div
+            className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-[9px] font-bold"
+            style={{ backgroundColor: HOMES_TEAL }}
+          >
+            {listing.listingAgent?.charAt(0) ?? 'A'}
+          </div>
+          <div className="min-w-0">
+            {listing.listingAgent && (
+              <p className="font-medium text-foreground truncate">
+                {listing.listingAgent}
+              </p>
+            )}
+            {listing.broker && (
+              <p className="truncate">{listing.broker}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
+  );
+
+  const previewPanel = (
+    <AdCardWrapper
+      platform="Homes.com"
+      platformIcon={platformIcon}
+      dimensionLabel="Listing Detail"
+      complianceResult={complianceResult}
+      qualityResult={qualityResult}
+      copyText={content}
+      violations={violations}
+      onReplace={onReplace}
+    >
+      {mockupContent}
+    </AdCardWrapper>
+  );
+
+  const editPanel = (
+    <CardEditPanel
+      platform="Homes.com"
+      platformIcon={platformIcon}
+      content={content}
+      onEditText={onEditText}
+      platformId="homesComTrulia"
+      fieldName="description"
+      complianceResult={complianceResult}
+      qualityResult={qualityResult}
+    />
+  );
+
+  return (
+    <CardLayoutWrapper editPanel={editPanel} previewPanel={previewPanel} />
   );
 }

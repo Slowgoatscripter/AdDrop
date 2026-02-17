@@ -21,12 +21,12 @@ export function PhoneFrame({ children }: PhoneFrameProps) {
         }}
       >
         {/* Shadow wrapper — only on md+ */}
-        <div className="hidden md:block absolute inset-0 rounded-[2rem]" style={{
+        <div aria-hidden="true" className="hidden md:block absolute inset-0 rounded-[2rem]" style={{
           boxShadow: '0 2px 8px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15)',
         }} />
 
         {/* Status bar — hidden on mobile */}
-        <div className="hidden md:flex items-center justify-between px-6 py-2 relative z-10">
+        <div aria-hidden="true" className="hidden md:flex items-center justify-between px-6 py-2 relative z-10">
           <span className="text-xs font-semibold text-black/80">9:41</span>
           <div className="flex items-center gap-1.5">
             {/* Signal dots */}
@@ -57,7 +57,7 @@ export function PhoneFrame({ children }: PhoneFrameProps) {
         </div>
 
         {/* Home indicator bar — hidden on mobile */}
-        <div className="hidden md:flex justify-center py-2 relative z-10">
+        <div aria-hidden="true" className="hidden md:flex justify-center py-2 relative z-10">
           <div className="w-32 h-1 rounded-full bg-black/20" />
         </div>
       </div>

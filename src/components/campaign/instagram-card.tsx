@@ -137,7 +137,7 @@ export function InstagramCard({
                   )}
                 </div>
               </div>
-              <MoreHorizontal className="h-5 w-5 text-[#262626]" />
+              <MoreHorizontal aria-label="More options" className="h-5 w-5 text-[#262626]" />
             </div>
 
             {/* Image area */}
@@ -166,11 +166,11 @@ export function InstagramCard({
             {/* Action row */}
             <div className="flex items-center justify-between px-3 py-1">
               <div className="flex items-center gap-4">
-                <Heart className="h-6 w-6 text-[#262626]" />
-                <MessageCircle className="h-6 w-6 text-[#262626]" />
-                <Send className="h-6 w-6 text-[#262626]" />
+                <Heart aria-label="Like" className="h-6 w-6 text-[#262626]" />
+                <MessageCircle aria-label="Comment" className="h-6 w-6 text-[#262626]" />
+                <Send aria-label="Share" className="h-6 w-6 text-[#262626]" />
               </div>
-              <Bookmark className="h-6 w-6 text-[#262626]" />
+              <Bookmark aria-label="Save" className="h-6 w-6 text-[#262626]" />
             </div>
 
             {/* Likes */}

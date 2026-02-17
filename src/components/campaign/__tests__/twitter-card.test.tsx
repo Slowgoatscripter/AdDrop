@@ -25,7 +25,7 @@ describe('TwitterCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText(/Just listed/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Just listed/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('shows X logo and profile section', () => {
@@ -36,7 +36,7 @@ describe('TwitterCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    expect(screen.getAllByText('Jane Smith').length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders 280-character badge', () => {
@@ -47,7 +47,7 @@ describe('TwitterCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText(/\/ 280 characters/)).toBeInTheDocument();
+    expect(screen.getAllByText(/\/ 280 characters/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('wraps content in AdCardWrapper', () => {

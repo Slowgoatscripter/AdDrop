@@ -116,14 +116,14 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
   };
 
   const inputClass =
-    'w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent';
-  const labelClass = 'block text-sm font-medium text-slate-700 mb-1';
+    'w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card text-foreground';
+  const labelClass = 'block text-sm font-medium text-card-foreground mb-1';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto">
       {/* Section 1: Property Details */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Property Details</h2>
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Property Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className={labelClass}>Street Address *</label>
@@ -267,8 +267,8 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
       </div>
 
       {/* Section 2: Listing Info */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Listing Info</h2>
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Listing Info</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Listing Agent</label>
@@ -294,8 +294,8 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
       </div>
 
       {/* Section 3: Description + Selling Points */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Description</h2>
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Description</h2>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -304,9 +304,9 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
           rows={5}
         />
         <div className="mt-6">
-          <h3 className="text-sm font-medium text-slate-700 mb-2">
+          <h3 className="text-sm font-medium text-card-foreground mb-2">
             Selling Points
-            <span className="text-slate-500 font-normal ml-2">
+            <span className="text-muted-foreground font-normal ml-2">
               Highlights for the AI to emphasize
             </span>
           </h3>
@@ -324,7 +324,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
                   <button
                     type="button"
                     onClick={() => handleRemoveSellingPoint(i)}
-                    className="p-2 text-slate-500 hover:text-red-500"
+                    className="p-2 text-muted-foreground hover:text-destructive"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -335,7 +335,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
           <button
             type="button"
             onClick={handleAddSellingPoint}
-            className="mt-2 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+            className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80"
           >
             <Plus className="h-4 w-4" /> Add selling point
           </button>
@@ -343,11 +343,11 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
       </div>
 
       {/* Section 4: Photos */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           Photos
           {photos.length > 0 && (
-            <span className="text-slate-500 font-normal text-sm ml-2">
+            <span className="text-muted-foreground font-normal text-sm ml-2">
               {photos.length} photo{photos.length !== 1 ? 's' : ''} — first photo is the hero
             </span>
           )}
@@ -355,7 +355,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
         {photos.length > 0 ? (
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {photos.map((photo, i) => (
-              <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-slate-100">
+              <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo}
@@ -363,7 +363,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '';
-                    (e.target as HTMLImageElement).parentElement!.classList.add('bg-slate-200');
+                    (e.target as HTMLImageElement).parentElement!.classList.add('bg-muted');
                   }}
                 />
                 <button
@@ -374,7 +374,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
                   <X className="h-3 w-3" />
                 </button>
                 {i === 0 && (
-                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded">
+                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-primary-foreground text-xs rounded">
                     Hero
                   </span>
                 )}
@@ -382,11 +382,11 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-slate-500">
+          <div className="text-center py-8 text-muted-foreground">
             No photos yet — upload some to get started
           </div>
         )}
-        <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-md cursor-pointer text-sm text-slate-700 transition-colors">
+        <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 rounded-md cursor-pointer text-sm text-card-foreground transition-colors">
           <Upload className="h-4 w-4" />
           Upload Photos
           <input
@@ -401,7 +401,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
 
       {/* Section 5: Platform Selection */}
       {selectedPlatforms && onPlatformsChange && (
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
+        <div className="bg-card rounded-lg border border-border p-6">
           <PlatformSelector
             selected={selectedPlatforms}
             onChange={onPlatformsChange}

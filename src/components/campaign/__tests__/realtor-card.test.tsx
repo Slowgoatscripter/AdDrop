@@ -22,28 +22,28 @@ describe('RealtorCard', () => {
     render(
       <RealtorCard content="Lovely home" photos={['/photo1.jpg']} listing={mockListing} />
     );
-    expect(screen.getByText(/realtor\.com/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/realtor\.com/i).length).toBeGreaterThanOrEqual(1);
   });
 
   test('shows listing price', () => {
     render(
       <RealtorCard content="Description" photos={['/photo1.jpg']} listing={mockListing} />
     );
-    expect(screen.getByText(/525,000/)).toBeInTheDocument();
+    expect(screen.getAllByText(/525,000/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('displays property stats', () => {
     render(
       <RealtorCard content="Description" photos={['/photo1.jpg']} listing={mockListing} />
     );
-    expect(screen.getByText(/4 bd/i)).toBeInTheDocument();
-    expect(screen.getByText(/3 ba/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/4 bd/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/3 ba/i).length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders generated description', () => {
     render(
       <RealtorCard content="Spacious family home" photos={['/photo1.jpg']} listing={mockListing} />
     );
-    expect(screen.getByText(/Spacious family home/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Spacious family home/).length).toBeGreaterThanOrEqual(1);
   });
 });

@@ -22,28 +22,28 @@ describe('HomesTruliaCard', () => {
     render(
       <HomesTruliaCard content="Charming townhouse" photos={['/photo1.jpg']} listing={mockListing} />
     );
-    expect(screen.getByText(/Homes\.com/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Homes\.com/i).length).toBeGreaterThanOrEqual(1);
   });
 
   test('shows listing price', () => {
     render(
       <HomesTruliaCard content="Description" photos={['/photo1.jpg']} listing={mockListing} />
     );
-    expect(screen.getByText(/375,000/)).toBeInTheDocument();
+    expect(screen.getAllByText(/375,000/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('displays property stats', () => {
     render(
       <HomesTruliaCard content="Description" photos={['/photo1.jpg']} listing={mockListing} />
     );
-    expect(screen.getByText(/3 bd/i)).toBeInTheDocument();
-    expect(screen.getByText(/2 ba/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/3 bd/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/2 ba/i).length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders generated description', () => {
     render(
       <HomesTruliaCard content="Charming townhouse near downtown" photos={['/photo1.jpg']} listing={mockListing} />
     );
-    expect(screen.getByText(/Charming townhouse near downtown/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Charming townhouse near downtown/).length).toBeGreaterThanOrEqual(1);
   });
 });

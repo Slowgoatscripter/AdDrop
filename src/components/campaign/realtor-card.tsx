@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { AdCardWrapper } from './ad-card-wrapper';
 import { MockupImage } from './mockup-image';
+import { CardLayoutWrapper } from './card-layout-wrapper';
+import { CardEditPanel } from './card-edit-panel';
 import { PlatformComplianceResult } from '@/lib/types';
 import type { PlatformQualityResult, QualityIssue } from '@/lib/types/quality';
 import type { ListingData } from '@/lib/types/listing';
@@ -51,56 +53,49 @@ export function RealtorCard({
 
   const violations = complianceResult?.violations ?? [];
 
-  return (
-    <AdCardWrapper
-      platform="Realtor.com"
-      platformIcon={<RealtorPlatformIcon />}
-      dimensionLabel="Listing Detail"
-      complianceResult={complianceResult}
-      qualityResult={qualityResult}
-      copyText={content}
-      violations={violations}
-      onReplace={onReplace}
-      onRevert={onRevert}
-    >
-      <div className="w-full max-w-md mx-auto">
-        {/* Property photo with price overlay */}
-        <div className="relative">
-          <MockupImage
-            src={photo}
-            alt={listing ? `${listing.address.street}` : 'Property photo'}
-            aspectRatio="aspect-[16/9]"
-            sizes="(max-width: 448px) 100vw, 448px"
-            photos={photos}
-            selectedIndex={selectedPhotoIndex}
-            onImageSelect={setSelectedPhotoIndex}
-          />
-          {formattedPrice && (
-            <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/60 to-transparent">
-              <p className="text-white font-bold text-xl">{formattedPrice}</p>
-              {listing && (
-                <p className="text-white/90 text-xs">
-                  {listing.address.street}, {listing.address.city},{' '}
-                  {listing.address.state} {listing.address.zip}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+  const platformIcon = <RealtorPlatformIcon />;
 
-        {/* Stats bar: beds, baths, sqft */}
-        {listing && (
-          <div className="flex items-center gap-4 px-3 py-2 border-b border-gray-200 bg-white text-sm text-gray-700">
-            <span className="font-medium">{listing.beds} bd</span>
-            <span className="text-gray-300">|</span>
-            <span className="font-medium">{listing.baths} ba</span>
-            <span className="text-gray-300">|</span>
-            <span className="font-medium">{listing.sqft.toLocaleString()} sqft</span>
+  const mockupContent = (
+    <div className="w-full">
+      {/* Property photo with price overlay */}
+      <div className="relative">
+        <MockupImage
+          src={photo}
+          alt={listing ? `${listing.address.street}` : 'Property photo'}
+          aspectRatio="aspect-[16/9]"
+          sizes="(max-width: 448px) 100vw, 448px"
+          photos={photos}
+          selectedIndex={selectedPhotoIndex}
+          onImageSelect={setSelectedPhotoIndex}
+        />
+        {formattedPrice && (
+          <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/60 to-transparent">
+            <p className="text-white font-bold text-xl">{formattedPrice}</p>
+            {listing && (
+              <p className="text-white/90 text-xs">
+                {listing.address.street}, {listing.address.city},{' '}
+                {listing.address.state} {listing.address.zip}
+              </p>
+            )}
           </div>
         )}
+      </div>
 
-        {/* Generated description */}
-        <div className="px-3 py-3 bg-white">
+      {/* Stats bar: beds, baths, sqft */}
+      {listing && (
+        <div className="flex items-center gap-4 px-3 py-2 border-b border-gray-200 bg-white text-sm text-gray-700">
+          <span className="font-medium">{listing.beds} bd</span>
+          <span className="text-gray-300">|</span>
+          <span className="font-medium">{listing.baths} ba</span>
+          <span className="text-gray-300">|</span>
+          <span className="font-medium">{listing.sqft.toLocaleString()} sqft</span>
+        </div>
+      )}
+
+      {/* Generated description */}
+      <div className="px-3 py-3 bg-white">
+        {/* Mobile: editable; Desktop: read-only */}
+        <div className="lg:hidden">
           {onEditText ? (
             <EditableText
               value={content}
@@ -109,34 +104,68 @@ export function RealtorCard({
               className="text-sm text-gray-700 leading-relaxed"
             />
           ) : (
-            <>
-              <p className={`text-sm text-gray-700 leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>{content}</p>
-              {content.length > 200 && (
-                <button
-                  onClick={() => setExpanded(!expanded)}
-                  className="text-xs font-medium mt-1"
-                  style={{ color: '#D92228' }}
-                >
-                  {expanded ? 'Show less' : 'Read more'}
-                </button>
-              )}
-            </>
+            <p className="text-sm text-gray-700 leading-relaxed">{content}</p>
           )}
-          <p className="text-xs text-muted-foreground mt-2">{content.length} characters</p>
         </div>
-
-        {/* Agent footer */}
-        {listing && (listing.listingAgent || listing.broker) && (
-          <div className="px-3 py-2 border-t border-gray-200 bg-gray-50 text-xs text-gray-500 space-y-0.5">
-            {listing.listingAgent && (
-              <p>Listed by: <span className="font-medium text-gray-700">{listing.listingAgent}</span></p>
-            )}
-            {listing.broker && (
-              <p>Brokerage: <span className="font-medium text-gray-700">{listing.broker}</span></p>
-            )}
-          </div>
-        )}
+        <div className="hidden lg:block">
+          <p className={`text-sm text-gray-700 leading-relaxed ${!expanded ? 'line-clamp-4' : ''}`}>{content}</p>
+          {content.length > 200 && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs font-medium mt-1"
+              style={{ color: '#D92228' }}
+            >
+              {expanded ? 'Show less' : 'Read more'}
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">{content.length} characters</p>
       </div>
+
+      {/* Agent footer */}
+      {listing && (listing.listingAgent || listing.broker) && (
+        <div className="px-3 py-2 border-t border-gray-200 bg-gray-50 text-xs text-gray-500 space-y-0.5">
+          {listing.listingAgent && (
+            <p>Listed by: <span className="font-medium text-gray-700">{listing.listingAgent}</span></p>
+          )}
+          {listing.broker && (
+            <p>Brokerage: <span className="font-medium text-gray-700">{listing.broker}</span></p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const previewPanel = (
+    <AdCardWrapper
+      platform="Realtor.com"
+      platformIcon={platformIcon}
+      dimensionLabel="Listing Detail"
+      complianceResult={complianceResult}
+      qualityResult={qualityResult}
+      copyText={content}
+      violations={violations}
+      onReplace={onReplace}
+      onRevert={onRevert}
+    >
+      {mockupContent}
     </AdCardWrapper>
+  );
+
+  const editPanel = (
+    <CardEditPanel
+      platform="Realtor.com"
+      platformIcon={platformIcon}
+      content={content}
+      onEditText={onEditText}
+      platformId="realtorCom"
+      fieldName="description"
+      complianceResult={complianceResult}
+      qualityResult={qualityResult}
+    />
+  );
+
+  return (
+    <CardLayoutWrapper editPanel={editPanel} previewPanel={previewPanel} />
   );
 }

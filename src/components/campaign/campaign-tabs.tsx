@@ -182,7 +182,7 @@ export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRege
 
       {/* Social Media */}
       {visibleCategories.some((c) => c.value === 'social') && (
-        <TabsContent value="social" className="flex flex-col items-center gap-6 mt-4">
+        <TabsContent value="social" className="flex flex-col gap-6 mt-4">
           {has(selected, 'instagram') && campaign.instagram && (
             <InstagramCard content={campaign.instagram} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'instagram')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'instagram')} onReplace={onReplace} onRevert={onRevert} onEditText={onEditText} />
           )}
@@ -197,7 +197,7 @@ export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRege
 
       {/* Paid Ads */}
       {visibleCategories.some((c) => c.value === 'paid') && (
-        <TabsContent value="paid" className="flex flex-col items-center gap-6 mt-4">
+        <TabsContent value="paid" className="flex flex-col gap-6 mt-4">
           {has(selected, 'googleAds') && campaign.googleAds && (
             <GoogleAdsCard ads={campaign.googleAds} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'googleAds')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'googleAds')} onReplace={onReplace} onRevert={onRevert} onEditText={onEditText} />
           )}
@@ -209,7 +209,7 @@ export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRege
 
       {/* Print */}
       {visibleCategories.some((c) => c.value === 'print') && (
-        <TabsContent value="print" className="flex flex-col items-center gap-6 mt-4">
+        <TabsContent value="print" className="flex flex-col gap-6 mt-4">
           {has(selected, 'magazineFullPage') && campaign.magazineFullPage && (
             <PrintAdCard title="Magazine — Full Page" content={campaign.magazineFullPage} photos={photos} listing={listing} variant="full-page" complianceResult={buildPlatformResult(agentResult, platformTexts, 'magazineFullPage')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'magazineFullPage')} onReplace={onReplace} onRevert={onRevert} onEditText={onEditText} />
           )}
@@ -224,7 +224,7 @@ export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRege
 
       {/* Online Listings */}
       {visibleCategories.some((c) => c.value === 'listings') && (
-        <TabsContent value="listings" className="flex flex-col items-center gap-6 mt-4">
+        <TabsContent value="listings" className="flex flex-col gap-6 mt-4">
           {has(selected, 'zillow') && campaign.zillow && (
             <ZillowCard content={campaign.zillow} photos={photos} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'zillow')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'zillow')} onReplace={onReplace} onEditText={onEditText} />
           )}

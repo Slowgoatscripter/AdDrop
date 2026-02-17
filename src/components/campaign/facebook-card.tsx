@@ -132,7 +132,7 @@ export function FacebookCard({
                 <div className="font-semibold text-[15px] leading-tight">{pageName}</div>
                 <div className="text-[13px] text-[#65676B]">Just now · 🌐</div>
               </div>
-              <MoreHorizontal className="w-5 h-5 text-[#65676B] flex-shrink-0" />
+              <MoreHorizontal aria-label="More options" className="w-5 h-5 text-[#65676B] flex-shrink-0" />
             </div>
 
             {/* Post Text */}
@@ -181,15 +181,15 @@ export function FacebookCard({
             {/* Action Buttons */}
             <div className="px-2 py-1 flex justify-around">
               <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
-                <ThumbsUp className="w-5 h-5" />
+                <ThumbsUp aria-hidden="true" className="w-5 h-5" />
                 <span>Like</span>
               </button>
               <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
-                <MessageCircle className="w-5 h-5" />
+                <MessageCircle aria-hidden="true" className="w-5 h-5" />
                 <span>Comment</span>
               </button>
               <button className="flex items-center gap-1.5 text-[15px] font-semibold text-[#65676B] py-2 px-4 hover:bg-slate-50 rounded-md flex-1 justify-center">
-                <Share2 className="w-5 h-5" />
+                <Share2 aria-hidden="true" className="w-5 h-5" />
                 <span>Share</span>
               </button>
             </div>

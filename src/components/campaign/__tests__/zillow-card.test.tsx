@@ -36,7 +36,7 @@ describe('ZillowCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText(/450,000/)).toBeInTheDocument();
+    expect(screen.getAllByText(/450,000/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('displays beds, baths, sqft badges', () => {
@@ -47,9 +47,9 @@ describe('ZillowCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText(/3 bd/i)).toBeInTheDocument();
-    expect(screen.getByText(/2 ba/i)).toBeInTheDocument();
-    expect(screen.getByText(/1,800/)).toBeInTheDocument();
+    expect(screen.getAllByText(/3 bd/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/2 ba/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/1,800/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders the generated description content', () => {
@@ -60,7 +60,7 @@ describe('ZillowCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText(/Stunning mountain retreat/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Stunning mountain retreat/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('shows agent info in footer', () => {
@@ -71,6 +71,6 @@ describe('ZillowCard', () => {
         listing={mockListing}
       />
     );
-    expect(screen.getByText(/Jane Smith/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Jane Smith/).length).toBeGreaterThanOrEqual(1);
   });
 });

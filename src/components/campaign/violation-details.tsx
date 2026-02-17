@@ -121,7 +121,7 @@ function ViolationItem({
 
       <div className="flex items-center gap-2 text-xs">
         <span className="text-muted-foreground">
-          Suggested: <span className="font-medium text-green-400">{violation.alternative}</span>
+          Suggested: <span className="font-medium text-emerald-300">{violation.alternative}</span>
         </span>
       </div>
 

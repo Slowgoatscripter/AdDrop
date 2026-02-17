@@ -31,10 +31,10 @@ const categoryLabels: Record<QualityCategory, string> = {
 };
 
 const severityColors: Record<string, string> = {
-  low: 'bg-gray-100 text-gray-700',
-  medium: 'bg-amber-100 text-amber-700',
-  high: 'bg-red-100 text-red-700',
-  critical: 'bg-red-200 text-red-800',
+  low: 'bg-muted text-muted-foreground',
+  medium: 'bg-yellow-500/10 text-yellow-500',
+  high: 'bg-destructive/10 text-destructive',
+  critical: 'bg-destructive/20 text-destructive',
 };
 
 function groupByPlatform(suggestions: QualitySuggestion[]): Map<string, QualitySuggestion[]> {
@@ -53,51 +53,51 @@ function ConstraintsSection({ constraints }: { constraints: QualityConstraintVio
   if (constraints.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-6 py-4">
+    <div className="rounded-xl border border-green-500/20 bg-green-500/10 px-6 py-4">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600">
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-500/20 text-green-500">
             <Check className="w-5 h-5" />
           </span>
           <div className="text-left">
-            <p className="text-sm font-semibold text-emerald-900">
+            <p className="text-sm font-semibold text-green-500">
               {constraints.length} constraint{constraints.length !== 1 ? 's' : ''} auto-enforced
             </p>
-            <p className="text-xs text-emerald-700">Click to review what was enforced</p>
+            <p className="text-xs text-green-500">Click to review what was enforced</p>
           </div>
         </div>
         {expanded ? (
-          <ChevronDown className="w-4 h-4 text-emerald-600" />
+          <ChevronDown className="w-4 h-4 text-green-500" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-emerald-600" />
+          <ChevronRight className="w-4 h-4 text-green-500" />
         )}
       </button>
 
       {expanded && (
         <div className="mt-4 space-y-3">
           {constraints.map((constraint) => (
-            <div key={constraint.id} className="rounded-lg border border-emerald-200 bg-white p-3">
+            <div key={constraint.id} className="rounded-lg border border-green-500/20 bg-card p-3">
               <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 capitalize">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-500 capitalize">
                   {constraint.type.replace(/-/g, ' ')}
                 </span>
-                <span className="text-xs text-emerald-600">{constraint.platform}</span>
+                <span className="text-xs text-green-500">{constraint.platform}</span>
               </div>
-              <p className="text-sm text-gray-700 mb-2">{constraint.issue}</p>
+              <p className="text-sm text-muted-foreground mb-2">{constraint.issue}</p>
               {constraint.autoFixed && constraint.fixedText && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-xs font-medium text-gray-500 mb-1">Before</p>
-                    <p className="text-sm text-red-700 line-through bg-red-50 rounded px-2 py-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Before</p>
+                    <p className="text-sm text-destructive line-through bg-destructive/10 rounded px-2 py-1">
                       {constraint.currentText}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 mb-1">After</p>
-                    <p className="text-sm text-green-700 bg-green-50 rounded px-2 py-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-1">After</p>
+                    <p className="text-sm text-green-500 bg-green-500/10 rounded px-2 py-1">
                       {constraint.fixedText}
                     </p>
                   </div>
@@ -123,7 +123,7 @@ function SuggestionCard({
   isApplying?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-3">
+    <div className="rounded-lg border border-border bg-card p-3">
       <div className="flex items-center gap-2 mb-2">
         <span
           className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${severityColors[suggestion.severity]}`}
@@ -132,36 +132,36 @@ function SuggestionCard({
         </span>
       </div>
 
-      <p className="text-sm text-gray-800 mb-2">{suggestion.issue}</p>
+      <p className="text-sm text-foreground mb-2">{suggestion.issue}</p>
 
       <div className="space-y-2 mb-3">
         <div>
-          <p className="text-xs font-medium text-gray-400 mb-0.5">Current</p>
-          <p className="text-sm text-gray-500 bg-gray-50 rounded px-2 py-1">
+          <p className="text-xs font-medium text-muted-foreground mb-0.5">Current</p>
+          <p className="text-sm text-muted-foreground bg-muted rounded px-2 py-1">
             {suggestion.currentText}
           </p>
         </div>
         {suggestion.suggestedRewrite && (
           <div>
-            <p className="text-xs font-medium text-emerald-600 mb-0.5">Suggested</p>
-            <p className="text-sm text-emerald-800 bg-emerald-50 rounded px-2 py-1">
+            <p className="text-xs font-medium text-green-500 mb-0.5">Suggested</p>
+            <p className="text-sm text-green-500 bg-green-500/10 rounded px-2 py-1">
               {suggestion.suggestedRewrite}
             </p>
           </div>
         )}
       </div>
 
-      <p className="text-xs text-gray-500 mb-3">{suggestion.explanation}</p>
+      <p className="text-xs text-muted-foreground mb-3">{suggestion.explanation}</p>
 
       <div className="flex items-center gap-2">
         {suggestion.suggestedRewrite && onApply && (
           <button
             onClick={() => onApply(suggestion)}
             disabled={isApplying}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isApplying ? (
-              <span className="w-3 h-3 border border-emerald-600 border-t-transparent rounded-full animate-spin" />
+              <span className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin" />
             ) : (
               <Sparkles className="w-3 h-3" />
             )}
@@ -172,7 +172,7 @@ function SuggestionCard({
           <button
             onClick={() => onDismiss(suggestion.id)}
             disabled={isApplying}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-3 h-3" />
             Dismiss
@@ -203,28 +203,28 @@ export function QualitySuggestionsPanel({
       <ConstraintsSection constraints={constraints} />
 
       {suggestions.length > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-6 py-4">
+        <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 px-6 py-4">
           <button
             onClick={() => setSuggestionsExpanded(!suggestionsExpanded)}
             className="w-full flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-600">
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-500">
                 <Sparkles className="w-5 h-5" />
               </span>
               <div className="text-left">
-                <p className="text-sm font-semibold text-amber-900">
+                <p className="text-sm font-semibold text-yellow-500">
                   {suggestions.length} quality suggestion{suggestions.length !== 1 ? 's' : ''}
                 </p>
-                <p className="text-xs text-amber-700">
+                <p className="text-xs text-yellow-500">
                   Review and apply suggested improvements
                 </p>
               </div>
             </div>
             {suggestionsExpanded ? (
-              <ChevronDown className="w-4 h-4 text-amber-600" />
+              <ChevronDown className="w-4 h-4 text-yellow-500" />
             ) : (
-              <ChevronRight className="w-4 h-4 text-amber-600" />
+              <ChevronRight className="w-4 h-4 text-yellow-500" />
             )}
           </button>
 
@@ -232,7 +232,7 @@ export function QualitySuggestionsPanel({
             <div className="mt-4 space-y-4">
               {Array.from(grouped.entries()).map(([platform, platformSuggestions]) => (
                 <div key={platform}>
-                  <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-2">
+                  <p className="text-xs font-semibold text-yellow-500 uppercase tracking-wide mb-2">
                     {platform}
                   </p>
                   <div className="space-y-2">

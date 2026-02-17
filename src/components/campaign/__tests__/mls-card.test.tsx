@@ -24,32 +24,32 @@ describe('MlsCard', () => {
     render(
       <MlsCard description="MLS description" listing={mockListing} />
     );
-    expect(screen.getByText(/MLS Listing Detail/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/MLS Listing/i).length).toBeGreaterThanOrEqual(1);
   });
 
   test('shows MLS number badge', () => {
     render(
       <MlsCard description="MLS description" listing={mockListing} />
     );
-    expect(screen.getByText(/MLS-2026-1234/)).toBeInTheDocument();
+    expect(screen.getAllByText(/MLS-2026-1234/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders structured property fields', () => {
     render(
       <MlsCard description="MLS description" listing={mockListing} />
     );
-    expect(screen.getByText(/Active/)).toBeInTheDocument();
-    expect(screen.getByText(/620,000/)).toBeInTheDocument();
-    expect(screen.getByText(/789 Pine Rd/)).toBeInTheDocument();
-    expect(screen.getByText(/Single Family/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Active/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/620,000/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/789 Pine Rd/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Single Family/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders Public Remarks section with description in monospace', () => {
     render(
       <MlsCard description="Beautiful mountain retreat with panoramic views" listing={mockListing} />
     );
-    expect(screen.getByText(/Public Remarks/i)).toBeInTheDocument();
-    expect(screen.getByText(/Beautiful mountain retreat/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Public Remarks/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Beautiful mountain retreat/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('shows character count badge', () => {
@@ -57,7 +57,7 @@ describe('MlsCard', () => {
     render(
       <MlsCard description={desc} listing={mockListing} />
     );
-    expect(screen.getByText(/500/)).toBeInTheDocument();
+    expect(screen.getAllByText(/500/).length).toBeGreaterThanOrEqual(1);
   });
 
   test('wraps in AdCardWrapper', () => {
