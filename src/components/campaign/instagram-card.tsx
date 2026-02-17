@@ -8,6 +8,7 @@ import { MockupImage } from './mockup-image';
 import { PhoneFrame } from './phone-frame';
 import { AdTone, PlatformComplianceResult, ListingData } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { seededRandom } from '@/lib/utils/seeded-random';
 import {
   Heart,
@@ -23,6 +24,7 @@ interface InstagramCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
   listing?: ListingData;
 }
 
@@ -32,6 +34,7 @@ export function InstagramCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
   listing,
 }: InstagramCardProps) {
   const tones = Object.keys(content) as AdTone[];
@@ -95,6 +98,7 @@ export function InstagramCard({
         copyText={currentCaption}
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
         toneSwitcher={
           <div className="space-y-2">
             <ToneSwitcher

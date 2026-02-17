@@ -6,6 +6,7 @@ import { BrowserFrame } from './browser-frame';
 import { ViolationDetails } from './violation-details';
 import { GoogleAd, PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { ListingData } from '@/lib/types/listing';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -14,6 +15,7 @@ interface GoogleAdsCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
   listing?: ListingData;
 }
 
@@ -31,6 +33,7 @@ export function GoogleAdsCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
   listing,
 }: GoogleAdsCardProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -61,6 +64,7 @@ export function GoogleAdsCard({
         copyText={copyText}
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
       >
         <BrowserFrame searchQuery={searchQuery}>
           <div className="px-4 md:px-6 py-4 bg-white">

@@ -7,6 +7,7 @@ import { ToneSwitcher } from './tone-switcher';
 import { MockupImage } from './mockup-image';
 import { MetaAd, PlatformComplianceResult, ListingData } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { seededRandom } from '@/lib/utils/seeded-random';
 import { Globe, MoreHorizontal } from 'lucide-react';
 
@@ -16,6 +17,7 @@ interface MetaAdCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
   listing?: ListingData;
 }
 
@@ -25,6 +27,7 @@ export function MetaAdCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
   listing,
 }: MetaAdCardProps) {
   const tones = Object.keys(content);
@@ -59,6 +62,7 @@ export function MetaAdCard({
         copyText={fullText}
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
         toneSwitcher={
           <div className="space-y-2">
             {tones.length > 1 && (

@@ -6,6 +6,7 @@ import { ToneSwitcher } from './tone-switcher';
 import { MockupImage } from './mockup-image';
 import { PrintAd, PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { ListingData } from '@/lib/types/listing';
 import { Newspaper } from 'lucide-react';
 
@@ -17,6 +18,7 @@ interface PrintAdCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
   listing?: ListingData;
   variant?: 'full-page' | 'half-page';
 }
@@ -37,6 +39,7 @@ export function PrintAdCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
   listing,
   variant = 'full-page',
 }: PrintAdCardProps) {
@@ -79,6 +82,7 @@ export function PrintAdCard({
         }
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
       >
         {/* Physical paper effect: rotation + layered shadow */}
         <div

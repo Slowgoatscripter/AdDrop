@@ -8,6 +8,7 @@ import { MockupImage } from './mockup-image';
 import { PhoneFrame } from './phone-frame';
 import { PlatformComplianceResult, ListingData } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { seededRandom } from '@/lib/utils/seeded-random';
 import {
   ThumbsUp,
@@ -22,6 +23,7 @@ interface FacebookCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
   listing?: ListingData;
 }
 
@@ -31,6 +33,7 @@ export function FacebookCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
   listing,
 }: FacebookCardProps) {
   const tones = Object.keys(content);
@@ -99,6 +102,7 @@ export function FacebookCard({
         copyText={currentContent}
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
         toneSwitcher={
           <div className="space-y-2">
             <ToneSwitcher

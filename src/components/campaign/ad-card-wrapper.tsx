@@ -5,8 +5,10 @@ import { CopyButton } from '@/components/copy-button';
 import { ComplianceBadge } from './compliance-badge';
 import { QualityBadge } from './quality-badge';
 import { ViolationDetails } from './violation-details';
+import { QualityDetails } from './quality-details';
 import { PlatformComplianceResult, ComplianceViolation } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 
@@ -21,6 +23,7 @@ interface AdCardWrapperProps {
   children: ReactNode;
   violations?: ComplianceViolation[];
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
 }
 
 export function AdCardWrapper({
@@ -34,6 +37,7 @@ export function AdCardWrapper({
   children,
   violations,
   onReplace,
+  onRevert,
 }: AdCardWrapperProps) {
   return (
     <div className="bg-card border rounded-xl overflow-hidden">
@@ -89,6 +93,11 @@ export function AdCardWrapper({
         {/* Violation details */}
         {violations && violations.length > 0 && onReplace && (
           <ViolationDetails violations={violations} onReplace={onReplace} />
+        )}
+
+        {/* Quality details */}
+        {qualityResult && qualityResult.issues.length > 0 && (
+          <QualityDetails issues={qualityResult.issues} onRevert={onRevert} />
         )}
       </div>
     </div>

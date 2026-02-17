@@ -6,6 +6,7 @@ import { ToneSwitcher } from './tone-switcher';
 import { MockupImage } from './mockup-image';
 import { PrintAd, PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { ListingData } from '@/lib/types/listing';
 import { Mail, User } from 'lucide-react';
 
@@ -15,6 +16,7 @@ interface PostcardCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
   listing?: ListingData;
 }
 
@@ -32,6 +34,7 @@ export function PostcardCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
   listing,
 }: PostcardCardProps) {
   const tones = Object.keys(content);
@@ -71,6 +74,7 @@ export function PostcardCard({
         }
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
       >
         {/* Side-by-side proof layout with stack effect */}
         <div className="flex flex-col md:flex-row gap-4">
