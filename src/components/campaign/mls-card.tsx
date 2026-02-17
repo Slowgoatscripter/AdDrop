@@ -6,10 +6,12 @@ import { CopyButton } from '@/components/copy-button';
 import { ComplianceBadge } from './compliance-badge';
 import { ViolationDetails } from './violation-details';
 import { PlatformComplianceResult } from '@/lib/types';
+import type { PlatformQualityResult } from '@/lib/types/quality';
 
 interface MlsCardProps {
   description: string;
   complianceResult?: PlatformComplianceResult;
+  qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 

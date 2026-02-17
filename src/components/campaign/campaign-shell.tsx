@@ -426,7 +426,7 @@ export function CampaignShell() {
         )}
 
         <PropertyHeader listing={campaign.listing} />
-        <CampaignTabs campaign={campaign} onReplace={handleReplace} />
+        <CampaignTabs campaign={campaign} onReplace={handleReplace} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} />
       </div>
     </div>
   );

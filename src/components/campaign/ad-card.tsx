@@ -7,6 +7,7 @@ import { CopyButton } from '@/components/copy-button';
 import { ComplianceBadge } from './compliance-badge';
 import { ViolationDetails } from './violation-details';
 import { AdTone, PlatformComplianceResult } from '@/lib/types';
+import type { PlatformQualityResult } from '@/lib/types/quality';
 
 interface AdCardProps {
   title: string;
@@ -15,6 +16,7 @@ interface AdCardProps {
   characterLimit?: number;
   subtitle?: string;
   complianceResult?: PlatformComplianceResult;
+  qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
 }
 
