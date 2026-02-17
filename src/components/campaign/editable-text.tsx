@@ -59,7 +59,8 @@ export function EditableText({
 
   if (editing) {
     return (
-      <div className={className}>
+      <div className="rounded-lg border-2 border-primary/20 bg-white p-3 shadow-sm">
+        <span className="text-xs font-medium text-gray-500 mb-1.5 block">Edit text</span>
         {multiline ? (
           <textarea
             ref={textareaRef}
@@ -70,7 +71,7 @@ export function EditableText({
             }}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="w-full min-h-[100px] p-2 text-sm rounded border border-border bg-background resize-y focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full min-h-[140px] p-3 text-sm leading-relaxed rounded-md border border-gray-200 bg-white text-gray-900 resize-y focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40"
           />
         ) : (
           <input
@@ -82,16 +83,16 @@ export function EditableText({
             }}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="w-full p-2 text-sm rounded border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full p-3 text-sm rounded-md border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40"
           />
         )}
-        <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center justify-between mt-3">
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSave}>Save</Button>
-            <Button size="sm" variant="ghost" onClick={handleCancel}>Cancel</Button>
+            <Button size="sm" variant="outline" onClick={handleCancel}>Cancel</Button>
           </div>
           {maxLength && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm font-medium text-gray-500">
               {draft.length} / {maxLength}
             </span>
           )}
