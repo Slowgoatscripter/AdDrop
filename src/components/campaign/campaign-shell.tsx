@@ -20,6 +20,7 @@ export function CampaignShell() {
   const [campaign, setCampaign] = useState<CampaignKit | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
   useEffect(() => {
     async function loadCampaign() {
       const id = params.id as string;
@@ -292,48 +293,54 @@ export function CampaignShell() {
 
       const applied = applyTextSwap(updated);
       if (!applied) {
-        console.warn('[campaign-shell] Could not apply suggestion to platform path:', suggestion.platform);
+        toast.warning('Could not apply suggestion — text may have already changed.');
         return;
       }
 
-      const beforeViolationCount = campaign.complianceResult?.violations?.length ?? 0;
+      setApplyingId(suggestion.id);
 
-      // Re-check compliance on the modified campaign
       try {
-        const res = await fetch('/api/compliance/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ campaign: updated }),
-        });
+        const beforeViolationCount = campaign.complianceResult?.violations?.length ?? 0;
 
-        if (res.ok) {
-          const result: ComplianceAgentResult = await res.json();
+        // Re-check compliance on the modified campaign
+        try {
+          const res = await fetch('/api/compliance/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ campaign: updated }),
+          });
 
-          // If the new text introduces a compliance violation, revert
-          if (result.violations && result.violations.length > beforeViolationCount) {
-            const newViolations = result.violations.slice(beforeViolationCount);
-            toast.error(
-              'This suggestion introduces a compliance violation and was not applied: ' +
-              newViolations.map((v) => `${v.term}: ${v.explanation}`).join('; '),
-            );
-            return;
+          if (res.ok) {
+            const result: ComplianceAgentResult = await res.json();
+
+            // If the new text introduces a compliance violation, revert
+            if (result.violations && result.violations.length > beforeViolationCount) {
+              const newViolations = result.violations.slice(beforeViolationCount);
+              toast.error(
+                'This suggestion introduces a compliance violation and was not applied: ' +
+                newViolations.map((v) => `${v.term}: ${v.explanation}`).join('; '),
+              );
+              return;
+            }
+
+            updated.complianceResult = result;
           }
-
-          updated.complianceResult = result;
+        } catch (err) {
+          console.error('[campaign-shell] Compliance re-check failed after suggestion apply:', err);
+          // If compliance check fails, still apply the text change but warn
+          toast.warning('Suggestion applied but compliance status may be outdated.');
         }
-      } catch (err) {
-        console.error('[campaign-shell] Compliance re-check failed after suggestion apply:', err);
-        // If compliance check fails, still apply the text change but warn
-        console.warn('[campaign-shell] Applying suggestion without compliance verification');
+
+        // Remove the applied suggestion from the list
+        updated.qualitySuggestions = updated.qualitySuggestions?.filter(
+          (s) => s.id !== suggestion.id,
+        );
+
+        setCampaign(updated);
+        sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+      } finally {
+        setApplyingId(null);
       }
-
-      // Remove the applied suggestion from the list
-      updated.qualitySuggestions = updated.qualitySuggestions?.filter(
-        (s) => s.id !== suggestion.id,
-      );
-
-      setCampaign(updated);
-      sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
     },
     [campaign],
   );
@@ -434,6 +441,7 @@ export function CampaignShell() {
             constraints={campaign.qualityConstraints || []}
             onApply={handleApplySuggestion}
             onDismiss={handleDismissSuggestion}
+            applyingId={applyingId}
           />
         ) : null}
 

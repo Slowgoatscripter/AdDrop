@@ -9,6 +9,7 @@ interface QualitySuggestionsPanelProps {
   constraints: QualityConstraintViolation[];
   onApply?: (suggestion: QualitySuggestion) => void;
   onDismiss?: (suggestionId: string) => void;
+  applyingId?: string | null;
 }
 
 const categoryLabels: Record<QualityCategory, string> = {
@@ -114,10 +115,12 @@ function SuggestionCard({
   suggestion,
   onApply,
   onDismiss,
+  isApplying,
 }: {
   suggestion: QualitySuggestion;
   onApply?: (suggestion: QualitySuggestion) => void;
   onDismiss?: (suggestionId: string) => void;
+  isApplying?: boolean;
 }) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-3">
@@ -154,16 +157,22 @@ function SuggestionCard({
         {suggestion.suggestedRewrite && onApply && (
           <button
             onClick={() => onApply(suggestion)}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors"
+            disabled={isApplying}
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Sparkles className="w-3 h-3" />
-            Apply
+            {isApplying ? (
+              <span className="w-3 h-3 border border-emerald-600 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Sparkles className="w-3 h-3" />
+            )}
+            {isApplying ? 'Applying...' : 'Apply'}
           </button>
         )}
         {onDismiss && (
           <button
             onClick={() => onDismiss(suggestion.id)}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            disabled={isApplying}
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-3 h-3" />
             Dismiss
@@ -179,6 +188,7 @@ export function QualitySuggestionsPanel({
   constraints,
   onApply,
   onDismiss,
+  applyingId,
 }: QualitySuggestionsPanelProps) {
   const [suggestionsExpanded, setSuggestionsExpanded] = useState(true);
 
@@ -232,6 +242,7 @@ export function QualitySuggestionsPanel({
                         suggestion={suggestion}
                         onApply={onApply}
                         onDismiss={onDismiss}
+                        isApplying={suggestion.id === applyingId}
                       />
                     ))}
                   </div>
