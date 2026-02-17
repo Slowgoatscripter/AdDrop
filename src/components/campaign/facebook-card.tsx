@@ -8,6 +8,7 @@ import { MockupImage } from './mockup-image';
 import { PhoneFrame } from './phone-frame';
 import { PlatformComplianceResult, ListingData } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import { seededRandom } from '@/lib/utils/seeded-random';
 import {
   ThumbsUp,
   MessageCircle,
@@ -22,13 +23,6 @@ interface FacebookCardProps {
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
   listing?: ListingData;
-}
-
-/** Derive a stable pseudo-random number from a seed within [min, max] */
-function seededRandom(seed: number, min: number, max: number): number {
-  const x = Math.sin(seed) * 10000;
-  const t = x - Math.floor(x);
-  return Math.floor(t * (max - min + 1)) + min;
 }
 
 export function FacebookCard({
