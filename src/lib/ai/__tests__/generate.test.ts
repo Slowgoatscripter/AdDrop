@@ -599,6 +599,17 @@ describe('generateCampaign', () => {
     expect(result.selectedPlatforms).toEqual(['twitter']);
   });
 
+  test('system message includes Fair Housing Act instruction', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockAIResponse) } }],
+    });
+
+    await generateCampaign(mockListing);
+    const systemMsg = mockCreate.mock.calls[0][0].messages[0];
+    expect(systemMsg.content).toContain('Fair Housing Act');
+    expect(systemMsg.content).toContain('protected classes');
+  });
+
   // --- Quality Pipeline Integration Tests ---
 
   test('full quality pipeline executes in correct order with voice-authenticity', async () => {

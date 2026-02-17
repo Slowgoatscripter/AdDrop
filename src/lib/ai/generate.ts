@@ -82,7 +82,7 @@ export async function generateCampaign(
     messages: [
       {
         role: 'system',
-        content: 'You are a real estate marketing expert. Always respond with valid JSON only. No markdown, no code fences, no explanatory text.',
+        content: 'You are a real estate marketing expert specializing in platform-native ad copy. Generate compelling, specific marketing content. Always respond with valid JSON only. No markdown, no code fences, no explanatory text.\n\nImportant: All copy must comply with the Fair Housing Act. Never target or exclude based on protected classes. Describe property features, not ideal residents.',
       },
       { role: 'user', content: prompt },
     ],
