@@ -131,14 +131,14 @@ export function PostcardCard({
                       </div>
                     </div>
 
-                    {/* Front text content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5 space-y-1.5">
+                    {/* Front text content — pointer-events-none so ImagePicker stays clickable */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5 space-y-1.5 pointer-events-none">
                       {onEditText ? (
                         <EditableText
                           value={postcard.front.headline}
                           onChange={() => {}}
                           onSave={(val) => onEditText('postcard', 'front.headline', val)}
-                          className="text-2xl font-extrabold text-white drop-shadow-lg uppercase tracking-[0.04em] leading-tight"
+                          className="text-2xl font-extrabold text-white drop-shadow-lg uppercase tracking-[0.04em] leading-tight pointer-events-auto"
                         />
                       ) : (
                         <h2 className="text-2xl font-extrabold text-white drop-shadow-lg uppercase tracking-[0.04em] leading-tight">
@@ -156,7 +156,7 @@ export function PostcardCard({
                           onChange={() => {}}
                           onSave={(val) => onEditText('postcard', 'front.cta', val)}
                           multiline={false}
-                          className="text-sm text-white/90 drop-shadow-md font-medium"
+                          className="text-sm text-white/90 drop-shadow-md font-medium pointer-events-auto"
                         />
                       ) : (
                         <p className="text-sm text-white/90 drop-shadow-md font-medium">

@@ -42,6 +42,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 function highlightTerm(context: string, term: string): React.ReactNode {
+  if (!term) return context;
   const idx = context.toLowerCase().indexOf(term.toLowerCase());
   if (idx === -1) return context;
 

@@ -70,7 +70,9 @@
       "Bash(node scripts/compare-terms.mjs:*)",
       "Bash(1)",
       "Bash(echo:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(dir \"C:\\\\Users\\\\dutte\\\\OneDrive\\\\Desktop\\\\Projects\\\\RealEstate Add Gen\\\\src\\\\app\\\\api\\\\campaign\")",
+      "Bash(dir:*)"
     ]
   }
 }

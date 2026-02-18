@@ -4,8 +4,10 @@ import React, { useState, useCallback } from 'react';
 import { ListingData, ListingAddress } from '@/lib/types/listing';
 import { PlatformId, ALL_PLATFORMS } from '@/lib/types/campaign';
 import { PlatformSelector } from '@/components/campaign/platform-selector';
+import { uploadPropertyImages } from '@/lib/uploads/property-images';
 import { Button } from '@/components/ui/button';
-import { X, Plus, Upload, Loader2 } from 'lucide-react';
+import { X, Plus, Upload, Loader2, Star } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PropertyFormProps {
   initialData?: Partial<ListingData>;
@@ -13,6 +15,7 @@ interface PropertyFormProps {
   loading?: boolean;
   selectedPlatforms?: PlatformId[];
   onPlatformsChange?: (platforms: PlatformId[]) => void;
+  userId?: string;
 }
 
 const PROPERTY_TYPES = [
@@ -25,7 +28,7 @@ const PROPERTY_TYPES = [
   'Other',
 ];
 
-export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms, onPlatformsChange }: PropertyFormProps) {
+export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms, onPlatformsChange, userId }: PropertyFormProps) {
   // Property details
   const [street, setStreet] = useState(initialData?.address?.street || '');
   const [city, setCity] = useState(initialData?.address?.city || '');
@@ -50,9 +53,20 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
 
   // Photos
   const [photos, setPhotos] = useState<string[]>(initialData?.photos || []);
+  const [uploading, setUploading] = useState(false);
 
   const handleRemovePhoto = useCallback((index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleSetHero = useCallback((index: number) => {
+    if (index === 0) return;
+    setPhotos((prev) => {
+      const updated = [...prev];
+      const [photo] = updated.splice(index, 1);
+      updated.unshift(photo);
+      return updated;
+    });
   }, []);
 
   const handleAddSellingPoint = useCallback(() => {
@@ -71,15 +85,41 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
     });
   }, []);
 
-  const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach((file) => {
-      const url = URL.createObjectURL(file);
-      setPhotos((prev) => [...prev, url]);
-    });
-    e.target.value = '';
-  }, []);
+    if (!files || files.length === 0) return;
+
+    if (!userId) {
+      // Fallback for cases where userId isn't available (shouldn't happen in normal flow)
+      toast.error('Please sign in to upload photos.');
+      e.target.value = '';
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const { urls, errors } = await uploadPropertyImages(
+        Array.from(files),
+        userId,
+        photos.length
+      );
+
+      if (errors.length > 0) {
+        errors.forEach((err) => toast.error(err));
+      }
+
+      if (urls.length > 0) {
+        setPhotos((prev) => [...prev, ...urls]);
+        toast.success(`Uploaded ${urls.length} photo${urls.length !== 1 ? 's' : ''}`);
+      }
+    } catch (err) {
+      console.error('[property-form] Upload failed:', err);
+      toast.error('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  }, [userId, photos.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -366,16 +406,28 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
                     (e.target as HTMLImageElement).parentElement!.classList.add('bg-muted');
                   }}
                 />
-                <button
-                  type="button"
-                  onClick={() => handleRemovePhoto(i)}
-                  className="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X className="h-3 w-3" />
-                </button>
+                <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {i !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetHero(i)}
+                      className="p-1 bg-black/60 rounded-full text-white hover:bg-primary/80"
+                      title="Set as hero image"
+                    >
+                      <Star className="h-3 w-3" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(i)}
+                    className="p-1 bg-black/60 rounded-full text-white hover:bg-destructive/80"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
                 {i === 0 && (
-                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-primary-foreground text-xs rounded">
-                    Hero
+                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-primary-foreground text-xs rounded flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-current" /> Hero
                   </span>
                 )}
               </div>
@@ -386,14 +438,15 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
             No photos yet — upload some to get started
           </div>
         )}
-        <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 rounded-md cursor-pointer text-sm text-card-foreground transition-colors">
-          <Upload className="h-4 w-4" />
-          Upload Photos
+        <label className={`mt-3 inline-flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 rounded-md text-sm text-card-foreground transition-colors ${uploading ? 'opacity-60 pointer-events-none' : 'cursor-pointer'}`}>
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          {uploading ? 'Uploading...' : 'Upload Photos'}
           <input
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp,image/gif"
             multiple
             onChange={handlePhotoUpload}
+            disabled={uploading}
             className="hidden"
           />
         </label>
@@ -413,7 +466,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
       <div className="flex justify-end">
         <Button
           type="submit"
-          disabled={loading || (selectedPlatforms !== undefined && selectedPlatforms.length === 0)}
+          disabled={loading || uploading || (selectedPlatforms !== undefined && selectedPlatforms.length === 0)}
           className="px-8 py-3 text-base"
         >
           {loading ? (

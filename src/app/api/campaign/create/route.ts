@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { ListingData, PlatformId, ALL_PLATFORMS } from '@/lib/types';
-import { generateCampaign } from '@/lib/ai/generate';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
 import { getCampaignUsage } from '@/lib/usage/campaign-limits';
 
@@ -46,7 +45,7 @@ export async function POST(request: NextRequest) {
     const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
 
-    // Beta rate limit check
+    // Rate limit check — count 'generating' campaigns as used slots
     const usage = await getCampaignUsage(supabase, user!.id);
     if (usage.isLimited) {
       return NextResponse.json({
@@ -60,19 +59,19 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
-    }
-
     const body = await request.json();
 
+    // Validate listing
     const parseResult = ListingSchema.safeParse(body.listing);
     if (!parseResult.success) {
-      return NextResponse.json({ error: 'Invalid listing data', details: parseResult.error.flatten() }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid listing data', details: parseResult.error.flatten() },
+        { status: 400 }
+      );
     }
     const listing = parseResult.data as ListingData;
 
-    // Strip obvious injection patterns (speed bump, not a full defense)
+    // Strip obvious prompt injection patterns (speed bump, not a full defense)
     if (listing.description) {
       listing.description = listing.description
         .split('\n')
@@ -92,34 +91,38 @@ export async function POST(request: NextRequest) {
       }
       const invalid = body.platforms.filter((p: string) => !VALID_PLATFORMS.has(p));
       if (invalid.length > 0) {
-        return NextResponse.json({ error: `Unknown platform(s): ${invalid.join(', ')}` }, { status: 400 });
+        return NextResponse.json(
+          { error: `Unknown platform(s): ${invalid.join(', ')}` },
+          { status: 400 }
+        );
       }
       platforms = body.platforms as PlatformId[];
     }
 
-    const campaign = await generateCampaign(listing, platforms);
+    // Generate a stable ID for the campaign row
+    const id = crypto.randomUUID();
 
-    // Persist campaign to database for dashboard access and rate limiting
+    // Insert a pending campaign row — no AI calls here, just a fast insert
     const { error: insertError } = await supabase
       .from('campaigns')
       .insert({
-        id: campaign.id,
+        id,
         user_id: user!.id,
         name: buildCampaignName(listing),
         listing_data: listing,
-        generated_ads: campaign,
+        generated_ads: null,
         platform: Array.isArray(platforms) ? platforms.join(',') : 'all',
-        status: 'generated',
+        status: 'generating',
       });
 
     if (insertError) {
-      console.error('[generate] Failed to persist campaign:', insertError);
-      // Don't block — still return the campaign. Log for monitoring.
+      console.error('[campaign/create] Failed to insert campaign row:', insertError);
+      return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, campaign });
+    return NextResponse.json({ success: true, id });
   } catch (error) {
-    console.error('Generate API error:', error);
-    return NextResponse.json({ error: 'Generation failed' }, { status: 500 });
+    console.error('[campaign/create] Unexpected error:', error);
+    return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });
   }
 }

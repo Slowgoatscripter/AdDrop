@@ -16,6 +16,7 @@ import { RealtorCard } from './realtor-card';
 import { HomesTruliaCard } from './homes-trulia-card';
 import { MlsCard } from './mls-card';
 import { MarketingCard } from './marketing-card';
+import { PhotosTab } from './photos-tab';
 
 interface CategoryConfig {
   value: string;
@@ -42,9 +43,12 @@ interface CampaignTabsProps {
   qualityConstraints?: QualityConstraintViolation[];
   onApplySuggestion?: (suggestion: QualitySuggestion) => void;
   onDismissSuggestion?: (suggestionId: string) => void;
+  onPhotosChange?: (photos: string[]) => void;
+  userId?: string;
 }
 
 function extractContext(term: string, platformTexts: Map<string, string>, platformPrefix: string): string {
+  if (!term) return '';
   // Search platform texts for the term and extract surrounding context
   for (const [key, text] of platformTexts) {
     if (key === platformPrefix || key.startsWith(platformPrefix + '.')) {
@@ -154,7 +158,7 @@ function has(selected: PlatformId[] | undefined, platform: PlatformId): boolean 
   return selected.includes(platform);
 }
 
-export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRegenerate, regeneratingPlatform, qualitySuggestions, qualityConstraints, onApplySuggestion, onDismissSuggestion }: CampaignTabsProps) {
+export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRegenerate, regeneratingPlatform, qualitySuggestions, qualityConstraints, onApplySuggestion, onDismissSuggestion, onPhotosChange, userId }: CampaignTabsProps) {
   const agentResult = campaign.complianceResult;
   const photos = campaign.listing.photos;
   const listing = campaign.listing;
@@ -174,11 +178,21 @@ export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRege
   return (
     <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="flex overflow-x-auto flex-nowrap w-full">
+        {onPhotosChange && userId && (
+          <TabsTrigger value="photos" className="flex-shrink-0">Photos</TabsTrigger>
+        )}
         {visibleCategories.map((cat) => (
           <TabsTrigger key={cat.value} value={cat.value} className="flex-shrink-0">{cat.label}</TabsTrigger>
         ))}
         <TabsTrigger value="strategy" className="flex-shrink-0">Strategy</TabsTrigger>
       </TabsList>
+
+      {/* Photos */}
+      {onPhotosChange && userId && (
+        <TabsContent value="photos" className="mt-4">
+          <PhotosTab photos={photos} onPhotosChange={onPhotosChange} userId={userId} />
+        </TabsContent>
+      )}
 
       {/* Social Media */}
       {visibleCategories.some((c) => c.value === 'social') && (

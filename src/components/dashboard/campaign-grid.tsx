@@ -132,10 +132,10 @@ function getQualityBadge(kit: CampaignKit | null | undefined): React.ReactNode {
   const score = kit.qualityResult.overallScore
   if (score === undefined || score === null) return null
 
-  const pct = Math.round(score)
+  const pct = Math.round(score * 10)
   let cls = 'bg-green-500/10 text-green-600 border-green-500/20'
-  if (pct < 50) cls = 'bg-red-500/10 text-red-600 border-red-500/20'
-  else if (pct < 75) cls = 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
+  if (pct < 60) cls = 'bg-red-500/10 text-red-600 border-red-500/20'
+  else if (pct < 80) cls = 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
 
   return (
     <Badge className={`${cls} text-[10px] px-1.5 py-0`}>

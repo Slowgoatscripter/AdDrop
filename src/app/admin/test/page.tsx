@@ -91,7 +91,7 @@ export default function TestBenchPage() {
     setError(null)
 
     try {
-      const res = await fetch('/api/generate', {
+      const res = await fetch('/api/campaign/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ listing: preset.listing_data }),
@@ -101,11 +101,7 @@ export default function TestBenchPage() {
 
       if (!res.ok) throw new Error(json.error || 'Generation failed')
 
-      sessionStorage.setItem(
-        `campaign-${json.campaign.id}`,
-        JSON.stringify(json.campaign)
-      )
-      router.push(`/campaign/${json.campaign.id}`)
+      router.push(`/campaign/${json.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Generation failed')
       setGenerating(false)
