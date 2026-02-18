@@ -23,6 +23,7 @@ interface CampaignPdfProps {
 export function CampaignPdf({ campaign }: CampaignPdfProps) {
   const { listing: l } = campaign;
   const addr = [l.address.street, l.address.city, l.address.state, l.address.zip].filter(Boolean).join(', ');
+  const mlsState = campaign.listing?.address?.state?.trim() || campaign.stateCode || 'Unknown State';
 
   return (
     <Document>
@@ -148,7 +149,7 @@ export function CampaignPdf({ campaign }: CampaignPdfProps) {
 
         {campaign.mlsDescription && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>MLS Description (Montana)</Text>
+            <Text style={styles.sectionTitle}>{`MLS Description (${mlsState})`}</Text>
             <Text style={styles.body}>{campaign.mlsDescription}</Text>
           </View>
         )}
