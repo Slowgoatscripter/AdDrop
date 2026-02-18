@@ -169,6 +169,8 @@ export function TwitterCard({
       onRevert={onRevert}
       platformId="twitter"
       charCountText={content}
+      photoUrl={photos[0]}
+      photoPlatform="twitter"
       toneSwitcher={
         <Badge variant={isOverLimit ? 'destructive' : 'secondary'} className="text-xs">
           {characterCount} / 280 characters

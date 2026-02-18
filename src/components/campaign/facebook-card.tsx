@@ -195,6 +195,8 @@ export function FacebookCard({
       onRevert={onRevert}
       platformId="facebook"
       charCountText={currentContent}
+      photoUrl={photos[0]}
+      photoPlatform="facebook"
       toneSwitcher={
         <div className="space-y-2">
           <ToneSwitcher

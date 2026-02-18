@@ -11,7 +11,8 @@ import { PlatformComplianceResult, ComplianceViolation } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
 import type { QualityIssue } from '@/lib/types/quality';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AdCardWrapperProps {
   platform: string;
@@ -31,6 +32,8 @@ interface AdCardWrapperProps {
   platformId?: string;
   charCountText?: string;
   charCountElement?: string;
+  photoUrl?: string;
+  photoPlatform?: string;
 }
 
 export function AdCardWrapper({
@@ -51,8 +54,35 @@ export function AdCardWrapper({
   platformId,
   charCountText,
   charCountElement,
+  photoUrl,
+  photoPlatform,
 }: AdCardWrapperProps) {
   const [showToneSelector, setShowToneSelector] = useState(false);
+  const [downloadingPhoto, setDownloadingPhoto] = useState(false);
+
+  async function handleDownloadPhoto() {
+    if (!photoUrl || !photoPlatform) return;
+    setDownloadingPhoto(true);
+    try {
+      const res = await fetch('/api/export/photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoUrl, platform: photoPlatform }),
+      });
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = res.headers.get('Content-Disposition')?.split('filename="')[1]?.replace('"', '') || `${photoPlatform}-photo.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Photo download failed');
+    } finally {
+      setDownloadingPhoto(false);
+    }
+  }
 
   return (
     <div className="bg-card border rounded-xl overflow-hidden">
@@ -130,7 +160,18 @@ export function AdCardWrapper({
               element={charCountElement}
             />
           )}
-          {/* Download Photo button — Task 11 */}
+          {photoUrl && photoPlatform && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs gap-1.5"
+              disabled={downloadingPhoto}
+              onClick={handleDownloadPhoto}
+            >
+              <Download className="h-3.5 w-3.5" />
+              {downloadingPhoto ? 'Downloading...' : 'Download Photo'}
+            </Button>
+          )}
         </div>
 
         {/* Violation details */}

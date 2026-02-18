@@ -217,6 +217,8 @@ export function InstagramCard({
       onRevert={onRevert}
       platformId="instagram"
       charCountText={currentCaption}
+      photoUrl={photos[0]}
+      photoPlatform="instagram"
       toneSwitcher={
         <div className="space-y-2">
           <ToneSwitcher
