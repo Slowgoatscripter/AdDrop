@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CampaignKit } from '@/lib/types';
 import type { ComplianceAgentResult } from '@/lib/types/compliance';
@@ -9,8 +9,12 @@ import { createClient } from '@/lib/supabase/client';
 import { PropertyHeader } from './property-header';
 import { CampaignTabs } from './campaign-tabs';
 import { QualitySuggestionsPanel } from './quality-suggestions-panel';
+import CampaignGeneratingView from './campaign-generating-view';
+import CampaignFailedView from './campaign-failed-view';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { SharePopover } from './share-popover';
+import { EmailModal } from './email-modal';
 
 async function persistCampaignAds(id: string, generatedAds: CampaignKit) {
   try {
@@ -36,8 +40,16 @@ export function CampaignShell() {
   const [campaign, setCampaign] = useState<CampaignKit | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [bundling, setBundling] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [regeneratingPlatform, setRegeneratingPlatform] = useState<string | null>(null);
+  const [campaignStatus, setCampaignStatus] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [listingData, setListingData] = useState<any>(null);
+  const [platforms, setPlatforms] = useState<string[]>([]);
+  const [campaignName, setCampaignName] = useState<string>('');
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const generationTriggered = useRef(false);
   useEffect(() => {
     async function loadCampaign() {
       const id = params.id as string;
@@ -46,16 +58,47 @@ export function CampaignShell() {
       try {
         // Try loading from database first
         const supabase = createClient();
+
+        // Fetch userId for photo uploads
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) setUserId(authUser.id);
         const { data, error } = await supabase
           .from('campaigns')
-          .select('generated_ads')
+          .select('generated_ads, status, error_message, listing_data, platform, name')
           .eq('id', id)
           .single();
 
-        if (!error && data?.generated_ads) {
-          setCampaign(data.generated_ads as CampaignKit);
-          setLoading(false);
-          return;
+        if (!error && data) {
+          // Handle status-based flow (new redirect-first flow)
+          if (data.status === 'generating') {
+            setListingData(data.listing_data);
+            setPlatforms(Array.isArray(data.platform) ? data.platform : data.platform ? [data.platform] : []);
+            setCampaignName(data.name || '');
+            setCampaignStatus('generating');
+            setLoading(false);
+            return;
+          }
+
+          if (data.status === 'failed') {
+            setCampaignStatus('failed');
+            setErrorMessage(data.error_message || 'Campaign generation failed.');
+            setLoading(false);
+            return;
+          }
+
+          // status === 'generated' or has generated_ads (existing flow)
+          if (data.generated_ads) {
+            const kit = data.generated_ads as CampaignKit;
+            // Clean up dead blob URLs from existing campaigns
+            if (kit.listing?.photos) {
+              kit.listing.photos = kit.listing.photos.filter(
+                (url: string) => !url.startsWith('blob:')
+              );
+            }
+            setCampaign(kit);
+            setLoading(false);
+            return;
+          }
         }
       } catch (err) {
         console.error('[campaign-shell] DB fetch failed, trying sessionStorage:', err);
@@ -76,6 +119,63 @@ export function CampaignShell() {
 
     loadCampaign();
   }, [params.id]);
+
+  // Trigger generation when status is 'generating'
+  useEffect(() => {
+    if (campaignStatus === 'generating' && !generationTriggered.current) {
+      generationTriggered.current = true;
+      const id = params.id as string;
+      // Fire-and-forget: kick off the AI pipeline
+      fetch(`/api/campaign/${id}/generate`, { method: 'POST' }).catch((err) => {
+        console.error('[campaign-shell] Failed to trigger generation:', err);
+      });
+    }
+  }, [campaignStatus, params.id]);
+
+  // Poll Supabase while generating
+  useEffect(() => {
+    if (campaignStatus !== 'generating') return;
+
+    const id = params.id as string;
+    const supabase = createClient();
+
+    const interval = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('campaigns')
+          .select('status, generated_ads, error_message')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          console.error('[campaign-shell] Polling error:', error);
+          return;
+        }
+
+        if (data?.status === 'generated' && data.generated_ads) {
+          setCampaign(data.generated_ads as CampaignKit);
+          setCampaignStatus('generated');
+          clearInterval(interval);
+        } else if (data?.status === 'failed') {
+          setCampaignStatus('failed');
+          setErrorMessage(data.error_message || 'Campaign generation failed.');
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error('[campaign-shell] Polling exception:', err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [campaignStatus, params.id]);
+
+  // Retry handler for failed campaigns
+  const handleRetry = useCallback(() => {
+    generationTriggered.current = false;
+    setCampaignStatus('generating');
+    setErrorMessage(null);
+    // The useEffect above will re-trigger generation
+  }, []);
 
   const handleReplace = useCallback(
     async (platform: string, oldTerm: string, newTerm: string) => {
@@ -480,6 +580,51 @@ export function CampaignShell() {
     [campaign],
   );
 
+  /** Update photos from Photos tab — propagates to all card mockups */
+  const handlePhotosChange = useCallback(
+    async (newPhotos: string[]) => {
+      if (!campaign) return;
+
+      const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
+      updated.listing.photos = newPhotos;
+
+      setCampaign(updated);
+      sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+      persistCampaignAds(updated.id, updated);
+
+      // Also update listing_data column so photos persist in both JSONB columns
+      try {
+        const supabase = createClient();
+        await supabase
+          .from('campaigns')
+          .update({ listing_data: updated.listing })
+          .eq('id', updated.id);
+      } catch (err) {
+        console.error('[campaign-shell] Failed to persist photos to listing_data:', err);
+      }
+    },
+    [campaign],
+  );
+
+  if (campaignStatus === 'generating') {
+    return (
+      <CampaignGeneratingView
+        propertyAddress={listingData?.address ? `${listingData.address.street}, ${listingData.address.city}, ${listingData.address.state}` : campaignName}
+        platforms={platforms}
+      />
+    );
+  }
+
+  if (campaignStatus === 'failed') {
+    return (
+      <CampaignFailedView
+        error={errorMessage}
+        onRetry={handleRetry}
+        onStartOver={() => router.push('/create')}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -503,6 +648,35 @@ export function CampaignShell() {
         </div>
       </div>
     );
+  }
+
+  async function handleDownloadAll() {
+    setBundling(true);
+    try {
+      const res = await fetch('/api/export/bundle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId: campaign!.id }),
+      });
+      if (!res.ok) {
+        toast.error('Bundle download failed — please try again.');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const address = campaign!.listing?.address?.street || 'Campaign';
+      a.download = `${address}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Downloaded!');
+    } catch (err) {
+      console.error('[campaign-shell] Bundle download failed:', err);
+      toast.error('Bundle download failed — please try again.');
+    } finally {
+      setBundling(false);
+    }
   }
 
   async function handleExport(format: 'pdf' | 'csv') {
@@ -543,7 +717,10 @@ export function CampaignShell() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/create')}>New Campaign</Button>
             <Button variant="outline" onClick={() => handleExport('csv')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export CSV'}</Button>
-            <Button onClick={() => handleExport('pdf')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export PDF'}</Button>
+            <Button variant="outline" onClick={() => handleExport('pdf')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export PDF'}</Button>
+            <Button onClick={handleDownloadAll} disabled={bundling}>{bundling ? 'Preparing…' : 'Download All'}</Button>
+            <SharePopover campaignId={campaign!.id} />
+            <EmailModal campaignId={campaign!.id} />
           </div>
         </div>
 
@@ -578,7 +755,7 @@ export function CampaignShell() {
         )}
 
         <PropertyHeader listing={campaign.listing} />
-        <CampaignTabs campaign={campaign} onReplace={handleReplace} onEditText={handleEditText} onRegenerate={handleRegenerate} regeneratingPlatform={regeneratingPlatform} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} onApplySuggestion={handleApplySuggestion} onDismissSuggestion={handleDismissSuggestion} />
+        <CampaignTabs campaign={campaign} onReplace={handleReplace} onEditText={handleEditText} onRegenerate={handleRegenerate} regeneratingPlatform={regeneratingPlatform} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} onApplySuggestion={handleApplySuggestion} onDismissSuggestion={handleDismissSuggestion} onPhotosChange={handlePhotosChange} userId={userId} />
       </div>
     </div>
   );
