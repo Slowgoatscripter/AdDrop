@@ -3,7 +3,6 @@ import { requireAuth } from '@/lib/supabase/auth-helpers';
 import { Resend } from 'resend';
 import { CampaignKit } from '@/lib/types';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -68,6 +67,7 @@ export async function POST(
     const platforms = campaign.selectedPlatforms?.join(', ') || 'Multiple platforms';
 
     // Send emails individually
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const results = await Promise.allSettled(
       to.map(email =>
         resend.emails.send({

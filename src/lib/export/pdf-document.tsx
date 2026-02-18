@@ -227,6 +227,7 @@ export function CampaignPdf({ campaign }: CampaignPdfProps) {
       {/* ============================================================ */}
       <Page size="LETTER" style={styles.coverPage}>
         {heroPhoto && (
+          // eslint-disable-next-line jsx-a11y/alt-text
           <Image style={styles.heroImage} src={heroPhoto} />
         )}
 

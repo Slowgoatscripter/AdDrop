@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     const address = campaign.listing?.address?.street?.replace(/[^a-zA-Z0-9 -]/g, '').trim() || 'Campaign';
 
-    return new NextResponse(zipBuffer, {
+    return new NextResponse(new Uint8Array(zipBuffer), {
       headers: {
         'Content-Type': 'application/zip',
         'Content-Disposition': `attachment; filename="${address}.zip"`,
