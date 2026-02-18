@@ -118,5 +118,50 @@ function buildCsvRows(c: CampaignKit): string[][] {
   }
   rows.push(['Hashtags', '', c.hashtags.join(' '), String(c.hashtags.length)]);
 
+  // Postcard
+  if (c.postcard?.professional) {
+    rows.push(['Postcard', 'Professional (Front)', `${c.postcard.professional.front.headline}\n${c.postcard.professional.front.body}\n${c.postcard.professional.front.cta}`, '']);
+    rows.push(['Postcard', 'Professional (Back)', c.postcard.professional.back, String(c.postcard.professional.back.length)]);
+  }
+  if (c.postcard?.casual) {
+    rows.push(['Postcard', 'Casual (Front)', `${c.postcard.casual.front.headline}\n${c.postcard.casual.front.body}\n${c.postcard.casual.front.cta}`, '']);
+    rows.push(['Postcard', 'Casual (Back)', c.postcard.casual.back, String(c.postcard.casual.back.length)]);
+  }
+
+  // Magazine Full Page
+  if (c.magazineFullPage?.professional) {
+    const m = c.magazineFullPage.professional;
+    rows.push(['Magazine Full Page', 'Professional', `${m.headline}\n${m.body}\n${m.cta}`, '']);
+  }
+  if (c.magazineFullPage?.luxury) {
+    const m = c.magazineFullPage.luxury;
+    rows.push(['Magazine Full Page', 'Luxury', `${m.headline}\n${m.body}\n${m.cta}`, '']);
+  }
+
+  // Magazine Half Page
+  if (c.magazineHalfPage?.professional) {
+    const m = c.magazineHalfPage.professional;
+    rows.push(['Magazine Half Page', 'Professional', `${m.headline}\n${m.body}\n${m.cta}`, '']);
+  }
+  if (c.magazineHalfPage?.luxury) {
+    const m = c.magazineHalfPage.luxury;
+    rows.push(['Magazine Half Page', 'Luxury', `${m.headline}\n${m.body}\n${m.cta}`, '']);
+  }
+
+  // Selling Points
+  if (c.sellingPoints?.length) {
+    rows.push(['Selling Points', '', c.sellingPoints.join('\n'), '']);
+  }
+
+  // Calls to Action
+  if (c.callsToAction?.length) {
+    rows.push(['Calls to Action', '', c.callsToAction.join('\n'), '']);
+  }
+
+  // Targeting Notes
+  if (c.targetingNotes) {
+    rows.push(['Targeting Notes', '', c.targetingNotes, String(c.targetingNotes.length)]);
+  }
+
   return rows;
 }
