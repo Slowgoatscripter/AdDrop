@@ -193,6 +193,8 @@ export function FacebookCard({
       violations={complianceResult?.violations}
       onReplace={onReplace}
       onRevert={onRevert}
+      platformId="facebook"
+      charCountText={currentContent}
       toneSwitcher={
         <div className="space-y-2">
           <ToneSwitcher

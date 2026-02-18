@@ -66,6 +66,9 @@ export function MetaAdCard({
         violations={complianceResult?.violations}
         onReplace={onReplace}
         onRevert={onRevert}
+        platformId="metaAd"
+        charCountText={ad.headline}
+        charCountElement="headline"
         toneSwitcher={
           <div className="space-y-2">
             {tones.length > 1 && (

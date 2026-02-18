@@ -8,6 +8,7 @@ import { PlatformComplianceResult, ListingData } from '@/lib/types';
 import type { PlatformQualityResult, QualityIssue } from '@/lib/types/quality';
 import { useState } from 'react';
 import { EditableText } from './editable-text';
+import { sanitizeMlsText } from '@/lib/export/sanitize-mls';
 
 interface MlsCardProps {
   description: string;
@@ -184,6 +185,8 @@ export function MlsCard({
     </>
   );
 
+  const mlsText = description;
+
   const previewPanel = (
     <AdCardWrapper
       platform="MLS Listing"
@@ -191,10 +194,12 @@ export function MlsCard({
       dimensionLabel="MLS System"
       complianceResult={complianceResult}
       qualityResult={qualityResult}
-      copyText={description}
+      copyText={mlsText ? sanitizeMlsText(mlsText) : undefined}
       violations={complianceResult?.violations}
       onReplace={onReplace}
       onRevert={onRevert}
+      platformId="mlsDescription"
+      charCountText={mlsText}
     >
       {mockupContent}
     </AdCardWrapper>

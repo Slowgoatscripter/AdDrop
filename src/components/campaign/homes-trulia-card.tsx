@@ -103,7 +103,7 @@ export function HomesTruliaCard({
           onImageSelect={setSelectedPhotoIndex}
         />
         {formattedPrice && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 pointer-events-none">
             <span className="text-white font-bold text-lg">{formattedPrice}</span>
           </div>
         )}
@@ -206,6 +206,8 @@ export function HomesTruliaCard({
       copyText={content}
       violations={violations}
       onReplace={onReplace}
+      platformId="homesComTrulia"
+      charCountText={content}
     >
       {mockupContent}
     </AdCardWrapper>

@@ -215,6 +215,8 @@ export function InstagramCard({
       violations={complianceResult?.violations}
       onReplace={onReplace}
       onRevert={onRevert}
+      platformId="instagram"
+      charCountText={currentCaption}
       toneSwitcher={
         <div className="space-y-2">
           <ToneSwitcher

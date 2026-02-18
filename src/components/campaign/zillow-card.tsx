@@ -47,7 +47,7 @@ export function ZillowCard({
   );
 
   const characterCount = content.length;
-  const isOverLimit = characterCount > 2000;
+  const isOverLimit = characterCount > 4500;
 
   const formattedPrice = listing?.price
     ? `$${listing.price.toLocaleString()}`
@@ -88,9 +88,9 @@ export function ZillowCard({
           onImageSelect={setSelectedImageIndex}
         />
 
-        {/* Price overlay */}
+        {/* Price overlay — pointer-events-none so ImagePicker stays clickable */}
         {formattedPrice && (
-          <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/70 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none">
             <span className="text-white font-bold text-xl drop-shadow">
               {formattedPrice}
             </span>
@@ -213,6 +213,8 @@ export function ZillowCard({
       violations={complianceResult?.violations}
       onReplace={onReplace}
       onRevert={onRevert}
+      platformId="zillow"
+      charCountText={content}
       toneSwitcher={
         <Badge
           variant={isOverLimit ? 'destructive' : 'secondary'}
@@ -236,7 +238,7 @@ export function ZillowCard({
       fieldName="description"
       complianceResult={complianceResult}
       qualityResult={qualityResult}
-      maxLength={2000}
+      maxLength={4500}
     />
   );
 

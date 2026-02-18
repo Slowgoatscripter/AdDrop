@@ -6,11 +6,12 @@ import { ComplianceBadge } from './compliance-badge';
 import { QualityBadge } from './quality-badge';
 import { ViolationDetails } from './violation-details';
 import { QualityDetails } from './quality-details';
+import { CharacterCount } from './character-count';
 import { PlatformComplianceResult, ComplianceViolation } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
 import type { QualityIssue } from '@/lib/types/quality';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface AdCardWrapperProps {
   platform: string;
@@ -27,6 +28,9 @@ interface AdCardWrapperProps {
   onRegenerate?: (tone: string) => void;
   toneOptions?: string[];
   isRegenerating?: boolean;
+  platformId?: string;
+  charCountText?: string;
+  charCountElement?: string;
 }
 
 export function AdCardWrapper({
@@ -44,6 +48,9 @@ export function AdCardWrapper({
   onRegenerate,
   toneOptions,
   isRegenerating,
+  platformId,
+  charCountText,
+  charCountElement,
 }: AdCardWrapperProps) {
   const [showToneSelector, setShowToneSelector] = useState(false);
 
@@ -109,23 +116,21 @@ export function AdCardWrapper({
         {/* Divider */}
         <div className="border-t border-border/50" />
 
-        {/* Copy + Export row */}
+        {/* Copy + char count row */}
         <div className="flex items-center justify-between gap-2">
           {copyText ? (
             <CopyButton text={copyText} label="Copy Ad Text" />
           ) : (
             <div />
           )}
-          <Button
-            size="sm"
-            variant="outline"
-            disabled
-            title="Coming soon"
-            className="text-xs gap-1.5 opacity-50 cursor-not-allowed"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export
-          </Button>
+          {platformId && charCountText && (
+            <CharacterCount
+              platformId={platformId}
+              text={charCountText}
+              element={charCountElement}
+            />
+          )}
+          {/* Download Photo button — Task 11 */}
         </div>
 
         {/* Violation details */}

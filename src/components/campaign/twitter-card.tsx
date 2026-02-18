@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { AdCardWrapper } from './ad-card-wrapper';
 import { MockupImage } from './mockup-image';
@@ -42,6 +42,7 @@ export function TwitterCard({
   onEditText,
   listing,
 }: TwitterCardProps) {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const characterCount = content.length;
   const isOverLimit = characterCount > 280;
 
@@ -116,10 +117,13 @@ export function TwitterCard({
               {photos.length > 0 && (
                 <div className="mt-3 rounded-2xl overflow-hidden border border-slate-200">
                   <MockupImage
-                    src={photos[0]}
+                    src={photos[selectedImageIndex] || ''}
                     alt="Property photo"
                     aspectRatio="aspect-video"
                     sizes="(max-width: 448px) 100vw, 448px"
+                    photos={photos}
+                    selectedIndex={selectedImageIndex}
+                    onImageSelect={setSelectedImageIndex}
                   />
                 </div>
               )}
@@ -163,6 +167,8 @@ export function TwitterCard({
       violations={complianceResult?.violations}
       onReplace={onReplace}
       onRevert={onRevert}
+      platformId="twitter"
+      charCountText={content}
       toneSwitcher={
         <Badge variant={isOverLimit ? 'destructive' : 'secondary'} className="text-xs">
           {characterCount} / 280 characters

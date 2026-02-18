@@ -68,6 +68,9 @@ export function GoogleAdsCard({
         violations={complianceResult?.violations}
         onReplace={onReplace}
         onRevert={onRevert}
+        platformId="googleAds"
+        charCountText={activeAd.headline}
+        charCountElement="headline"
       >
         <BrowserFrame searchQuery={searchQuery}>
           <div className="px-4 md:px-6 py-4 bg-white">
