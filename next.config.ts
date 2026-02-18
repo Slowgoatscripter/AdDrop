@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
               `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://challenges.cloudflare.com`,
               "style-src 'self' 'unsafe-inline'",
               "font-src 'self'",
-              "img-src 'self' data: https://images.unsplash.com https://placehold.co",
+              "img-src 'self' data: blob: https://images.unsplash.com https://placehold.co https://qunrofzwejafqzssmkpa.supabase.co",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
               "frame-src https://challenges.cloudflare.com",
               "object-src 'none'",
@@ -47,6 +47,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'placehold.co' },
+      { protocol: 'https', hostname: 'qunrofzwejafqzssmkpa.supabase.co' },
     ],
   },
   webpack: (config, { isServer, webpack: wp }) => {
