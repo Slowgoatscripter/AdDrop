@@ -5,6 +5,7 @@
 **Goal:** Replace the blind "Preparing..." button state on Download All with a modal showing real-time progress via Server-Sent Events, matching the existing campaign-generating-view stepper pattern.
 
 **Design Doc Date:** 2026-02-18
+**Review Status:** Approved with Changes (applied 2026-02-18)
 
 ---
 
@@ -29,7 +30,7 @@ User clicks "Download All"
   → Server generates bundle, streaming progress events
   → Server uploads finished ZIP to Supabase Storage (temp-exports bucket)
   → Server sends final "done" event with signed download URL
-  → Browser auto-downloads ZIP
+  → Browser auto-downloads ZIP (with fallback button if blocked)
   → Modal shows success briefly, then closes
 ```
 
@@ -50,9 +51,13 @@ The existing `POST /api/export/bundle` stays as-is for the share page's Download
 
 ### Event Format
 
+The server sends `retry: 0` as the first field to disable EventSource auto-reconnect:
+
 ```
+retry: 0
+
 event: progress
-data: {"phase":"photos","detail":"Photo 2 of 5 — Instagram 1080×1080","step":1,"totalSteps":5}
+data: {"phase":"photos","detail":"Resizing 5 photos for 4 platforms...","step":1,"totalSteps":5}
 
 event: progress
 data: {"phase":"originals","detail":"Original 3 of 5","step":2,"totalSteps":5}
@@ -74,11 +79,13 @@ data: {"message":"Photo resize failed"}
 
 | Phase | Step | Detail Pattern |
 |-------|------|----------------|
-| `photos` | 1 | `"Photo {n} of {total} — {platform} {width}×{height}"` |
+| `photos` | 1 | `"Resizing {n} photos for {m} platforms..."` |
 | `originals` | 2 | `"Original {n} of {total}"` |
 | `pdf` | 3 | `"Generating campaign PDF..."` |
 | `zip` | 4 | `"Compressing files..."` |
 | `done` | 5 | `"Ready"` + `downloadUrl` |
+
+> **Note on photos phase:** The `resizeAllPhotos()` function in `photo-resize.ts` is a batch operation with no per-photo callback. Rather than refactoring that function's API, the photos step emits a single summary event before the batch runs (`"Resizing {n} photos for {m} platforms..."`). Per-photo granularity can be added later by threading a callback through `resizeAllPhotos` if desired, but is not required for v1.
 
 ---
 
@@ -87,6 +94,13 @@ data: {"message":"Photo resize failed"}
 ### `GET /api/export/bundle/stream`
 
 **File:** `src/app/api/export/bundle/stream/route.ts`
+
+**Required exports:**
+```typescript
+export const runtime = 'nodejs';       // sharp, archiver, stream.Writable are Node-only
+export const dynamic = 'force-dynamic'; // prevent static analysis of streaming response
+export const maxDuration = 300;         // 5-minute ceiling for large bundles (Vercel Pro)
+```
 
 **Query params:** `campaignId` (required UUID)
 
@@ -105,13 +119,16 @@ X-Accel-Buffering: no
 2. Authenticate via `requireAuth()`
 3. Fetch campaign from Supabase where `user_id` matches
 4. Set SSE response headers, get writable stream
-5. Call `generateBundle(campaign, onProgress)` where `onProgress` writes SSE events
-6. Upload completed ZIP buffer to `temp-exports` bucket with filename `{campaignId}-{timestamp}.zip`
-7. Generate signed URL (1-hour expiry) via `createSignedUrl`
-8. Send `done` event with signed URL
-9. Close stream
+5. Send `retry: 0\n\n` as first SSE field to disable auto-reconnect
+6. Call `generateBundle(campaign, onProgress)` where `onProgress` writes SSE events
+7. Upload completed ZIP buffer to `temp-exports` bucket with filename `{campaignId}-{timestamp}.zip`
+8. Generate signed URL (1-hour expiry) via `createSignedUrl`
+9. Send `done` event with signed URL
+10. Close stream
 
-**Error handling:** Catch errors, send `error` event, close stream.
+**Server-side timeout:** If no progress event has been emitted for 120 seconds, the server sends an `error` event with message `"Bundle generation timed out — please try again"` and closes the stream. This prevents silent hangs if the platform kills the connection.
+
+**Error handling:** Catch errors at every phase, send `error` event with descriptive message, close stream. Never leave the stream open after an error.
 
 ---
 
@@ -129,12 +146,14 @@ export interface BundleProgress {
 ```
 
 Add progress calls:
-- Before each photo resize: `phase: "photos"` with photo index and platform name
+- Before photo resize batch: `phase: "photos"` with total photo and platform count
 - Before each original download: `phase: "originals"` with index
 - Before PDF generation: `phase: "pdf"`
 - Before `archive.finalize()`: `phase: "zip"`
 
 The total steps count is always 5 (fixed phases shown in the stepper). The detail string provides granular sub-progress within each phase.
+
+> **Type change note:** Narrowing `phase` from `string` to a union literal and adding `step`/`totalSteps` is a breaking interface change. The only existing caller is `POST /api/export/bundle`, which passes no `onProgress` callback, so practical risk is zero. The implementation should verify no other callers exist.
 
 ---
 
@@ -144,12 +163,58 @@ The total steps count is always 5 (fixed phases shown in the stepper). The detai
 
 - **Visibility:** Private (not public)
 - **Access:** Signed URLs only, 1-hour expiry
-- **Cleanup:** Supabase lifecycle policy or cron to delete objects older than 1 hour
-- **Migration:** Create bucket via SQL migration or Supabase dashboard
+- **Migration:** SQL migration to create bucket and RLS policies
+
+### Migration: `20260218_create_temp_exports_bucket.sql`
+
+```sql
+-- Create temp-exports bucket (private)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('temp-exports', 'temp-exports', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- RLS: Authenticated users can upload to their own path
+CREATE POLICY "Authenticated users can upload temp exports"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'temp-exports');
+
+-- RLS: Authenticated users can read their own temp exports (fallback for signed URL issues)
+CREATE POLICY "Authenticated users can read temp exports"
+ON storage.objects FOR SELECT
+TO authenticated
+USING (bucket_id = 'temp-exports');
+
+-- RLS: Authenticated users can delete their own temp exports
+CREATE POLICY "Authenticated users can delete temp exports"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (bucket_id = 'temp-exports');
+```
 
 ### Signed URL
 
 Use `supabase.storage.from('temp-exports').createSignedUrl(path, 3600)` for 1-hour access.
+
+### Temp Storage Cleanup
+
+Automated cleanup via a scheduled Supabase Edge Function (or `pg_cron` if available on the project tier):
+
+**Approach: Server-side cleanup on upload.** Before uploading a new ZIP, the SSE route lists and deletes any objects in `temp-exports/` older than 1 hour for the current user. This is self-cleaning — no external cron needed.
+
+```typescript
+// Cleanup old temp exports before uploading new one
+const { data: existing } = await supabase.storage.from('temp-exports').list('', { limit: 100 });
+if (existing) {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const stale = existing.filter(f => new Date(f.created_at) < oneHourAgo);
+  if (stale.length > 0) {
+    await supabase.storage.from('temp-exports').remove(stale.map(f => f.name));
+  }
+}
+```
+
+This runs opportunistically on each bundle generation. Worst case, files linger until the next download. Acceptable for the expected usage volume.
 
 ---
 
@@ -189,7 +254,7 @@ interface BundleProgressModalProps {
 │  ○  Ready to download                   │
 │                                         │
 │─────────────────────────────────────────│
-│  ● AI is preparing your files...        │
+│  ● Preparing your files...              │
 └─────────────────────────────────────────┘
 ```
 
@@ -209,8 +274,8 @@ const STEPS = [
 
 | State | Visual | Behavior |
 |-------|--------|----------|
-| **In progress** | Stepper advances per SSE events, active step has spinner, bottom bar pulses | Modal cannot be dismissed (prevent accidental close) |
-| **Success** | All steps checked, "Download starting..." text | Auto-triggers download, modal auto-closes after 2 seconds |
+| **In progress** | Stepper advances per SSE events, active step has spinner, bottom bar pulses | Close button shows confirmation: "Bundle is still preparing. Close anyway?" If confirmed, EventSource closes. |
+| **Success** | All steps checked, "Download starting..." text | Auto-triggers download, modal auto-closes after 2 seconds. If auto-download is blocked (Safari/Firefox), shows a "Download Ready — Click to Save" fallback button instead of auto-closing. |
 | **Error** | Red alert with error message | "Try Again" button restarts SSE, "Close" button dismisses |
 
 ### Step Rendering (Matches campaign-generating-view)
@@ -219,14 +284,24 @@ const STEPS = [
 - **Active:** Ring border + spinning indicator + detail text from SSE
 - **Pending:** Muted border + dimmed icon
 
+> **Note on zip step:** `archive.finalize()` can take several seconds for large bundles. During this time step 4 shows an indeterminate spinner with "Compressing files..." — no sub-progress is available from archiver, which is acceptable.
+
 ### SSE Connection Lifecycle
 
 - Opens `EventSource` when `open` becomes `true`
 - Listens to `progress` and `error` events
-- On `done` event: extracts `downloadUrl`, triggers `<a>` click download, shows success, auto-closes after 2s
+- **Auto-reconnect disabled:** The `onerror` handler immediately calls `eventSource.close()` and shows error state. This prevents the browser from silently restarting bundle generation on connection drops.
+- On `done` event: extracts `downloadUrl`, triggers download, shows success, auto-closes after 2s
 - On `error` event: shows error state with retry button
 - On unmount or close: calls `eventSource.close()`
-- On connection drop (EventSource `onerror`): shows error state
+
+```typescript
+// Critical: disable auto-reconnect on error
+eventSource.onerror = () => {
+  eventSource.close();
+  setError('Connection lost. Please try again.');
+};
+```
 
 ### Auto-Download Trigger
 
@@ -238,6 +313,10 @@ function triggerDownload(url: string, filename: string) {
   a.click();
 }
 ```
+
+**Filename convention:** Uses `{address}.zip` matching the existing POST bundle route (e.g. `"123 Main St.zip"`).
+
+**Fallback for blocked downloads:** Safari and Firefox with strict settings may block programmatic `<a>.click()` from async callbacks (not a direct user gesture). After calling `triggerDownload`, set a 2-second timeout. If the modal is still open after the timeout, assume the download was blocked and show a "Download Ready — Click to Save" button that the user clicks manually. This button fires `triggerDownload` from a real click event, which browsers always allow.
 
 ---
 
@@ -278,13 +357,16 @@ const [bundleModalOpen, setBundleModalOpen] = useState(false);
 
 | Scenario | Behavior |
 |----------|----------|
-| Auth failure | SSE returns 401, modal shows "Session expired" error |
+| Auth failure | SSE returns 401 before streaming begins, modal shows "Session expired" error |
 | Campaign not found | SSE returns 404, modal shows "Campaign not found" error |
 | Photo fetch fails | Server skips that photo, continues (existing behavior in bundle.ts) |
 | Sharp resize fails | Server sends error event, modal shows error with retry |
 | Supabase upload fails | Server sends error event, modal shows error with retry |
-| Network drop | EventSource auto-reconnects (browser default), or shows error after timeout |
-| User closes modal mid-process | EventSource closes, server-side generation completes but result is discarded |
+| Network drop | EventSource `onerror` fires → `eventSource.close()` called immediately → modal shows "Connection lost" error with retry button. No auto-reconnect. |
+| Server timeout (120s no progress) | Server sends error event with "Bundle generation timed out", closes stream |
+| Serverless platform kills connection | Client-side: EventSource `onerror` fires → shows connection lost error. Same as network drop. |
+| User closes modal mid-process | Confirmation dialog: "Bundle is still preparing. Close anyway?" If confirmed, EventSource closes. Server-side generation completes but result is discarded (cleaned up on next upload). |
+| Auto-download blocked by browser | Fallback "Download Ready — Click to Save" button appears after 2s timeout |
 
 ---
 
@@ -292,11 +374,11 @@ const [bundleModalOpen, setBundleModalOpen] = useState(false);
 
 | File | Change |
 |------|--------|
-| `src/app/api/export/bundle/stream/route.ts` | **New** — SSE endpoint |
-| `src/lib/export/bundle.ts` | **Modify** — enhance BundleProgress interface with step/totalSteps |
-| `src/components/campaign/bundle-progress-modal.tsx` | **New** — modal component |
-| `src/components/campaign/campaign-shell.tsx` | **Modify** — swap handleDownloadAll for modal |
-| `supabase/migrations/20260218_create_temp_exports_bucket.sql` | **New** — temp-exports bucket |
+| `src/app/api/export/bundle/stream/route.ts` | **New** — SSE endpoint with `runtime = 'nodejs'`, `dynamic = 'force-dynamic'`, `maxDuration = 300` |
+| `src/lib/export/bundle.ts` | **Modify** — enhance BundleProgress interface (phase union type, step/totalSteps), add `zip` phase event before `archive.finalize()` |
+| `src/components/campaign/bundle-progress-modal.tsx` | **New** — modal component with stepper, SSE connection, auto-download with fallback |
+| `src/components/campaign/campaign-shell.tsx` | **Modify** — swap `handleDownloadAll`/`bundling` for modal open state |
+| `supabase/migrations/20260218_create_temp_exports_bucket.sql` | **New** — temp-exports bucket with RLS policies |
 
 ---
 
@@ -306,3 +388,28 @@ const [bundleModalOpen, setBundleModalOpen] = useState(false);
 - Per-card Download Photo progress (single photo, fast enough)
 - Bundle content customization (select which platforms to include)
 - Download history / re-download from storage
+- Per-photo resize granularity in the progress stepper (v1 uses a single summary event for the photos phase)
+
+---
+
+## Design Review Log
+
+**Reviewed by:** quality-reviewer + integration-reviewer (2026-02-18)
+**Verdict:** Approved with Changes
+
+### Issues Resolved
+
+| # | Issue | Severity | Resolution |
+|---|-------|----------|------------|
+| 1 | Missing `runtime = 'nodejs'` + `dynamic = 'force-dynamic'` | Critical | Added to API Route section as required exports |
+| 2 | EventSource auto-reconnect creates ghost generations | Critical | Added `retry: 0` server-side, explicit `close()` in client `onerror`, documented in SSE Connection Lifecycle |
+| 3 | Serverless timeout risk for large bundles | Critical | Added `maxDuration = 300`, server-side 120s inactivity timeout with error event |
+| 4 | `resizeAllPhotos` is a black box (no per-photo callback) | Important | Simplified to single summary event per photos phase; per-photo granularity deferred to future enhancement |
+| 5 | Missing `zip` phase event in bundle.ts | Important | Added to Changes to bundle.ts section |
+| 6 | Supabase bucket missing RLS policies | Important | Full migration SQL with INSERT/SELECT/DELETE policies added |
+| 7 | Temp storage cleanup underspecified | Important | Self-cleaning approach: delete stale files on each new upload. No external cron needed. |
+| 8 | Non-dismissible modal is poor UX | Important | Changed to close-with-confirmation pattern |
+| 9 | `BundleProgress` type change is breaking | Important | Acknowledged in bundle.ts section with migration note |
+| 10 | Auto-download may be blocked by browsers | Minor | Added 2-second fallback button detection |
+| 11 | Download filename not specified | Minor | Added filename convention matching existing POST route |
+| 12 | Zip step appears to hang | Minor | Acknowledged in step rendering notes |
