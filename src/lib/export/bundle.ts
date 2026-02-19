@@ -26,6 +26,11 @@ export async function generateBundle(
   campaign: CampaignKit,
   onProgress?: (progress: BundleProgress) => void,
 ): Promise<Buffer> {
+  const t0 = Date.now();
+  const log = (msg: string) => console.log(`[bundle] +${Date.now() - t0}ms ${msg}`);
+
+  log('START');
+
   const chunks: Buffer[] = [];
   const writable = new Writable({
     write(chunk, _encoding, callback) {
@@ -43,6 +48,8 @@ export async function generateBundle(
 
   // 1. Resize and add photos
   const photos = campaign.listing?.photos?.filter(Boolean) || [];
+  log(`Photos found: ${photos.length}`);
+
   if (photos.length > 0) {
     const selectedPlatforms = campaign.selectedPlatforms || [];
     const photoPlatformIds: string[] = [];
@@ -59,42 +66,61 @@ export async function generateBundle(
       ? photoPlatformIds
       : PLATFORM_DIMENSIONS.map(d => d.platform);
 
+    log(`Platforms: ${platformIds.join(', ')} (${platformIds.length} total)`);
     onProgress?.({ phase: 'photos', detail: `Resizing ${photos.length} photos for ${platformIds.length} platforms...`, step: 1, totalSteps: 6 });
 
+    log('resizeAllPhotos START');
     const resized = await resizeAllPhotos(photos, platformIds);
+    log(`resizeAllPhotos DONE — ${resized.length} files`);
+
     for (const photo of resized) {
       archive.append(photo.buffer, { name: `${folderName}/${photo.filename}` });
     }
+    log('Photos appended to archive');
 
     // Add originals
     for (let i = 0; i < photos.length; i++) {
       onProgress?.({ phase: 'originals', detail: `Saving original ${i + 1} of ${photos.length}...`, step: 2, totalSteps: 6 });
+      log(`Fetching original ${i + 1}/${photos.length}`);
       try {
         const res = await fetch(photos[i]);
         if (res.ok) {
           const buf = Buffer.from(await res.arrayBuffer());
           const ext = photos[i].split('.').pop()?.split('?')[0] || 'jpg';
           archive.append(buf, { name: `${folderName}/Originals/photo-${String(i + 1).padStart(2, '0')}.${ext}` });
+          log(`Original ${i + 1} added (${(buf.length / 1024).toFixed(0)}KB)`);
+        } else {
+          log(`Original ${i + 1} FAILED: HTTP ${res.status}`);
         }
-      } catch {
-        // Skip failed original downloads
+      } catch (err) {
+        log(`Original ${i + 1} ERROR: ${err}`);
       }
     }
   }
 
   // 2. Generate and add PDF
+  log('PDF generation START');
   onProgress?.({ phase: 'pdf', detail: 'Generating campaign PDF...', step: 3, totalSteps: 6 });
   const pdfBuffer = await generatePdfBuffer(campaign);
+  log(`PDF generation DONE (${(pdfBuffer.byteLength / 1024).toFixed(0)}KB)`);
   archive.append(Buffer.from(pdfBuffer), { name: `${folderName}/Campaign-Full.pdf` });
 
-  // 3. Finalize
-  onProgress?.({ phase: 'zip', detail: 'Compressing files...', step: 4, totalSteps: 6 });
-  await archive.finalize();
-
-  await new Promise<void>((resolve, reject) => {
+  // 3. Finalize — set up finish listener BEFORE finalize to avoid race condition
+  const writableFinished = new Promise<void>((resolve, reject) => {
     writable.on('finish', resolve);
     writable.on('error', reject);
   });
 
-  return Buffer.concat(chunks);
+  log('Archive finalize START');
+  onProgress?.({ phase: 'zip', detail: 'Compressing files...', step: 4, totalSteps: 6 });
+  await archive.finalize();
+  log('Archive finalize DONE');
+
+  log('Waiting for writable finish...');
+  await writableFinished;
+  log('Writable finished');
+
+  const result = Buffer.concat(chunks);
+  log(`Bundle complete: ${(result.length / 1024 / 1024).toFixed(1)}MB total`);
+  return result;
 }
