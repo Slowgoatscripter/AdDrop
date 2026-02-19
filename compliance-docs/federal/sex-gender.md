@@ -46,7 +46,7 @@ Under current HUD interpretation, "sex" in the FHA covers:
 
 ### Legal Landscape
 - While the Bostock reasoning has been applied to fair housing by HUD, the Supreme Court has not directly ruled on its application to the FHA
-- Many states, including Montana (under the Montana Human Rights Act), independently protect sex as a class, and some states have explicit sexual orientation and gender identity protections
+- Many states independently protect sex as a class, and some states have explicit sexual orientation and gender identity protections
 - The legal landscape continues to evolve; the safest approach is to treat sexual orientation and gender identity as protected
 
 ### Consequences

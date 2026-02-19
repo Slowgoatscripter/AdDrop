@@ -6,7 +6,11 @@ import { ListingData } from '@/lib/types/listing';
 import { PlatformId, ALL_PLATFORMS } from '@/lib/types/campaign';
 import { PropertyForm } from '@/components/campaign/property-form';
 
-export function MlsInputForm() {
+interface MlsInputFormProps {
+  userId?: string;
+}
+
+export function MlsInputForm({ userId }: MlsInputFormProps) {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>([...ALL_PLATFORMS]);
@@ -22,7 +26,7 @@ export function MlsInputForm() {
         ? undefined
         : selectedPlatforms;
 
-      const res = await fetch('/api/generate', {
+      const res = await fetch('/api/campaign/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ listing, platforms }),
@@ -31,12 +35,11 @@ export function MlsInputForm() {
       const json = await res.json();
 
       if (!json.success) {
-        setError(json.error || 'Campaign generation failed');
+        setError(json.error || 'Campaign creation failed');
         return;
       }
 
-      sessionStorage.setItem(`campaign-${json.campaign.id}`, JSON.stringify(json.campaign));
-      router.push(`/campaign/${json.campaign.id}`);
+      router.push(`/campaign/${json.id}`);
     } catch {
       setError('Failed to generate campaign. Please try again.');
     } finally {
@@ -51,11 +54,12 @@ export function MlsInputForm() {
         loading={generateLoading}
         selectedPlatforms={selectedPlatforms}
         onPlatformsChange={setSelectedPlatforms}
+        userId={userId}
       />
 
       {/* Error */}
       {error && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
+        <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
           {error}
         </div>
       )}

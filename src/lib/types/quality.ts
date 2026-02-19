@@ -12,7 +12,8 @@ export type QualityCategory =
   | 'platform-optimization'
   | 'demographic-fit'
   | 'property-type-fit'
-  | 'emotional-triggers';
+  | 'emotional-triggers'
+  | 'voice-authenticity';
 
 export type QualityPriority = 'required' | 'recommended';
 
@@ -78,4 +79,28 @@ export interface PlatformFormat {
   maxHashtags?: number;
   minHashtags?: number;
   requiresCTA: boolean;
+}
+
+/** Advisory quality suggestion -- user applies manually via UI */
+export interface QualitySuggestion {
+  id: string;
+  platform: string;
+  category: QualityCategory;
+  severity: 'low' | 'medium' | 'high';
+  issue: string;
+  currentText: string;
+  suggestedRewrite?: string;
+  explanation: string;
+}
+
+/** Auto-enforced hard constraint (char limits, required disclosures) */
+export interface QualityConstraintViolation {
+  id: string;
+  platform: string;
+  type: 'character-limit' | 'missing-disclosure' | 'missing-required-field';
+  severity: 'critical';
+  issue: string;
+  currentText: string;
+  autoFixed: boolean;
+  fixedText?: string;
 }

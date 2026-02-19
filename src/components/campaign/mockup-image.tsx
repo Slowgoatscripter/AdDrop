@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ImageIcon } from 'lucide-react';
 import { ImagePicker } from '@/components/ui/image-picker';
@@ -27,8 +27,19 @@ export function MockupImage({
   selectedIndex,
 }: MockupImageProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const isLocal = src.startsWith('/') || src.startsWith('/_next');
+  const [hasError, setHasError] = useState(!src);
+  const isLocal = src && (src.startsWith('/') || src.startsWith('/_next'));
+
+  // Reset loading/error state when src changes (e.g., photo added/changed)
+  useEffect(() => {
+    if (src) {
+      setHasError(false);
+      setIsLoading(true);
+    } else {
+      setHasError(true);
+      setIsLoading(false);
+    }
+  }, [src]);
 
   return (
     <div className={`relative ${aspectRatio} overflow-hidden bg-slate-100 ${className ?? ''}`}>
@@ -69,9 +80,12 @@ export function MockupImage({
         />
       )}
 
-      {/* ImagePicker overlay */}
+      {/* ImagePicker overlay — z-50 ensures it sits above text overlays like EditableText */}
       {photos && photos.length >= 2 && onImageSelect && (
-        <div className="absolute bottom-2 right-2">
+        <div
+          className="absolute bottom-2 right-2 z-50"
+          onClick={(e) => e.stopPropagation()}
+        >
           <ImagePicker
             images={photos}
             selectedIndex={selectedIndex ?? 0}

@@ -5,10 +5,30 @@ import {
   checkAllPlatformQuality,
   extractPlatformTexts,
 } from './engine';
-import { qualityRules, platformFormats } from './rules';
+import { autoFixTextRegex, autoFixQuality } from './auto-fix';
+import { formattingRules, platformFormats } from './rules';
 import { buildQualityCheatSheet } from './docs';
-import { QualityRule } from '@/lib/types/quality';
+import { mergeQualityResults } from './scorer';
+import { buildQualitySuggestions } from './index';
+import { QualityIssue, QualityRule } from '@/lib/types/quality';
 import { CampaignKit } from '@/lib/types/campaign';
+
+// Import scorer internals for testing via require (to access non-exported members)
+// We'll test exported functions and verify constants via module inspection
+
+// Mock OpenAI to avoid requiring API key in tests
+jest.mock('openai', () => {
+  return {
+    __esModule: true,
+    default: jest.fn().mockImplementation(() => ({
+      chat: {
+        completions: {
+          create: jest.fn(),
+        },
+      },
+    })),
+  };
+});
 
 // Mock loadQualityDocs to avoid file system access in tests
 jest.mock('./docs', () => {
@@ -54,7 +74,7 @@ function buildMockCampaign(overrides: Partial<CampaignKit> = {}): CampaignKit {
     realtorCom: 'Professional listing description for Realtor.com',
     homesComTrulia: 'Professional listing description',
     mlsDescription: 'Professional MLS description within limits',
-    complianceResult: { platforms: [], totalChecks: 0, totalPassed: 0, hardViolations: 0, softWarnings: 0, allPassed: true },
+    complianceResult: { platforms: [], campaignVerdict: 'compliant', violations: [], autoFixes: [], totalViolations: 0, totalAutoFixes: 0 },
     hashtags: ['#realestate', '#bozeman', '#montanahomes'],
     callsToAction: ['Schedule your showing'],
     targetingNotes: 'Target first-time buyers in Bozeman area',
@@ -64,15 +84,19 @@ function buildMockCampaign(overrides: Partial<CampaignKit> = {}): CampaignKit {
 }
 
 // ============================
-// Quality Rules Config Tests
+// Formatting Rules Config Tests
 // ============================
-describe('Quality Rules', () => {
-  test('exports 80+ quality rules', () => {
-    expect(qualityRules.length).toBeGreaterThanOrEqual(80);
+describe('Formatting Rules', () => {
+  test('exports only formatting rules (no language rules)', () => {
+    expect(formattingRules.length).toBeGreaterThanOrEqual(4);
+    expect(formattingRules.length).toBeLessThan(10);
+    for (const rule of formattingRules) {
+      expect(rule.category).toBe('formatting');
+    }
   });
 
   test('all rules have required fields', () => {
-    for (const rule of qualityRules) {
+    for (const rule of formattingRules) {
       expect(rule.pattern).toBeTruthy();
       expect(rule.category).toBeTruthy();
       expect(['required', 'recommended']).toContain(rule.priority);
@@ -81,22 +105,23 @@ describe('Quality Rules', () => {
     }
   });
 
-  test('rules cover expected subcategories', () => {
-    const subcategories = new Set(qualityRules.map(r => r.subcategory).filter(Boolean));
-    expect(subcategories).toContain('vague-praise');
-    expect(subcategories).toContain('euphemism');
-    expect(subcategories).toContain('pressure-tactic');
-    expect(subcategories).toContain('assumption');
-    expect(subcategories).toContain('meaningless-superlative');
-    expect(subcategories).toContain('ai-slop');
-    expect(subcategories).toContain('avoid-word');
+  test('language rules are no longer exported', () => {
+
+    const rules = require('./rules');
+    expect(rules.qualityRules).toBeUndefined();
+    expect(rules.formattingRules).toBeDefined();
+    expect(rules.platformFormats).toBeDefined();
   });
 
-  test('has both required and recommended priority rules', () => {
-    const required = qualityRules.filter(r => r.priority === 'required');
-    const recommended = qualityRules.filter(r => r.priority === 'recommended');
-    expect(required.length).toBeGreaterThan(0);
-    expect(recommended.length).toBeGreaterThan(0);
+  test('no language subcategories present in formatting rules', () => {
+    const languageSubcategories = [
+      'vague-praise', 'euphemism', 'pressure-tactic', 'assumption',
+      'meaningless-superlative', 'ai-slop', 'avoid-word', 'weak-cta',
+    ];
+    const subcategories = new Set(formattingRules.map(r => r.subcategory).filter(Boolean));
+    for (const langSub of languageSubcategories) {
+      expect(subcategories).not.toContain(langSub);
+    }
   });
 });
 
@@ -132,6 +157,54 @@ describe('Platform Formats', () => {
 });
 
 // ============================
+// Language Anti-Patterns NOT Flagged
+// ============================
+describe('Language anti-patterns are not flagged by regex engine', () => {
+  test('common real-estate anti-patterns produce zero issues', () => {
+    const textWithAntiPatterns =
+      'Nestled in a quiet neighborhood, this home boasts a cozy living room ' +
+      'with a charming fireplace. The stunning kitchen is a must-see! ' +
+      'This gem won\'t last long. Priced to sell. Schedule a tour today.';
+
+    // findQualityIssues should not flag any language anti-patterns
+    const ruleIssues = findQualityIssues(textWithAntiPatterns, 'instagram.professional');
+    expect(ruleIssues).toEqual([]);
+
+    // checkFormattingAbuse should also not flag these words
+    const abuseIssues = checkFormattingAbuse(textWithAntiPatterns, 'instagram.professional');
+    expect(abuseIssues).toEqual([]);
+
+    // checkPlatformFormat should not flag language either
+    const formatIssues = checkPlatformFormat(textWithAntiPatterns, 'instagram.professional');
+    // Only possible issue is missing CTA, but "Schedule" is present
+    const languageIssues = formatIssues.filter(i =>
+      i.category !== 'platform-format' && i.category !== 'cta-effectiveness'
+    );
+    expect(languageIssues).toEqual([]);
+  });
+
+  test('full campaign with language anti-patterns passes quality engine', () => {
+    const campaign = buildMockCampaign({
+      instagram: {
+        professional: 'Nestled in the hills, this home boasts mountain views. Schedule a tour today. #realestate #montana #dreamhome',
+        casual: 'This cozy gem is a must-see! Charming inside and out. Book your showing! #realestate #montana #dreamhome',
+        luxury: 'A stunning estate nestled among towering pines. Discover elegance. #realestate #montana #dreamhome',
+      },
+    });
+    const result = checkAllPlatformQuality(campaign);
+    // Language words like "nestled", "boasts", "cozy", "gem", "stunning", "charming"
+    // should NOT produce any issues — those are now handled by the AI scorer
+    const igResults = result.platforms.filter(p => p.platform.startsWith('instagram'));
+    for (const igResult of igResults) {
+      const languageFlagged = igResult.issues.filter(i =>
+        i.category !== 'platform-format' && i.category !== 'cta-effectiveness' && i.category !== 'formatting'
+      );
+      expect(languageFlagged).toEqual([]);
+    }
+  });
+});
+
+// ============================
 // findQualityIssues Tests
 // ============================
 describe('findQualityIssues', () => {
@@ -146,69 +219,6 @@ describe('findQualityIssues', () => {
   test('returns empty array for empty text', () => {
     expect(findQualityIssues('', 'test')).toEqual([]);
     expect(findQualityIssues('   ', 'test')).toEqual([]);
-  });
-
-  test('detects vague praise', () => {
-    const issues = findQualityIssues(
-      'This home has great potential for the right buyer.',
-      'instagram.professional'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-    expect(issues[0].category).toBe('anti-pattern');
-    expect(issues[0].source).toBe('regex');
-  });
-
-  test('detects euphemisms', () => {
-    const issues = findQualityIssues(
-      'A cozy cottage with rustic charm.',
-      'instagram.professional'
-    );
-    const euphemisms = issues.filter(i => i.issue.toLowerCase().includes('cozy') || i.issue.toLowerCase().includes('small'));
-    expect(euphemisms.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('detects pressure tactics', () => {
-    const issues = findQualityIssues(
-      'Act fast before this one is gone! Don\'t miss out!',
-      'facebook.casual'
-    );
-    const pressureIssues = issues.filter(i => i.suggestedFix.length > 0);
-    expect(pressureIssues.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('detects AI slop words', () => {
-    const issues = findQualityIssues(
-      'This stunning home nestled in the hills boasts panoramic views.',
-      'instagram.luxury'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('detects buyer assumptions', () => {
-    const issues = findQualityIssues(
-      'Perfect for your family, you\'ll love the spacious backyard.',
-      'facebook.casual'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test('includes context snippet', () => {
-    const issues = findQualityIssues(
-      'This property has great potential with amazing possibilities.',
-      'instagram.professional'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-    expect(issues[0].context).toBeTruthy();
-    expect(issues[0].context!.length).toBeGreaterThan(0);
-  });
-
-  test('includes suggested fix', () => {
-    const issues = findQualityIssues(
-      'This is a must see to appreciate kind of home.',
-      'facebook.professional'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-    expect(issues[0].suggestedFix).toBeTruthy();
   });
 
   test('respects platform filter on rules', () => {
@@ -228,12 +238,19 @@ describe('findQualityIssues', () => {
     expect(fbIssues.length).toBe(0);
   });
 
-  test('detects multiple issues in same text', () => {
-    const issues = findQualityIssues(
-      'This cozy dream home boasts endless possibilities. Act fast!',
-      'instagram.professional'
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(2);
+  test('accepts custom rules', () => {
+    const customRules: QualityRule[] = [
+      {
+        pattern: 'custom test pattern',
+        category: 'anti-pattern',
+        priority: 'required',
+        shortExplanation: 'Custom test issue',
+        suggestedFix: 'Fix it',
+      },
+    ];
+    const issues = findQualityIssues('This has a custom test pattern inside.', 'instagram.professional', customRules);
+    expect(issues.length).toBe(1);
+    expect(issues[0].issue).toBe('Custom test issue');
   });
 });
 
@@ -386,21 +403,6 @@ describe('checkAllPlatformQuality', () => {
     expect(result.improvementsApplied).toBe(0);
   });
 
-  test('detects quality issues in instagram text', () => {
-    const campaign = buildMockCampaign({
-      instagram: {
-        professional: 'This stunning home nestled in the hills has great potential. Must see to appreciate!',
-        casual: 'Schedule a tour of this 3-bed home.',
-        luxury: 'Schedule a tour of this 3-bed home.',
-      },
-    });
-    const result = checkAllPlatformQuality(campaign);
-
-    const igPro = result.platforms.find(p => p.platform === 'instagram.professional');
-    expect(igPro).toBeDefined();
-    expect(igPro!.issues.length).toBeGreaterThanOrEqual(1);
-  });
-
   test('detects formatting abuse across campaign', () => {
     const campaign = buildMockCampaign({
       twitter: 'AMAZING HOME!!! BEST VIEWS EVER!!! ACT NOW!!!',
@@ -426,11 +428,7 @@ describe('checkAllPlatformQuality', () => {
 
   test('aggregates required and recommended issue counts', () => {
     const campaign = buildMockCampaign({
-      instagram: {
-        professional: 'This stunning home has great potential. Must see to appreciate! Act fast!',
-        casual: 'Schedule a tour of this 3-bed home.',
-        luxury: 'Schedule a tour of this 3-bed home.',
-      },
+      twitter: 'AMAZING HOME!!! BEST VIEWS EVER!!! ACT NOW!!!',
     });
     const result = checkAllPlatformQuality(campaign);
 
@@ -461,15 +459,125 @@ describe('checkAllPlatformQuality', () => {
 });
 
 // ============================
+// Auto-Fix Tests
+// ============================
+describe('autoFixTextRegex', () => {
+  test('converts ALL CAPS to title case', () => {
+    const issues: QualityIssue[] = [{
+      category: 'formatting',
+      issue: 'Excessive ALL CAPS usage',
+      suggestedFix: 'Use title case',
+      priority: 'required',
+      source: 'regex',
+      platform: 'test',
+    }];
+    const result = autoFixTextRegex('THIS BEAUTIFUL HOME HAS VIEWS', issues);
+    expect(result).toBe('This Beautiful Home Has Views');
+    expect(issues[0].fixedText).toBeDefined();
+  });
+
+  test('preserves common abbreviations in ALL CAPS fix', () => {
+    const issues: QualityIssue[] = [{
+      category: 'formatting',
+      issue: 'Excessive ALL CAPS usage',
+      suggestedFix: 'Use title case',
+      priority: 'required',
+      source: 'regex',
+      platform: 'test',
+    }];
+    const result = autoFixTextRegex('GREAT HOME NEAR MLS WITH HOA AND HVAC', issues);
+    expect(result).toContain('MLS');
+    expect(result).toContain('HOA');
+    expect(result).toContain('HVAC');
+  });
+
+  test('fixes excessive exclamation marks', () => {
+    const issues: QualityIssue[] = [{
+      category: 'formatting',
+      issue: 'Excessive exclamation marks',
+      suggestedFix: 'Use single exclamation',
+      priority: 'required',
+      source: 'regex',
+      platform: 'test',
+    }];
+    const result = autoFixTextRegex('Amazing home!!! Must see!!!', issues);
+    expect(result).toBe('Amazing home! Must see!');
+    expect(issues[0].fixedText).toBeDefined();
+  });
+
+  test('fixes excessive ellipsis', () => {
+    const issues: QualityIssue[] = [{
+      category: 'formatting',
+      issue: 'Excessive ellipsis usage',
+      suggestedFix: 'Use three dots',
+      priority: 'required',
+      source: 'regex',
+      platform: 'test',
+    }];
+    const result = autoFixTextRegex('Wait for it..... amazing', issues);
+    expect(result).toBe('Wait for it... amazing');
+    expect(issues[0].fixedText).toBeDefined();
+  });
+
+  test('returns text unchanged when no matching issues', () => {
+    const result = autoFixTextRegex('Clean text here.', []);
+    expect(result).toBe('Clean text here.');
+  });
+});
+
+describe('autoFixQuality', () => {
+  test('does not make any API calls', async () => {
+    const campaign = buildMockCampaign({
+      twitter: 'AMAZING HOME!!! BEST VIEWS EVER!!!',
+    });
+    const qualityResult = checkAllPlatformQuality(campaign);
+
+    // If autoFixQuality tried to call OpenAI, it would throw since there's no mock.
+    // The fact that this resolves proves no API calls are made.
+    const { campaign: fixed } = await autoFixQuality(campaign, qualityResult);
+    expect(fixed).toBeDefined();
+  });
+
+  test('applies format fixes to campaign text', async () => {
+    const campaign = buildMockCampaign({
+      twitter: 'AMAZING HOME!!! BEST VIEWS!!! Schedule a tour',
+    });
+    const qualityResult = checkAllPlatformQuality(campaign);
+
+    const { campaign: fixed, qualityResult: updatedResult } = await autoFixQuality(campaign, qualityResult);
+
+    // The twitter text should have been fixed (caps + exclamation)
+    expect((fixed as any).twitter).not.toBe(campaign.twitter);
+    expect((fixed as any).twitter).not.toContain('!!!');
+    expect(updatedResult.improvementsApplied).toBeGreaterThan(0);
+  });
+
+  test('does not mutate the original campaign', async () => {
+    const original = 'AMAZING HOME!!! Schedule a tour';
+    const campaign = buildMockCampaign({ twitter: original });
+    const qualityResult = checkAllPlatformQuality(campaign);
+
+    await autoFixQuality(campaign, qualityResult);
+    expect(campaign.twitter).toBe(original);
+  });
+});
+
+describe('autoFixTextAI is removed', () => {
+  test('auto-fix module does not export autoFixTextAI', () => {
+
+    const autoFix = require('./auto-fix');
+    expect(autoFix.autoFixTextAI).toBeUndefined();
+  });
+});
+
+// ============================
 // buildQualityCheatSheet Tests
 // ============================
 describe('buildQualityCheatSheet', () => {
-  test('generates cheat sheet with subcategory sections', () => {
+  test('generates cheat sheet with formatting section', () => {
     const sheet = buildQualityCheatSheet();
     expect(sheet).toContain('Ad Quality Cheat Sheet');
-    expect(sheet).toContain('Vague Praise');
-    expect(sheet).toContain('Euphemism');
-    expect(sheet).toContain('MUST AVOID');
+    expect(sheet).toContain('Formatting');
   });
 
   test('includes demographic guidance when specified', () => {
@@ -487,5 +595,214 @@ describe('buildQualityCheatSheet', () => {
   test('omits demographic section when not specified', () => {
     const sheet = buildQualityCheatSheet();
     expect(sheet).not.toContain('Target Demographic');
+  });
+});
+
+// ============================
+// Scorer Tests (GPT-5.2 + voice-authenticity)
+// ============================
+describe('Scorer: AI_CATEGORIES and model', () => {
+  // We test internals by reading the module source since AI_CATEGORIES
+  // and buildScoringPrompt are not exported. For exported functions we
+  // mock OpenAI to capture prompt content.
+
+  let scorerSource: string;
+
+  beforeAll(() => {
+
+    const fs = require('fs');
+    const path = require('path');
+    scorerSource = fs.readFileSync(
+      path.resolve(__dirname, 'scorer.ts'),
+      'utf-8',
+    );
+  });
+
+  test('AI_CATEGORIES includes voice-authenticity', () => {
+    expect(scorerSource).toContain("'voice-authenticity'");
+    // Verify it appears in the AI_CATEGORIES array block
+    const categoriesMatch = scorerSource.match(
+      /const AI_CATEGORIES[\s\S]*?\];/,
+    );
+    expect(categoriesMatch).not.toBeNull();
+    expect(categoriesMatch![0]).toContain("'voice-authenticity'");
+  });
+
+  test('AI_CATEGORIES has exactly 10 entries', () => {
+    const categoriesMatch = scorerSource.match(
+      /const AI_CATEGORIES[\s\S]*?\];/,
+    );
+    expect(categoriesMatch).not.toBeNull();
+    const singleQuoteEntries = categoriesMatch![0].match(/'/g);
+    // Each entry has 2 single quotes (opening + closing), so 20 quotes = 10 entries
+    expect(singleQuoteEntries!.length).toBe(20);
+  });
+
+  test('model is set to gpt-5.2', () => {
+    expect(scorerSource).toContain("model: 'gpt-5.2'");
+    expect(scorerSource).not.toContain("model: 'gpt-4o-mini'");
+  });
+
+  test('buildScoringPrompt accepts tone parameter', () => {
+    // Verify the function signature includes tone
+    const sigMatch = scorerSource.match(
+      /function buildScoringPrompt\([\s\S]*?\): string/,
+    );
+    expect(sigMatch).not.toBeNull();
+    expect(sigMatch![0]).toContain("tone?: 'professional' | 'casual' | 'luxury'");
+  });
+
+  test('prompt includes voice-authenticity scoring dimension', () => {
+    expect(scorerSource).toContain('voice-authenticity');
+    expect(scorerSource).toContain('Does this copy sound like a seasoned real estate professional');
+  });
+
+  test('prompt includes tone interpolation for voice-authenticity', () => {
+    // The prompt template should interpolate tone
+    expect(scorerSource).toContain("${tone || 'professional'}");
+  });
+});
+
+describe('Scorer: scoreAllPlatformQuality signature', () => {
+  test('accepts tone parameter', () => {
+
+    const fs = require('fs');
+    const path = require('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, 'scorer.ts'),
+      'utf-8',
+    );
+    const sigMatch = source.match(
+      /export async function scoreAllPlatformQuality\([\s\S]*?\): Promise/,
+    );
+    expect(sigMatch).not.toBeNull();
+    expect(sigMatch![0]).toContain("tone?: 'professional' | 'casual' | 'luxury'");
+  });
+
+  test('passes tone through to buildScoringPrompt', () => {
+
+    const fs = require('fs');
+    const path = require('path');
+    const source = fs.readFileSync(
+      path.resolve(__dirname, 'scorer.ts'),
+      'utf-8',
+    );
+    // The call to buildScoringPrompt should include tone as 4th argument
+    expect(source).toContain(
+      'buildScoringPrompt(propertyContext, platformTextBlock, demographic, tone)',
+    );
+  });
+});
+
+// ============================
+// mergeQualityResults Tests
+// ============================
+describe('mergeQualityResults', () => {
+  test('merges format-only regex results with AI results including voice-authenticity', () => {
+    const regexResult = {
+      platforms: [{
+        platform: 'instagram.professional',
+        issues: [{
+          platform: 'instagram.professional',
+          category: 'formatting' as const,
+          priority: 'required' as const,
+          source: 'regex' as const,
+          issue: 'Exceeds character limit',
+          suggestedFix: 'Shorten text',
+        }],
+        passed: false,
+      }],
+      totalChecks: 1,
+      totalPassed: 0,
+      requiredIssues: 1,
+      recommendedIssues: 0,
+      allPassed: false,
+      improvementsApplied: 0,
+    };
+
+    const aiResult = {
+      platforms: [{
+        platform: 'instagram.professional',
+        issues: [{
+          platform: 'instagram.professional',
+          category: 'voice-authenticity' as const,
+          priority: 'recommended' as const,
+          source: 'ai' as const,
+          issue: 'Distancing construction detected',
+          suggestedFix: 'Use direct, grounded phrasing',
+          score: 5,
+        }],
+        passed: false,
+      }],
+      totalChecks: 1,
+      totalPassed: 0,
+      requiredIssues: 0,
+      recommendedIssues: 1,
+      allPassed: false,
+      overallScore: 6,
+      improvementsApplied: 0,
+    };
+
+    const merged = mergeQualityResults(regexResult, aiResult);
+    const platform = merged.platforms.find(p => p.platform === 'instagram.professional');
+
+    expect(platform).toBeDefined();
+    expect(platform!.issues.length).toBe(2);
+    expect(platform!.issues.some(i => i.category === 'formatting')).toBe(true);
+    expect(platform!.issues.some(i => i.category === 'voice-authenticity')).toBe(true);
+    expect(merged.requiredIssues).toBe(1);
+    expect(merged.recommendedIssues).toBe(1);
+    expect(merged.overallScore).toBe(6);
+  });
+});
+
+// ============================
+// buildQualitySuggestions Tests
+// ============================
+describe('buildQualitySuggestions', () => {
+  test('converts quality issues to suggestions', () => {
+    const qualityResult = {
+      platforms: [{
+        platform: 'instagram', tone: 'casual', checks: [], score: 7,
+        issues: [{
+          platform: 'instagram.casual', category: 'filler-words' as any,
+          priority: 'recommended' as const, source: 'regex' as const,
+          issue: 'Contains filler words', suggestedFix: 'Remove filler',
+          originalText: 'This is a very nice home', fixedText: 'This home stands out',
+        }],
+        passed: true,
+      }],
+      totalChecks: 1, totalPassed: 0, requiredIssues: 0, recommendedIssues: 1,
+      allPassed: false, improvementsApplied: 0,
+    };
+
+    const suggestions = buildQualitySuggestions(qualityResult);
+    expect(suggestions).toHaveLength(1);
+    expect(suggestions[0].platform).toBe('instagram.casual');
+    expect(suggestions[0].category).toBe('filler-words');
+    expect(suggestions[0].severity).toBe('medium');
+    expect(suggestions[0].id).toBeDefined();
+  });
+
+  test('returns empty array when no issues', () => {
+    const qualityResult = {
+      platforms: [], totalChecks: 0, totalPassed: 0,
+      requiredIssues: 0, recommendedIssues: 0, allPassed: true, improvementsApplied: 0,
+    };
+    expect(buildQualitySuggestions(qualityResult)).toHaveLength(0);
+  });
+
+  test('maps required priority to high severity', () => {
+    const qualityResult = {
+      platforms: [{
+        platform: 'twitter', checks: [], score: 5,
+        issues: [{ platform: 'twitter', category: 'weak-hook' as any, priority: 'required' as const, source: 'ai' as const, issue: 'Weak hook', suggestedFix: 'Fix hook' }],
+        passed: false,
+      }],
+      totalChecks: 1, totalPassed: 0, requiredIssues: 1, recommendedIssues: 0,
+      allPassed: false, improvementsApplied: 0,
+    };
+    const suggestions = buildQualitySuggestions(qualityResult);
+    expect(suggestions[0].severity).toBe('high');
   });
 });

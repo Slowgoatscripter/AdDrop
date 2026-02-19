@@ -4,8 +4,10 @@ import React, { useState, useCallback } from 'react';
 import { ListingData, ListingAddress } from '@/lib/types/listing';
 import { PlatformId, ALL_PLATFORMS } from '@/lib/types/campaign';
 import { PlatformSelector } from '@/components/campaign/platform-selector';
+import { uploadPropertyImages } from '@/lib/uploads/property-images';
 import { Button } from '@/components/ui/button';
-import { X, Plus, Upload, Loader2 } from 'lucide-react';
+import { X, Plus, Upload, Loader2, Star } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PropertyFormProps {
   initialData?: Partial<ListingData>;
@@ -13,6 +15,7 @@ interface PropertyFormProps {
   loading?: boolean;
   selectedPlatforms?: PlatformId[];
   onPlatformsChange?: (platforms: PlatformId[]) => void;
+  userId?: string;
 }
 
 const PROPERTY_TYPES = [
@@ -25,7 +28,7 @@ const PROPERTY_TYPES = [
   'Other',
 ];
 
-export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms, onPlatformsChange }: PropertyFormProps) {
+export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms, onPlatformsChange, userId }: PropertyFormProps) {
   // Property details
   const [street, setStreet] = useState(initialData?.address?.street || '');
   const [city, setCity] = useState(initialData?.address?.city || '');
@@ -50,9 +53,20 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
 
   // Photos
   const [photos, setPhotos] = useState<string[]>(initialData?.photos || []);
+  const [uploading, setUploading] = useState(false);
 
   const handleRemovePhoto = useCallback((index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleSetHero = useCallback((index: number) => {
+    if (index === 0) return;
+    setPhotos((prev) => {
+      const updated = [...prev];
+      const [photo] = updated.splice(index, 1);
+      updated.unshift(photo);
+      return updated;
+    });
   }, []);
 
   const handleAddSellingPoint = useCallback(() => {
@@ -71,15 +85,41 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
     });
   }, []);
 
-  const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach((file) => {
-      const url = URL.createObjectURL(file);
-      setPhotos((prev) => [...prev, url]);
-    });
-    e.target.value = '';
-  }, []);
+    if (!files || files.length === 0) return;
+
+    if (!userId) {
+      // Fallback for cases where userId isn't available (shouldn't happen in normal flow)
+      toast.error('Please sign in to upload photos.');
+      e.target.value = '';
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const { urls, errors } = await uploadPropertyImages(
+        Array.from(files),
+        userId,
+        photos.length
+      );
+
+      if (errors.length > 0) {
+        errors.forEach((err) => toast.error(err));
+      }
+
+      if (urls.length > 0) {
+        setPhotos((prev) => [...prev, ...urls]);
+        toast.success(`Uploaded ${urls.length} photo${urls.length !== 1 ? 's' : ''}`);
+      }
+    } catch (err) {
+      console.error('[property-form] Upload failed:', err);
+      toast.error('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  }, [userId, photos.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,14 +156,14 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
   };
 
   const inputClass =
-    'w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent';
-  const labelClass = 'block text-sm font-medium text-slate-700 mb-1';
+    'w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card text-foreground';
+  const labelClass = 'block text-sm font-medium text-card-foreground mb-1';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto">
       {/* Section 1: Property Details */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Property Details</h2>
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Property Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className={labelClass}>Street Address *</label>
@@ -267,8 +307,8 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
       </div>
 
       {/* Section 2: Listing Info */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Listing Info</h2>
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Listing Info</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Listing Agent</label>
@@ -294,8 +334,8 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
       </div>
 
       {/* Section 3: Description + Selling Points */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Description</h2>
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Description</h2>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -304,9 +344,9 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
           rows={5}
         />
         <div className="mt-6">
-          <h3 className="text-sm font-medium text-slate-700 mb-2">
+          <h3 className="text-sm font-medium text-card-foreground mb-2">
             Selling Points
-            <span className="text-slate-500 font-normal ml-2">
+            <span className="text-muted-foreground font-normal ml-2">
               Highlights for the AI to emphasize
             </span>
           </h3>
@@ -324,7 +364,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
                   <button
                     type="button"
                     onClick={() => handleRemoveSellingPoint(i)}
-                    className="p-2 text-slate-500 hover:text-red-500"
+                    className="p-2 text-muted-foreground hover:text-destructive"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -335,7 +375,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
           <button
             type="button"
             onClick={handleAddSellingPoint}
-            className="mt-2 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+            className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80"
           >
             <Plus className="h-4 w-4" /> Add selling point
           </button>
@@ -343,11 +383,11 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
       </div>
 
       {/* Section 4: Photos */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+      <div className="bg-card rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           Photos
           {photos.length > 0 && (
-            <span className="text-slate-500 font-normal text-sm ml-2">
+            <span className="text-muted-foreground font-normal text-sm ml-2">
               {photos.length} photo{photos.length !== 1 ? 's' : ''} — first photo is the hero
             </span>
           )}
@@ -355,7 +395,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
         {photos.length > 0 ? (
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {photos.map((photo, i) => (
-              <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-slate-100">
+              <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo}
@@ -363,37 +403,50 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '';
-                    (e.target as HTMLImageElement).parentElement!.classList.add('bg-slate-200');
+                    (e.target as HTMLImageElement).parentElement!.classList.add('bg-muted');
                   }}
                 />
-                <button
-                  type="button"
-                  onClick={() => handleRemovePhoto(i)}
-                  className="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X className="h-3 w-3" />
-                </button>
+                <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {i !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetHero(i)}
+                      className="p-1 bg-black/60 rounded-full text-white hover:bg-primary/80"
+                      title="Set as hero image"
+                    >
+                      <Star className="h-3 w-3" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(i)}
+                    className="p-1 bg-black/60 rounded-full text-white hover:bg-destructive/80"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
                 {i === 0 && (
-                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded">
-                    Hero
+                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-primary-foreground text-xs rounded flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-current" /> Hero
                   </span>
                 )}
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-slate-500">
+          <div className="text-center py-8 text-muted-foreground">
             No photos yet — upload some to get started
           </div>
         )}
-        <label className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-md cursor-pointer text-sm text-slate-700 transition-colors">
-          <Upload className="h-4 w-4" />
-          Upload Photos
+        <label className={`mt-3 inline-flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 rounded-md text-sm text-card-foreground transition-colors ${uploading ? 'opacity-60 pointer-events-none' : 'cursor-pointer'}`}>
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          {uploading ? 'Uploading...' : 'Upload Photos'}
           <input
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp,image/gif"
             multiple
             onChange={handlePhotoUpload}
+            disabled={uploading}
             className="hidden"
           />
         </label>
@@ -401,7 +454,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
 
       {/* Section 5: Platform Selection */}
       {selectedPlatforms && onPlatformsChange && (
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
+        <div className="bg-card rounded-lg border border-border p-6">
           <PlatformSelector
             selected={selectedPlatforms}
             onChange={onPlatformsChange}
@@ -413,7 +466,7 @@ export function PropertyForm({ initialData, onSubmit, loading, selectedPlatforms
       <div className="flex justify-end">
         <Button
           type="submit"
-          disabled={loading || (selectedPlatforms !== undefined && selectedPlatforms.length === 0)}
+          disabled={loading || uploading || (selectedPlatforms !== undefined && selectedPlatforms.length === 0)}
           className="px-8 py-3 text-base"
         >
           {loading ? (

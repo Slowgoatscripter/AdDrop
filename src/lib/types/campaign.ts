@@ -1,4 +1,4 @@
-import { CampaignComplianceResult } from './compliance';
+import { ComplianceAgentResult } from './compliance';
 import { CampaignQualityResult } from './quality';
 
 export type AdTone = 'professional' | 'casual' | 'luxury';
@@ -82,9 +82,14 @@ export interface CampaignKit {
   homesComTrulia?: string;
   mlsDescription?: string;
   // Metadata
-  complianceResult: CampaignComplianceResult;
+  complianceResult: ComplianceAgentResult;
   qualityResult?: CampaignQualityResult;
+  /** Advisory quality suggestions -- user applies via UI (replaces auto-fix) */
+  qualitySuggestions?: import('./quality').QualitySuggestion[];
+  /** Auto-enforced hard constraints (char limits, disclosures) */
+  qualityConstraints?: import('./quality').QualityConstraintViolation[];
   selectedPlatforms?: PlatformId[];
+  stateCode?: string;
   // Strategy fields — always generated
   hashtags: string[];
   callsToAction: string[];

@@ -51,9 +51,16 @@ Outside of these qualifying categories, age-based advertising restrictions are i
 - **Rural communities** may informally prefer older, established residents — this cannot be reflected in advertising
 
 ### Penalties
-- First offense: Up to **$10,000** (MCA § 49-2-510)
-- Prior violations within 5 years: Up to **$25,000**
-- Plus compensatory damages, attorney's fees, and injunctive relief
+
+**Montana State Penalties (Board of Realty Regulation):**
+- Discretionary, up to $1,000 per violation
+
+**Federal FHA Civil Penalties (2025 inflation-adjusted):**
+- First offense (no prior adjudication): up to $26,262
+- One or more prior violations within 5 years: up to $65,654
+- Two or more prior violations within 7 years: up to $131,308
+
+Plus compensatory damages, attorney's fees, and injunctive relief under both state and federal law.
 
 ## Protected Class(es)
 

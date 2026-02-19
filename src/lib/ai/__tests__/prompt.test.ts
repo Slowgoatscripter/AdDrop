@@ -29,14 +29,17 @@ jest.mock('@/lib/compliance/compliance-settings', () => ({
           law: 'Fair Housing Act §3604(c)',
           suggestedAlternative: 'welcoming community',
         },
+        {
+          term: 'walking distance to church',
+          category: 'religion',
+          severity: 'soft',
+          shortExplanation: 'May imply religious preference',
+          law: '42 U.S.C. § 3604',
+          suggestedAlternative: 'near local amenities',
+        },
       ],
     },
   }),
-}));
-
-// Mock loadComplianceDocs to avoid file system access in tests
-jest.mock('@/lib/compliance/docs', () => ({
-  loadComplianceDocs: jest.fn().mockResolvedValue(''),
 }));
 
 // Mock quality docs to avoid file system access
@@ -105,25 +108,31 @@ describe('buildGenerationPrompt', () => {
     expect(prompt).toContain('Beautiful home with stunning mountain views.');
   });
 
-  test('includes compliance cheat sheet with categories', async () => {
+  test('includes lightweight Fair Housing compliance summary', async () => {
     const prompt = await buildGenerationPrompt(mockListing);
-    expect(prompt).toContain('Fair Housing Compliance Cheat Sheet');
-    expect(prompt).toContain('Steering');
-    expect(prompt).toContain('Familial Status');
-    expect(prompt).toContain('PROHIBITED');
+    expect(prompt).toContain('Fair Housing Compliance (Summary)');
+    expect(prompt).toContain('Fair Housing Act');
+    expect(prompt).toContain('NEVER target or exclude');
+    expect(prompt).toContain('Describe PROPERTY FEATURES');
+    expect(prompt).toContain('compliance review will run after generation');
   });
 
-  test('includes prohibited terms with explanations and alternatives', async () => {
+  test('does NOT include full cheat sheet or textbook sections', async () => {
     const prompt = await buildGenerationPrompt(mockListing);
-    expect(prompt).toContain('exclusive neighborhood');
-    expect(prompt).toContain('Say instead:');
-    expect(prompt).toContain('desirable location');
+    // The old cheat sheet had these patterns -- they should NOT be present
+    expect(prompt).not.toContain('Fair Housing Compliance Cheat Sheet');
+    expect(prompt).not.toContain('PROHIBITED (hard violations');
+    expect(prompt).not.toContain('AVOID (soft warnings');
+    expect(prompt).not.toContain('exclusive neighborhood');
+    expect(prompt).not.toContain('(hard)');
+    expect(prompt).not.toContain('(soft)');
+    expect(prompt).not.toContain('Fair Housing Legal Reference (Textbook)');
   });
 
   test('includes MLS compliance rules', async () => {
     const prompt = await buildGenerationPrompt(mockListing);
     expect(prompt).toContain('MLS');
-    expect(prompt).toContain('compliance');
+    expect(prompt).toContain('Montana Regional MLS');
   });
 
   test('includes JSON output structure requirements', async () => {
@@ -169,22 +178,22 @@ describe('buildGenerationPrompt', () => {
     expect(prompt).toContain('30 chars');
   });
 
-  test('includes textbook content when compliance docs provided', async () => {
-    const docs = '# Fair Housing Act Overview\nThis is the textbook content.';
-    const prompt = await buildGenerationPrompt(mockListing, docs);
-    expect(prompt).toContain('Fair Housing Legal Reference (Textbook)');
-    expect(prompt).toContain('This is the textbook content.');
+  test('compliance section appears after quality section in prompt', async () => {
+    const prompt = await buildGenerationPrompt(mockListing);
+    const qualityIndex = prompt.indexOf('## Ad Quality Standards');
+    const complianceIndex = prompt.indexOf('## Fair Housing Compliance (Summary)');
+    const rulesIndex = prompt.indexOf('IMPORTANT RULES:');
+    // Compliance should come AFTER quality, and important rules at the very end
+    expect(complianceIndex).toBeGreaterThan(qualityIndex);
+    expect(rulesIndex).toBeGreaterThan(complianceIndex);
   });
 
-  test('instructs AI to understand WHY laws exist', async () => {
-    const prompt = await buildGenerationPrompt(mockListing);
-    expect(prompt).toContain('WHY certain language is prohibited');
-    expect(prompt).toContain('not just WHAT is prohibited');
-  });
-
-  test('instructs AI to apply rules to ALL output', async () => {
-    const prompt = await buildGenerationPrompt(mockListing);
-    expect(prompt).toContain('every platform, every tone variant');
+  test('instructs AI not to add extra platforms', async () => {
+    const subset: PlatformId[] = ['instagram'];
+    const prompt = await buildGenerationPrompt(mockListing, undefined, undefined, {
+      platforms: subset,
+    });
+    expect(prompt).toContain('do NOT add any extra platforms');
   });
 
   // --- Platform selection tests ---
@@ -222,14 +231,6 @@ describe('buildGenerationPrompt', () => {
     expect(prompt).toContain('"callsToAction"');
     expect(prompt).toContain('"targetingNotes"');
     expect(prompt).toContain('"sellingPoints"');
-  });
-
-  test('instructs AI not to add extra platforms', async () => {
-    const subset: PlatformId[] = ['instagram'];
-    const prompt = await buildGenerationPrompt(mockListing, undefined, undefined, {
-      platforms: subset,
-    });
-    expect(prompt).toContain('do NOT add any extra platforms');
   });
 });
 

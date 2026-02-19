@@ -6,14 +6,18 @@ import { BrowserFrame } from './browser-frame';
 import { ViolationDetails } from './violation-details';
 import { GoogleAd, PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { ListingData } from '@/lib/types/listing';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { EditableText } from './editable-text';
 
 interface GoogleAdsCardProps {
   ads: GoogleAd[];
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -31,6 +35,8 @@ export function GoogleAdsCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
+  onEditText,
   listing,
 }: GoogleAdsCardProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -61,6 +67,10 @@ export function GoogleAdsCard({
         copyText={copyText}
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
+        platformId="googleAds"
+        charCountText={activeAd.headline}
+        charCountElement="headline"
       >
         <BrowserFrame searchQuery={searchQuery}>
           <div className="px-4 md:px-6 py-4 bg-white">
@@ -83,20 +93,39 @@ export function GoogleAdsCard({
               </div>
 
               {/* Headline — Google blue */}
-              <h3
-                className="text-xl leading-[26px] text-[#1a0dab] hover:underline cursor-pointer"
-                style={{ fontFamily: 'arial, sans-serif' }}
-              >
-                {activeAd.headline}
-              </h3>
+              {onEditText ? (
+                <EditableText
+                  value={activeAd.headline}
+                  onChange={() => {}}
+                  onSave={(val) => onEditText(`googleAds[${activeIndex}]`, 'headline', val)}
+                  multiline={false}
+                  className="text-xl leading-[26px] text-[#1a0dab]"
+                />
+              ) : (
+                <h3
+                  className="text-xl leading-[26px] text-[#1a0dab] hover:underline cursor-pointer"
+                  style={{ fontFamily: 'arial, sans-serif' }}
+                >
+                  {activeAd.headline}
+                </h3>
+              )}
 
               {/* Description */}
-              <p
-                className="text-sm leading-[22px] text-[#4D5156]"
-                style={{ fontFamily: 'arial, sans-serif' }}
-              >
-                {activeAd.description}
-              </p>
+              {onEditText ? (
+                <EditableText
+                  value={activeAd.description}
+                  onChange={() => {}}
+                  onSave={(val) => onEditText(`googleAds[${activeIndex}]`, 'description', val)}
+                  className="text-sm leading-[22px] text-[#4D5156]"
+                />
+              ) : (
+                <p
+                  className="text-sm leading-[22px] text-[#4D5156]"
+                  style={{ fontFamily: 'arial, sans-serif' }}
+                >
+                  {activeAd.description}
+                </p>
+              )}
             </div>
 
             {/* Variation navigator */}

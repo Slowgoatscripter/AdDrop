@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { saveSettings, resetSettings } from '@/app/admin/settings/actions'
+import { complianceConfigs } from '@/lib/compliance/terms/registry'
 
 const CATEGORIES = [
   { key: 'steering', label: 'Steering' },
@@ -13,9 +14,10 @@ const CATEGORIES = [
   { key: 'sex-gender', label: 'Sex & Gender' },
   { key: 'age', label: 'Age' },
   { key: 'marital-status', label: 'Marital Status' },
-  { key: 'political-beliefs', label: 'Political Beliefs' },
+  { key: 'creed', label: 'Creed (includes political beliefs)' },
   { key: 'economic-exclusion', label: 'Economic Exclusion' },
   { key: 'misleading-claims', label: 'Misleading Claims' },
+  { key: 'military-status', label: 'Military / Veteran Status' },
 ] as const
 
 interface ComplianceSettingsFormProps {
@@ -107,9 +109,13 @@ export function ComplianceSettingsForm({ settings }: ComplianceSettingsFormProps
         <div className="mb-6">
           <label className={labelClass}>State</label>
           <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)}>
-            <option value="MT">Montana</option>
+            {Object.keys(complianceConfigs).map(code => (
+              <option key={code} value={code}>
+                {complianceConfigs[code].state}
+              </option>
+            ))}
           </select>
-          <p className="text-xs text-muted-foreground mt-1">More states coming soon.</p>
+          <p className="text-xs text-muted-foreground mt-1">Select the state where your brokerage operates.</p>
         </div>
 
         {/* Max Description Length */}

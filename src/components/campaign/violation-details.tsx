@@ -8,7 +8,7 @@ import { ComplianceViolation } from '@/lib/types';
 
 interface ViolationDetailsProps {
   violations: ComplianceViolation[];
-  onReplace: (platform: string, oldTerm: string, newTerm: string) => void;
+  onReplace: (platform: string, oldTerm: string, newTerm: string) => void | Promise<void>;
 }
 
 const categoryColors: Record<string, string> = {
@@ -20,9 +20,10 @@ const categoryColors: Record<string, string> = {
   'sex-gender': 'bg-pink-100 text-pink-800',
   'age': 'bg-cyan-100 text-cyan-800',
   'marital-status': 'bg-violet-100 text-violet-800',
-  'political-beliefs': 'bg-gray-100 text-gray-800',
+  'creed': 'bg-gray-100 text-gray-800',
   'economic-exclusion': 'bg-yellow-100 text-yellow-800',
   'misleading-claims': 'bg-rose-100 text-rose-800',
+  'military-status': 'bg-green-100 text-green-800',
 };
 
 const categoryLabels: Record<string, string> = {
@@ -34,12 +35,14 @@ const categoryLabels: Record<string, string> = {
   'sex-gender': 'Sex / Gender',
   'age': 'Age',
   'marital-status': 'Marital Status',
-  'political-beliefs': 'Political Beliefs',
+  'creed': 'Creed',
   'economic-exclusion': 'Economic Exclusion',
   'misleading-claims': 'Misleading Claims',
+  'military-status': 'Military Status',
 };
 
 function highlightTerm(context: string, term: string): React.ReactNode {
+  if (!term) return context;
   const idx = context.toLowerCase().indexOf(term.toLowerCase());
   if (idx === -1) return context;
 
@@ -61,17 +64,25 @@ function ViolationItem({
   onReplace,
 }: {
   violation: ComplianceViolation;
-  onReplace: (platform: string, oldTerm: string, newTerm: string) => void;
+  onReplace: (platform: string, oldTerm: string, newTerm: string) => void | Promise<void>;
 }) {
   const [showMore, setShowMore] = useState(false);
   const [fixed, setFixed] = useState(false);
+  const [replacing, setReplacing] = useState(false);
 
   const colorClass = categoryColors[violation.category] || 'bg-slate-100 text-slate-800';
   const label = categoryLabels[violation.category] || violation.category;
 
-  function handleReplace() {
-    onReplace(violation.platform, violation.term, violation.alternative);
-    setFixed(true);
+  async function handleReplace() {
+    setReplacing(true);
+    try {
+      await Promise.resolve(onReplace(violation.platform, violation.term, violation.alternative));
+      setFixed(true);
+    } catch {
+      // Parent handles toast
+    } finally {
+      setReplacing(false);
+    }
   }
 
   if (fixed) {
@@ -98,8 +109,8 @@ function ViolationItem({
             {label}
           </Badge>
         </div>
-        <Button size="sm" variant="outline" className="text-xs flex-shrink-0 h-7" onClick={handleReplace}>
-          Replace
+        <Button size="sm" variant="outline" className="text-xs flex-shrink-0 h-7" onClick={handleReplace} disabled={replacing}>
+          {replacing ? 'Replacing...' : 'Replace'}
         </Button>
       </div>
 
@@ -111,7 +122,7 @@ function ViolationItem({
 
       <div className="flex items-center gap-2 text-xs">
         <span className="text-muted-foreground">
-          Suggested: <span className="font-medium text-green-400">{violation.alternative}</span>
+          Suggested: <span className="font-medium text-emerald-300">{violation.alternative}</span>
         </span>
       </div>
 
@@ -134,7 +145,9 @@ function ViolationItem({
 }
 
 export function ViolationDetails({ violations, onReplace }: ViolationDetailsProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(
+    violations.some((v) => v.severity === 'hard')
+  );
 
   if (violations.length === 0) return null;
 

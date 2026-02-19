@@ -23,6 +23,8 @@ In housing (MCA § 49-2-305), the listed protected class is **"creed"** rather t
 
 ## What It Prohibits
 
+> **Legal Note:** MCA § 49-2-305 protects "creed" in housing, which is broader than organized religion but does not explicitly name "political beliefs" or "political ideas" (those terms appear in employment law at MCA § 49-2-303). Montana courts have not definitively ruled on whether partisan political identity constitutes "creed" for housing purposes. This compliance module treats political speech in housing advertising as potentially covered under creed protections as a conservative compliance approach. Terms marked as "soft" reflect this legal uncertainty.
+
 ### In Advertising
 
 Under Montana law, it is unlawful to make, print, or publish any advertising that indicates a preference, limitation, or discrimination based on **creed** in housing. This means advertising cannot:

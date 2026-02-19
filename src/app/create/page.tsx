@@ -45,7 +45,7 @@ export default async function CreatePage() {
                   </p>
                 </div>
 
-                <MlsInputForm />
+                <MlsInputForm userId={user.id} />
               </>
             )}
           </div>

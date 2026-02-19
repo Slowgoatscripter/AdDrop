@@ -1,12 +1,16 @@
 import OpenAI from 'openai';
 import { ListingData, CampaignKit, PlatformId, ALL_PLATFORMS } from '@/lib/types';
-import { checkAllPlatforms, getDefaultCompliance } from '@/lib/compliance/engine';
+import { rewriteForCompliance } from '@/lib/compliance/agent';
+import { scanForProhibitedTerms } from '@/lib/compliance/regex-scan';
+import { extractAdCopyTexts } from '@/lib/compliance/utils';
+import { getComplianceSettings } from '@/lib/compliance/compliance-settings';
 import { buildGenerationPrompt } from './prompt';
 import {
   checkAllPlatformQuality,
   scoreAllPlatformQuality,
   mergeQualityResults,
-  autoFixQuality,
+  buildQualitySuggestions,
+  enforceConstraints,
 } from '@/lib/quality';
 
 const openai = new OpenAI({
@@ -50,15 +54,28 @@ function stripToRequestedPlatforms(
   return stripped;
 }
 
+export interface GenerateOptions {
+  platforms?: PlatformId[];
+  demographic?: string;
+  tone?: 'professional' | 'casual' | 'luxury';
+}
+
 export async function generateCampaign(
   listing: ListingData,
-  platforms?: PlatformId[]
+  platformsOrOptions?: PlatformId[] | GenerateOptions
 ): Promise<CampaignKit> {
+  // Support both legacy (platforms array) and new options-object signatures
+  const opts: GenerateOptions =
+    Array.isArray(platformsOrOptions)
+      ? { platforms: platformsOrOptions }
+      : platformsOrOptions ?? {};
+  const { platforms, demographic, tone } = opts;
   // undefined platforms = generate all (backward compatible, Review Fix #5)
   const targetPlatforms = platforms ?? ALL_PLATFORMS;
 
   const prompt = await buildGenerationPrompt(listing, undefined, undefined, {
     platforms: targetPlatforms,
+    demographic,
   });
 
   const maxTokens = getMaxCompletionTokens(targetPlatforms.length);
@@ -68,7 +85,7 @@ export async function generateCampaign(
     messages: [
       {
         role: 'system',
-        content: 'You are a real estate marketing expert. Always respond with valid JSON only. No markdown, no code fences, no explanatory text.',
+        content: 'You are a real estate marketing expert specializing in platform-native ad copy. Generate compelling, specific marketing content. Always respond with valid JSON only. No markdown, no code fences, no explanatory text.\n\nImportant: All copy must comply with the Fair Housing Act. Never target or exclude based on protected classes. Describe property features, not ideal residents.',
       },
       { role: 'user', content: prompt },
     ],
@@ -87,7 +104,7 @@ export async function generateCampaign(
   // Strip hallucinated platforms — only keep requested + strategy (Review Fix #4)
   const generated = stripToRequestedPlatforms(rawGenerated, targetPlatforms);
 
-  const compliance = getDefaultCompliance();
+  const { config, stateCode } = await getComplianceSettings();
   const campaignId = crypto.randomUUID();
 
   // Build campaign with only requested platform fields
@@ -111,8 +128,9 @@ export async function generateCampaign(
     ...(gen.homesComTrulia ? { homesComTrulia: gen.homesComTrulia } : {}),
     ...(gen.mlsDescription ? { mlsDescription: gen.mlsDescription } : {}),
     // Metadata
-    complianceResult: { platforms: [], totalChecks: 0, totalPassed: 0, hardViolations: 0, softWarnings: 0, allPassed: true },
+    complianceResult: { platforms: [], campaignVerdict: 'compliant' as const, violations: [], autoFixes: [], totalViolations: 0, totalAutoFixes: 0 },
     selectedPlatforms: targetPlatforms,
+    stateCode,
     // Strategy fields — always present
     hashtags: (generated.hashtags as string[]) ?? [],
     callsToAction: (generated.callsToAction as string[]) ?? [],
@@ -120,23 +138,41 @@ export async function generateCampaign(
     sellingPoints: (generated.sellingPoints as string[]) ?? [],
   };
 
-  // Run full compliance check across all platforms
-  campaign.complianceResult = checkAllPlatforms(campaign, compliance);
+  // --- Constraint Enforcement (instant) ---
+  const { campaign: constrainedCampaign, constraints } = enforceConstraints(campaign, config);
+  campaign = constrainedCampaign;
 
-  // Run quality checks (regex layer — instant)
+  // --- Compliance Regex Pre-Scan ---
+  const adCopyTexts = extractAdCopyTexts(campaign);
+  const regexFindings = scanForProhibitedTerms(adCopyTexts, config);
+
+  // --- Phase 2: Compliance Rewrite ---
+  try {
+    const { campaign: compliantCampaign, complianceResult } =
+      await rewriteForCompliance(campaign, config, regexFindings);
+    campaign = compliantCampaign;
+    campaign.complianceResult = { ...complianceResult, complianceRewriteApplied: true, source: 'rewrite' };
+  } catch (error) {
+    console.error('Phase 2 compliance rewrite failed:', error);
+    campaign.complianceResult = {
+      platforms: [], campaignVerdict: 'needs-review',
+      violations: [], autoFixes: [],
+      totalViolations: regexFindings.length, totalAutoFixes: 0,
+      complianceRewriteApplied: false, source: 'rewrite',
+    };
+  }
+
+  // --- Quality Check (read-only — suggestions only) ---
   const regexQuality = checkAllPlatformQuality(campaign);
-
-  // Run AI quality scoring (async — ~2-3 sec)
-  const aiQuality = await scoreAllPlatformQuality(campaign, listing);
-
-  // Merge regex + AI quality results
+  const aiQuality = await scoreAllPlatformQuality(campaign, listing, demographic, tone);
   const mergedQuality = mergeQualityResults(regexQuality, aiQuality);
+  const qualitySuggestions = buildQualitySuggestions(mergedQuality);
 
-  // Auto-fix quality issues (regex fixes + AI rewrites)
-  const { campaign: fixedCampaign, qualityResult } = await autoFixQuality(campaign, mergedQuality);
-
-  // Apply fixed campaign and store quality result
-  campaign = { ...fixedCampaign, qualityResult };
+  // --- Return with new fields ---
+  campaign.qualityConstraints = constraints;
+  campaign.qualitySuggestions = qualitySuggestions;
+  // Backward compatibility: keep qualityResult for transition period
+  campaign.qualityResult = mergedQuality;
 
   return campaign;
 }

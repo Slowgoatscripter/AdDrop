@@ -139,7 +139,7 @@ This phrase is **generally acceptable** as a subjective opinion about a location
 Excluding protected groups from seeing housing ads (e.g., through Facebook's former "ethnic affinity" targeting) violates the FHA even if the ad text itself is neutral. The method of distribution matters as much as the content. HUD's 2024 guidance addresses this for digital platforms.
 
 ### "No Section 8" / Source of Income
-While source of income is not a federally protected class, several states and cities (including some Montana municipalities) prohibit source-of-income discrimination. Additionally, "No Section 8" language has been found to have a disparate impact on race and national origin and may trigger an FHA complaint.
+While source of income is not a federally protected class, several states and cities prohibit source-of-income discrimination. Additionally, "No Section 8" language has been found to have a disparate impact on race and national origin and may trigger an FHA complaint.
 
 ## Sources
 

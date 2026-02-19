@@ -26,6 +26,7 @@ const categoryColors: Record<QualityCategory, string> = {
   'demographic-fit': 'bg-rose-100 text-rose-800',
   'property-type-fit': 'bg-indigo-100 text-indigo-800',
   'emotional-triggers': 'bg-pink-100 text-pink-800',
+  'voice-authenticity': 'bg-purple-100 text-purple-800',
 };
 
 const categoryLabels: Record<QualityCategory, string> = {
@@ -43,6 +44,7 @@ const categoryLabels: Record<QualityCategory, string> = {
   'demographic-fit': 'Audience',
   'property-type-fit': 'Property Type',
   'emotional-triggers': 'Emotion',
+  'voice-authenticity': 'Voice',
 };
 
 function QualityIssueItem({

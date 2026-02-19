@@ -71,20 +71,17 @@ This mirrors the federal FHA Section 804(c) language but covers the additional M
 ### Additional State-Level Protections
 Montana agents and advertisers must comply with BOTH federal AND state law. Where Montana law is more protective (marital status, age, creed), state law controls. An ad that is legal under federal law may still violate Montana law.
 
-### Enforcement and Penalties (MCA § 49-2-510)
+### Penalties
 
-| Violation | Maximum Civil Penalty |
-|-----------|---------------------|
-| First offense (no prior adjudication) | **$10,000** |
-| One or more prior violations within 5 years | **$25,000** |
-| Two or more prior violations within 7 years | **$50,000** |
+**Montana State Penalties (Board of Realty Regulation):**
+- Discretionary, up to $1,000 per violation
 
-Additional remedies available:
-- Compensatory damages (actual losses, emotional distress)
-- Injunctive relief (requiring compliance, stopping discriminatory practices)
-- Attorney's fees and costs
-- Mandatory fair housing training
-- Monitoring and reporting requirements
+**Federal FHA Civil Penalties (2025 inflation-adjusted):**
+- First offense (no prior adjudication): up to $26,262
+- One or more prior violations within 5 years: up to $65,654
+- Two or more prior violations within 7 years: up to $131,308
+
+Plus compensatory damages, attorney's fees, and injunctive relief under both state and federal law.
 
 ### Complaint Process
 - Complaints filed with the **Montana Human Rights Bureau**
@@ -142,6 +139,22 @@ Resort towns like Whitefish, Big Sky, and Red Lodge have seasonal workforce hous
 
 ### Native American Communities
 Montana has seven Indian reservations and one state-recognized tribe. Advertising that references or excludes tribal communities, or uses language that signals racial preferences in areas near reservations, requires particular sensitivity under both state and federal law.
+
+### Internet Advertising Rules (ARM 24.210.430)
+
+Montana Administrative Rules require:
+- Licensee identification must appear on every viewable page of web advertising, or be accessible via a link
+- Creation date and last-update date must be displayed on web advertisements
+- Material changes to listings must be updated within 7 days
+- All internet advertising must comply with Fair Housing Act requirements
+
+## Federal Law Connections
+
+Montana's protections overlap with and extend federal Fair Housing Act requirements:
+
+- **Source-of-income discrimination**: Some Montana municipalities prohibit source-of-income discrimination (e.g., refusing Section 8 vouchers). While source of income is not a federally protected class, such refusals may trigger FHA disparate impact claims on race and national origin grounds.
+- **Religion**: The Montana Human Rights Act independently protects religion under MCA § 49-2-305, and further extends protection to "creed" (broader than federal religion-only coverage).
+- **Sex**: The Montana Human Rights Act independently protects sex under MCA § 49-2-305, expanded to include maternity, pregnancy, and sexual harassment — broader than the federal FHA's sex protections.
 
 ## Sources
 

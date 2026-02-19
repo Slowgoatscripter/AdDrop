@@ -19,7 +19,7 @@ export function BrowserFrame({ searchQuery, children }: BrowserFrameProps) {
       }}
     >
       {/* Tab bar — hidden on mobile */}
-      <div className="hidden md:flex items-end bg-slate-100 pt-2 px-2 border-b border-slate-200">
+      <div aria-hidden="true" className="hidden md:flex items-end bg-slate-100 pt-2 px-2 border-b border-slate-200">
         {/* Active tab */}
         <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-t-lg border border-b-0 border-slate-200 -mb-px max-w-[200px]">
           {/* Google favicon */}
@@ -36,8 +36,8 @@ export function BrowserFrame({ searchQuery, children }: BrowserFrameProps) {
         <div className="px-3 py-2 text-slate-400 text-sm">+</div>
       </div>
 
-      {/* Search bar — always visible */}
-      <div className="px-3 md:px-4 py-3 bg-white">
+      {/* Search bar — always visible (decorative mockup) */}
+      <div aria-hidden="true" className="px-3 md:px-4 py-3 bg-white">
         <div
           className="flex items-center gap-3 px-4 py-2.5 rounded-full border border-slate-200 bg-white"
           style={{

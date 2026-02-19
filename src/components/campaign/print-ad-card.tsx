@@ -6,8 +6,10 @@ import { ToneSwitcher } from './tone-switcher';
 import { MockupImage } from './mockup-image';
 import { PrintAd, PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { ListingData } from '@/lib/types/listing';
 import { Newspaper } from 'lucide-react';
+import { EditableText } from './editable-text';
 
 interface PrintAdCardProps {
   title: string;
@@ -17,6 +19,8 @@ interface PrintAdCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
   variant?: 'full-page' | 'half-page';
 }
@@ -37,6 +41,8 @@ export function PrintAdCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
+  onEditText,
   listing,
   variant = 'full-page',
 }: PrintAdCardProps) {
@@ -58,6 +64,7 @@ export function PrintAdCard({
     : 'Half Page · 8.5 × 5.5"';
 
   const isFullPage = variant === 'full-page';
+  const platformId = isFullPage ? 'magazineFullPage' : 'magazineHalfPage';
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -79,12 +86,12 @@ export function PrintAdCard({
         }
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
       >
         {/* Physical paper effect: rotation + layered shadow */}
         <div
-          className="bg-white overflow-hidden"
+          className="bg-white overflow-hidden relative"
           style={{
-            transform: 'rotate(1.5deg)',
             boxShadow: '0 1px 4px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.08)',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
           }}
@@ -114,29 +121,57 @@ export function PrintAdCard({
                 {/* Gradient overlay with headline */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
                 <div className="absolute bottom-0 left-0 right-0 px-6 pb-5">
-                  <h2
-                    className="font-playfair text-[28px] md:text-[32px] font-bold text-white drop-shadow-lg leading-tight"
-                  >
-                    {ad.headline}
-                  </h2>
+                  {onEditText ? (
+                    <EditableText
+                      value={ad.headline}
+                      onChange={() => {}}
+                      onSave={(val) => onEditText(platformId, 'headline', val)}
+                      className="font-playfair text-[28px] md:text-[32px] font-bold text-white drop-shadow-lg leading-tight"
+                    />
+                  ) : (
+                    <h2
+                      className="font-playfair text-[28px] md:text-[32px] font-bold text-white drop-shadow-lg leading-tight"
+                    >
+                      {ad.headline}
+                    </h2>
+                  )}
                 </div>
               </div>
 
               {/* Body */}
               <div className="px-6 py-5">
-                <p
-                  className="text-sm text-[#333333] leading-[1.65] whitespace-pre-wrap"
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
-                >
-                  {ad.body}
-                </p>
+                {onEditText ? (
+                  <EditableText
+                    value={ad.body}
+                    onChange={() => {}}
+                    onSave={(val) => onEditText(platformId, 'body', val)}
+                    className="text-sm text-[#333333] leading-[1.65]"
+                  />
+                ) : (
+                  <p
+                    className="text-sm text-[#333333] leading-[1.65] whitespace-pre-wrap"
+                    style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
+                  >
+                    {ad.body}
+                  </p>
+                )}
               </div>
 
               {/* CTA */}
               <div className="px-6 pb-4">
-                <p className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.08em]">
-                  {ad.cta}
-                </p>
+                {onEditText ? (
+                  <EditableText
+                    value={ad.cta}
+                    onChange={() => {}}
+                    onSave={(val) => onEditText(platformId, 'cta', val)}
+                    multiline={false}
+                    className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.08em]"
+                  />
+                ) : (
+                  <p className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.08em]">
+                    {ad.cta}
+                  </p>
+                )}
               </div>
             </>
           ) : (
@@ -160,18 +195,46 @@ export function PrintAdCard({
                 )}
               </div>
               <div className="md:w-1/2 p-5 flex flex-col justify-center">
-                <h2 className="font-playfair text-[22px] md:text-[26px] font-bold text-[#1a1a1a] leading-tight mb-3">
-                  {ad.headline}
-                </h2>
-                <p
-                  className="text-sm text-[#333333] leading-[1.65] whitespace-pre-wrap mb-4"
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
-                >
-                  {ad.body}
-                </p>
-                <p className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.08em]">
-                  {ad.cta}
-                </p>
+                {onEditText ? (
+                  <EditableText
+                    value={ad.headline}
+                    onChange={() => {}}
+                    onSave={(val) => onEditText(platformId, 'headline', val)}
+                    className="font-playfair text-[22px] md:text-[26px] font-bold text-[#1a1a1a] leading-tight mb-3"
+                  />
+                ) : (
+                  <h2 className="font-playfair text-[22px] md:text-[26px] font-bold text-[#1a1a1a] leading-tight mb-3">
+                    {ad.headline}
+                  </h2>
+                )}
+                {onEditText ? (
+                  <EditableText
+                    value={ad.body}
+                    onChange={() => {}}
+                    onSave={(val) => onEditText(platformId, 'body', val)}
+                    className="text-sm text-[#333333] leading-[1.65] mb-4"
+                  />
+                ) : (
+                  <p
+                    className="text-sm text-[#333333] leading-[1.65] whitespace-pre-wrap mb-4"
+                    style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
+                  >
+                    {ad.body}
+                  </p>
+                )}
+                {onEditText ? (
+                  <EditableText
+                    value={ad.cta}
+                    onChange={() => {}}
+                    onSave={(val) => onEditText(platformId, 'cta', val)}
+                    multiline={false}
+                    className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.08em]"
+                  />
+                ) : (
+                  <p className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.08em]">
+                    {ad.cta}
+                  </p>
+                )}
               </div>
             </div>
           )}

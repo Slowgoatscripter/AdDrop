@@ -1,21 +1,56 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CampaignKit } from '@/lib/types';
-import { autoFixCampaign, checkAllPlatforms, getDefaultCompliance } from '@/lib/compliance/engine';
+import type { ComplianceAgentResult } from '@/lib/types/compliance';
+import type { QualitySuggestion } from '@/lib/types/quality';
 import { createClient } from '@/lib/supabase/client';
 import { PropertyHeader } from './property-header';
 import { CampaignTabs } from './campaign-tabs';
-import { ComplianceBanner } from './compliance-banner';
+import { QualitySuggestionsPanel } from './quality-suggestions-panel';
+import CampaignGeneratingView from './campaign-generating-view';
+import CampaignFailedView from './campaign-failed-view';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { SharePopover } from './share-popover';
+import { EmailModal } from './email-modal';
+import { BundleProgressModal } from './bundle-progress-modal';
+
+async function persistCampaignAds(id: string, generatedAds: CampaignKit) {
+  try {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('campaigns')
+      .update({ generated_ads: generatedAds })
+      .eq('id', id);
+
+    if (error) {
+      console.error('[campaign-shell] Supabase persist failed:', error);
+      toast.error('Changes saved locally but failed to sync.');
+    }
+  } catch (err) {
+    console.error('[campaign-shell] Supabase persist error:', err);
+    toast.error('Changes saved locally but failed to sync.');
+  }
+}
 
 export function CampaignShell() {
   const params = useParams();
   const router = useRouter();
   const [campaign, setCampaign] = useState<CampaignKit | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const [exporting, setExporting] = useState(false);
+  const [bundleModalOpen, setBundleModalOpen] = useState(false);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [regeneratingPlatform, setRegeneratingPlatform] = useState<string | null>(null);
+  const [campaignStatus, setCampaignStatus] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [listingData, setListingData] = useState<any>(null);
+  const [platforms, setPlatforms] = useState<string[]>([]);
+  const [campaignName, setCampaignName] = useState<string>('');
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const generationTriggered = useRef(false);
   useEffect(() => {
     async function loadCampaign() {
       const id = params.id as string;
@@ -24,16 +59,47 @@ export function CampaignShell() {
       try {
         // Try loading from database first
         const supabase = createClient();
+
+        // Fetch userId for photo uploads
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) setUserId(authUser.id);
         const { data, error } = await supabase
           .from('campaigns')
-          .select('generated_ads')
+          .select('generated_ads, status, error_message, listing_data, platform, name')
           .eq('id', id)
           .single();
 
-        if (!error && data?.generated_ads) {
-          setCampaign(data.generated_ads as CampaignKit);
-          setLoading(false);
-          return;
+        if (!error && data) {
+          // Handle status-based flow (new redirect-first flow)
+          if (data.status === 'generating') {
+            setListingData(data.listing_data);
+            setPlatforms(Array.isArray(data.platform) ? data.platform : data.platform ? [data.platform] : []);
+            setCampaignName(data.name || '');
+            setCampaignStatus('generating');
+            setLoading(false);
+            return;
+          }
+
+          if (data.status === 'failed') {
+            setCampaignStatus('failed');
+            setErrorMessage(data.error_message || 'Campaign generation failed.');
+            setLoading(false);
+            return;
+          }
+
+          // status === 'generated' or has generated_ads (existing flow)
+          if (data.generated_ads) {
+            const kit = data.generated_ads as CampaignKit;
+            // Clean up dead blob URLs from existing campaigns
+            if (kit.listing?.photos) {
+              kit.listing.photos = kit.listing.photos.filter(
+                (url: string) => !url.startsWith('blob:')
+              );
+            }
+            setCampaign(kit);
+            setLoading(false);
+            return;
+          }
         }
       } catch (err) {
         console.error('[campaign-shell] DB fetch failed, trying sessionStorage:', err);
@@ -55,23 +121,67 @@ export function CampaignShell() {
     loadCampaign();
   }, [params.id]);
 
-  const handleFixAll = useCallback(() => {
-    if (!campaign || !campaign.complianceResult) return;
+  // Trigger generation when status is 'generating'
+  useEffect(() => {
+    if (campaignStatus === 'generating' && !generationTriggered.current) {
+      generationTriggered.current = true;
+      const id = params.id as string;
+      // Fire-and-forget: kick off the AI pipeline
+      fetch(`/api/campaign/${id}/generate`, { method: 'POST' }).catch((err) => {
+        console.error('[campaign-shell] Failed to trigger generation:', err);
+      });
+    }
+  }, [campaignStatus, params.id]);
 
-    const config = getDefaultCompliance();
-    const fixed = autoFixCampaign(campaign, campaign.complianceResult);
-    const newResult = checkAllPlatforms(fixed, config);
-    const updated = { ...fixed, complianceResult: newResult };
+  // Poll Supabase while generating
+  useEffect(() => {
+    if (campaignStatus !== 'generating') return;
 
-    setCampaign(updated);
-    sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
-  }, [campaign]);
+    const id = params.id as string;
+    const supabase = createClient();
+
+    const interval = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('campaigns')
+          .select('status, generated_ads, error_message')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          console.error('[campaign-shell] Polling error:', error);
+          return;
+        }
+
+        if (data?.status === 'generated' && data.generated_ads) {
+          setCampaign(data.generated_ads as CampaignKit);
+          setCampaignStatus('generated');
+          clearInterval(interval);
+        } else if (data?.status === 'failed') {
+          setCampaignStatus('failed');
+          setErrorMessage(data.error_message || 'Campaign generation failed.');
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error('[campaign-shell] Polling exception:', err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [campaignStatus, params.id]);
+
+  // Retry handler for failed campaigns
+  const handleRetry = useCallback(() => {
+    generationTriggered.current = false;
+    setCampaignStatus('generating');
+    setErrorMessage(null);
+    // The useEffect above will re-trigger generation
+  }, []);
 
   const handleReplace = useCallback(
-    (platform: string, oldTerm: string, newTerm: string) => {
+    async (platform: string, oldTerm: string, newTerm: string) => {
       if (!campaign) return;
 
-      const config = getDefaultCompliance();
       const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
 
       function replaceInText(text: string): string {
@@ -137,15 +247,384 @@ export function CampaignShell() {
         replacers[root]?.();
       }
 
-      // Re-run compliance
-      const newResult = checkAllPlatforms(updated, config);
-      updated.complianceResult = newResult;
+      // Re-run compliance via the agent API
+      try {
+        const res = await fetch('/api/compliance/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaign: updated }),
+        });
+
+        if (res.ok) {
+          const result: ComplianceAgentResult = await res.json();
+          updated.complianceResult = result;
+        }
+      } catch (err) {
+        console.error('[campaign-shell] Compliance re-check failed:', err);
+        toast.warning('Changes applied but compliance status may be outdated.');
+      }
 
       setCampaign(updated);
       sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+      persistCampaignAds(updated.id, updated);
     },
     [campaign]
   );
+
+  const handleEditText = useCallback(
+    async (platform: string, field: string, newValue: string) => {
+      if (!campaign) return;
+
+      const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
+
+      // Simple string platforms
+      const simpleStringFields: Record<string, keyof CampaignKit> = {
+        twitter: 'twitter',
+        zillow: 'zillow',
+        realtorCom: 'realtorCom',
+        homesComTrulia: 'homesComTrulia',
+        mlsDescription: 'mlsDescription',
+      };
+
+      if (simpleStringFields[platform]) {
+        (updated as unknown as Record<string, unknown>)[platform] = newValue;
+      }
+
+      // Tone-keyed platforms: field = tone name
+      if (platform === 'instagram' || platform === 'facebook') {
+        const platformObj = updated[platform] as Record<string, string> | undefined;
+        if (platformObj) {
+          platformObj[field] = newValue;
+        }
+      }
+
+      // metaAd: field = primaryText | headline | description
+      if (platform === 'metaAd' && updated.metaAd) {
+        (updated.metaAd as unknown as Record<string, string>)[field] = newValue;
+      }
+
+      // Google Ads: platform = googleAds[idx], field = headline | description
+      const googleMatch = platform.match(/googleAds\[(\d+)\]/);
+      if (googleMatch && updated.googleAds) {
+        const idx = parseInt(googleMatch[1]);
+        (updated.googleAds[idx] as unknown as Record<string, string>)[field] = newValue;
+      }
+
+      setCampaign(updated);
+      sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+
+      // Persist to Supabase (fire and forget)
+      try {
+        const supabase = createClient();
+        await supabase
+          .from('campaigns')
+          .update({ generated_ads: updated })
+          .eq('id', updated.id);
+      } catch (err) {
+        console.error('[campaign-shell] Failed to persist edit to Supabase:', err);
+      }
+    },
+    [campaign]
+  );
+
+  const handleRegenerate = useCallback(
+    async (platform: string, tone: string) => {
+      if (!campaign) return;
+      setRegeneratingPlatform(platform);
+
+      try {
+        const res = await fetch('/api/regenerate-platform', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            campaignId: campaign.id,
+            platform,
+            tone,
+            listingData: campaign.listing,
+          }),
+        });
+
+        if (!res.ok) throw new Error('Regeneration failed');
+
+        const { copy } = await res.json();
+        const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
+
+        const simpleFields = ['twitter', 'zillow', 'realtorCom', 'homesComTrulia', 'mlsDescription'];
+        if (simpleFields.includes(platform)) {
+          (updated as unknown as Record<string, unknown>)[platform] = copy;
+        }
+
+        setCampaign(updated);
+        sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+
+        // Persist
+        try {
+          const supabase = createClient();
+          await supabase.from('campaigns').update({ generated_ads: updated }).eq('id', updated.id);
+        } catch {}
+      } catch (err) {
+        console.error('[campaign-shell] Regeneration failed:', err);
+      } finally {
+        setRegeneratingPlatform(null);
+      }
+    },
+    [campaign]
+  );
+
+  /**
+   * Apply a quality suggestion: replace the text in the campaign, re-check
+   * compliance, and update state. If the new text introduces a compliance
+   * violation, revert and alert the user.
+   */
+  const handleApplySuggestion = useCallback(
+    async (suggestion: QualitySuggestion) => {
+      if (!campaign || !suggestion.suggestedRewrite) return;
+
+      // Deep-clone so we can revert if needed
+      const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
+
+      // Use the same platform-keyed replacement logic as handleReplace,
+      // but swap the exact currentText → suggestedRewrite instead of regex.
+      const parts = suggestion.platform.split('.');
+      const root = parts[0];
+
+      /**
+       * Navigate into the campaign object based on the dot-notation platform
+       * path and replace `currentText` with `suggestedRewrite`.
+       */
+      function applyTextSwap(obj: CampaignKit): boolean {
+        // Simple string fields
+        const simpleStringFields = [
+          'twitter', 'zillow', 'realtorCom', 'homesComTrulia',
+          'mlsDescription', 'targetingNotes',
+        ] as const;
+
+        if (simpleStringFields.includes(root as typeof simpleStringFields[number])) {
+          const key = root as keyof CampaignKit;
+          const val = obj[key];
+          if (typeof val === 'string') {
+            (obj as unknown as Record<string, unknown>)[root] = val.replace(
+              suggestion.currentText,
+              suggestion.suggestedRewrite!,
+            );
+            return true;
+          }
+          return false;
+        }
+
+        // Tone-keyed social platforms (instagram.casual, facebook.formal, etc.)
+        if ((root === 'instagram' || root === 'facebook') && parts[1]) {
+          const platformObj = obj[root] as Record<string, string> | undefined;
+          if (platformObj && typeof platformObj[parts[1]] === 'string') {
+            platformObj[parts[1]] = platformObj[parts[1]].replace(
+              suggestion.currentText,
+              suggestion.suggestedRewrite!,
+            );
+            return true;
+          }
+          return false;
+        }
+
+        // metaAd (metaAd.primaryText, metaAd.headline, etc.)
+        if (root === 'metaAd' && parts[1] && obj.metaAd) {
+          const field = parts[1] as keyof typeof obj.metaAd;
+          if (typeof obj.metaAd[field] === 'string') {
+            (obj.metaAd as unknown as Record<string, string>)[parts[1]] = (
+              obj.metaAd[field] as string
+            ).replace(suggestion.currentText, suggestion.suggestedRewrite!);
+            return true;
+          }
+          return false;
+        }
+
+        // Google Ads indexed: googleAds[0].headline
+        if (root.startsWith('googleAds') && obj.googleAds) {
+          const match = root.match(/googleAds\[(\d+)\]/);
+          if (match) {
+            const idx = parseInt(match[1]);
+            const field = parts[1] as 'headline' | 'description';
+            if (obj.googleAds[idx] && typeof obj.googleAds[idx][field] === 'string') {
+              obj.googleAds[idx][field] = obj.googleAds[idx][field].replace(
+                suggestion.currentText,
+                suggestion.suggestedRewrite!,
+              );
+              return true;
+            }
+          }
+          return false;
+        }
+
+        // Array fields (hashtags, callsToAction, sellingPoints)
+        const arrayFields = ['hashtags', 'callsToAction', 'sellingPoints'] as const;
+        if (arrayFields.includes(root as typeof arrayFields[number])) {
+          const arr = obj[root as keyof CampaignKit] as string[] | undefined;
+          if (arr) {
+            const arrIdx = arr.findIndex((item) => item.includes(suggestion.currentText));
+            if (arrIdx !== -1) {
+              arr[arrIdx] = arr[arrIdx].replace(
+                suggestion.currentText,
+                suggestion.suggestedRewrite!,
+              );
+              return true;
+            }
+          }
+          return false;
+        }
+
+        // Magazine / postcard — same nested approach
+        if ((root === 'magazineFullPage' || root === 'magazineHalfPage') && parts[1] && parts[2]) {
+          const printData = obj[root] as Record<string, { headline: string; body: string; cta: string }> | undefined;
+          if (printData && printData[parts[1]]) {
+            const field = parts[2] as 'headline' | 'body' | 'cta';
+            printData[parts[1]][field] = printData[parts[1]][field].replace(
+              suggestion.currentText,
+              suggestion.suggestedRewrite!,
+            );
+            return true;
+          }
+          return false;
+        }
+
+        if (root === 'postcard' && parts[1]) {
+          const postcardData = obj[root] as Record<string, { front: { headline: string; body: string; cta: string }; back: string }> | undefined;
+          if (postcardData && postcardData[parts[1]]) {
+            if (parts[2] === 'front' && parts[3]) {
+              const field = parts[3] as 'headline' | 'body' | 'cta';
+              postcardData[parts[1]].front[field] = postcardData[parts[1]].front[field].replace(
+                suggestion.currentText,
+                suggestion.suggestedRewrite!,
+              );
+              return true;
+            }
+            if (parts[2] === 'back') {
+              postcardData[parts[1]].back = postcardData[parts[1]].back.replace(
+                suggestion.currentText,
+                suggestion.suggestedRewrite!,
+              );
+              return true;
+            }
+          }
+          return false;
+        }
+
+        return false;
+      }
+
+      const applied = applyTextSwap(updated);
+      if (!applied) {
+        toast.warning('Could not apply suggestion — text may have already changed.');
+        return;
+      }
+
+      setApplyingId(suggestion.id);
+
+      try {
+        const beforeViolationCount = campaign.complianceResult?.violations?.length ?? 0;
+
+        // Re-check compliance on the modified campaign
+        try {
+          const res = await fetch('/api/compliance/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ campaign: updated }),
+          });
+
+          if (res.ok) {
+            const result: ComplianceAgentResult = await res.json();
+
+            // If the new text introduces a compliance violation, revert
+            if (result.violations && result.violations.length > beforeViolationCount) {
+              const newViolations = result.violations.slice(beforeViolationCount);
+              toast.error(
+                'This suggestion introduces a compliance violation and was not applied: ' +
+                newViolations.map((v) => `${v.term}: ${v.explanation}`).join('; '),
+              );
+              return;
+            }
+
+            updated.complianceResult = result;
+          }
+        } catch (err) {
+          console.error('[campaign-shell] Compliance re-check failed after suggestion apply:', err);
+          // If compliance check fails, still apply the text change but warn
+          toast.warning('Suggestion applied but compliance status may be outdated.');
+        }
+
+        // Remove the applied suggestion from the list
+        updated.qualitySuggestions = updated.qualitySuggestions?.filter(
+          (s) => s.id !== suggestion.id,
+        );
+
+        setCampaign(updated);
+        sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+        persistCampaignAds(updated.id, updated);
+      } finally {
+        setApplyingId(null);
+      }
+    },
+    [campaign],
+  );
+
+  /** Dismiss a quality suggestion without applying it */
+  const handleDismissSuggestion = useCallback(
+    (suggestionId: string) => {
+      if (!campaign) return;
+      const updated: CampaignKit = {
+        ...campaign,
+        qualitySuggestions: campaign.qualitySuggestions?.filter(
+          (s) => s.id !== suggestionId,
+        ),
+      };
+      setCampaign(updated);
+      persistCampaignAds(updated.id, updated);
+    },
+    [campaign],
+  );
+
+  /** Update photos from Photos tab — propagates to all card mockups */
+  const handlePhotosChange = useCallback(
+    async (newPhotos: string[]) => {
+      if (!campaign) return;
+
+      const updated = JSON.parse(JSON.stringify(campaign)) as CampaignKit;
+      updated.listing.photos = newPhotos;
+
+      setCampaign(updated);
+      sessionStorage.setItem(`campaign-${updated.id}`, JSON.stringify(updated));
+      persistCampaignAds(updated.id, updated);
+
+      // Also update listing_data column so photos persist in both JSONB columns
+      try {
+        const supabase = createClient();
+        await supabase
+          .from('campaigns')
+          .update({ listing_data: updated.listing })
+          .eq('id', updated.id);
+      } catch (err) {
+        console.error('[campaign-shell] Failed to persist photos to listing_data:', err);
+      }
+    },
+    [campaign],
+  );
+
+  if (campaignStatus === 'generating') {
+    return (
+      <CampaignGeneratingView
+        propertyAddress={listingData?.address ? `${listingData.address.street}, ${listingData.address.city}, ${listingData.address.state}` : campaignName}
+        platforms={platforms}
+      />
+    );
+  }
+
+  if (campaignStatus === 'failed') {
+    return (
+      <CampaignFailedView
+        error={errorMessage}
+        onRetry={handleRetry}
+        onStartOver={() => router.push('/create')}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -173,18 +652,33 @@ export function CampaignShell() {
   }
 
   async function handleExport(format: 'pdf' | 'csv') {
-    const res = await fetch('/api/export', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ campaignId: campaign!.id, format }),
-    });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `campaign-${campaign!.id}.${format}`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setExporting(true);
+    try {
+      const res = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId: campaign!.id, format }),
+      });
+
+      if (!res.ok) {
+        toast.error('Export failed — please try again.');
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `campaign-${campaign!.id}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Downloaded!');
+    } catch (err) {
+      console.error('[campaign-shell] Export failed:', err);
+      toast.error('Export failed — please try again.');
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -194,17 +688,56 @@ export function CampaignShell() {
           <h1 className="text-2xl font-bold text-foreground">Campaign Kit</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/create')}>New Campaign</Button>
-            <Button variant="outline" onClick={() => handleExport('csv')}>Export CSV</Button>
-            <Button onClick={() => handleExport('pdf')}>Export PDF</Button>
+            <Button variant="outline" onClick={() => handleExport('csv')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export CSV'}</Button>
+            <Button variant="outline" onClick={() => handleExport('pdf')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export PDF'}</Button>
+            <Button onClick={() => setBundleModalOpen(true)}>Download All</Button>
+            <SharePopover campaignId={campaign!.id} />
+            <EmailModal campaignId={campaign!.id} />
           </div>
         </div>
+        <BundleProgressModal
+          open={bundleModalOpen}
+          onOpenChange={setBundleModalOpen}
+          campaignId={campaign!.id}
+          propertyAddress={
+            campaign!.listing?.address
+              ? `${campaign!.listing.address.street}, ${campaign!.listing.address.city}, ${campaign!.listing.address.state}`
+              : undefined
+          }
+        />
 
-        {campaign.complianceResult && (
-          <ComplianceBanner result={campaign.complianceResult} onFixAll={handleFixAll} />
+        {campaign.complianceResult && campaign.complianceResult.violations?.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+            <span className="font-medium">
+              {campaign.complianceResult.violations.length} compliance {campaign.complianceResult.violations.length === 1 ? 'issue' : 'issues'} found
+            </span>
+            <span className="text-amber-600">— View issues below each ad card</span>
+          </div>
+        )}
+
+        {/* Constraints section — keep full panel since these are auto-enforced and campaign-level */}
+        {campaign.qualityConstraints && campaign.qualityConstraints.length > 0 && (
+          <QualitySuggestionsPanel
+            suggestions={[]}
+            constraints={campaign.qualityConstraints}
+            onApply={handleApplySuggestion}
+            onDismiss={handleDismissSuggestion}
+            applyingId={applyingId}
+          />
+        )}
+
+        {/* Quality suggestions summary — details now live per-card */}
+        {campaign.qualitySuggestions && campaign.qualitySuggestions.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+            <span className="font-medium">
+              {campaign.qualitySuggestions.length} quality {campaign.qualitySuggestions.length === 1 ? 'suggestion' : 'suggestions'}
+            </span>
+            <span className="text-amber-600">— Review below each ad card</span>
+          </div>
         )}
 
         <PropertyHeader listing={campaign.listing} />
-        <CampaignTabs campaign={campaign} onReplace={handleReplace} />
+        <CampaignTabs campaign={campaign} onReplace={handleReplace} onEditText={handleEditText} onRegenerate={handleRegenerate} regeneratingPlatform={regeneratingPlatform} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} onApplySuggestion={handleApplySuggestion} onDismissSuggestion={handleDismissSuggestion} onPhotosChange={handlePhotosChange} userId={userId} />
       </div>
     </div>
   );

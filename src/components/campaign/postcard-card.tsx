@@ -6,8 +6,10 @@ import { ToneSwitcher } from './tone-switcher';
 import { MockupImage } from './mockup-image';
 import { PrintAd, PlatformComplianceResult } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
+import type { QualityIssue } from '@/lib/types/quality';
 import { ListingData } from '@/lib/types/listing';
 import { Mail, User } from 'lucide-react';
+import { EditableText } from './editable-text';
 
 interface PostcardCardProps {
   content: Record<string, { front: PrintAd; back: string }>;
@@ -15,6 +17,8 @@ interface PostcardCardProps {
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;
+  onRevert?: (issue: QualityIssue) => void;
+  onEditText?: (platform: string, field: string, newValue: string) => void;
   listing?: ListingData;
 }
 
@@ -32,6 +36,8 @@ export function PostcardCard({
   complianceResult,
   qualityResult,
   onReplace,
+  onRevert,
+  onEditText,
   listing,
 }: PostcardCardProps) {
   const tones = Object.keys(content);
@@ -71,6 +77,7 @@ export function PostcardCard({
         }
         violations={complianceResult?.violations}
         onReplace={onReplace}
+        onRevert={onRevert}
       >
         {/* Side-by-side proof layout with stack effect */}
         <div className="flex flex-col md:flex-row gap-4">
@@ -124,19 +131,38 @@ export function PostcardCard({
                       </div>
                     </div>
 
-                    {/* Front text content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5 space-y-1.5">
-                      <h2 className="text-2xl font-extrabold text-white drop-shadow-lg uppercase tracking-[0.04em] leading-tight">
-                        {postcard.front.headline}
-                      </h2>
+                    {/* Front text content — pointer-events-none so ImagePicker stays clickable */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5 space-y-1.5 pointer-events-none">
+                      {onEditText ? (
+                        <EditableText
+                          value={postcard.front.headline}
+                          onChange={() => {}}
+                          onSave={(val) => onEditText('postcard', 'front.headline', val)}
+                          className="text-2xl font-extrabold text-white drop-shadow-lg uppercase tracking-[0.04em] leading-tight pointer-events-auto"
+                        />
+                      ) : (
+                        <h2 className="text-2xl font-extrabold text-white drop-shadow-lg uppercase tracking-[0.04em] leading-tight">
+                          {postcard.front.headline}
+                        </h2>
+                      )}
                       {price && (
                         <p className="text-[28px] font-bold text-white drop-shadow-lg">
                           {price}
                         </p>
                       )}
-                      <p className="text-sm text-white/90 drop-shadow-md font-medium">
-                        {postcard.front.cta}
-                      </p>
+                      {onEditText ? (
+                        <EditableText
+                          value={postcard.front.cta}
+                          onChange={() => {}}
+                          onSave={(val) => onEditText('postcard', 'front.cta', val)}
+                          multiline={false}
+                          className="text-sm text-white/90 drop-shadow-md font-medium pointer-events-auto"
+                        />
+                      ) : (
+                        <p className="text-sm text-white/90 drop-shadow-md font-medium">
+                          {postcard.front.cta}
+                        </p>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -147,12 +173,31 @@ export function PostcardCard({
                           Just Listed
                         </span>
                       </div>
-                      <h2 className="text-lg font-extrabold text-slate-700 uppercase">
-                        {postcard.front.headline}
-                      </h2>
-                      <p className="text-sm font-semibold text-slate-800">
-                        {postcard.front.cta}
-                      </p>
+                      {onEditText ? (
+                        <EditableText
+                          value={postcard.front.headline}
+                          onChange={() => {}}
+                          onSave={(val) => onEditText('postcard', 'front.headline', val)}
+                          className="text-lg font-extrabold text-slate-700 uppercase"
+                        />
+                      ) : (
+                        <h2 className="text-lg font-extrabold text-slate-700 uppercase">
+                          {postcard.front.headline}
+                        </h2>
+                      )}
+                      {onEditText ? (
+                        <EditableText
+                          value={postcard.front.cta}
+                          onChange={() => {}}
+                          onSave={(val) => onEditText('postcard', 'front.cta', val)}
+                          multiline={false}
+                          className="text-sm font-semibold text-slate-800"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-800">
+                          {postcard.front.cta}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -172,9 +217,18 @@ export function PostcardCard({
               <div className="flex flex-1 p-4 gap-3">
                 {/* Left: Back text content */}
                 <div className="flex-1 flex flex-col">
-                  <p className="text-[13px] text-[#333333] whitespace-pre-wrap leading-[1.6] flex-1">
-                    {postcard.back}
-                  </p>
+                  {onEditText ? (
+                    <EditableText
+                      value={postcard.back}
+                      onChange={() => {}}
+                      onSave={(val) => onEditText('postcard', 'back', val)}
+                      className="text-[13px] text-[#333333] leading-[1.6] flex-1"
+                    />
+                  ) : (
+                    <p className="text-[13px] text-[#333333] whitespace-pre-wrap leading-[1.6] flex-1">
+                      {postcard.back}
+                    </p>
+                  )}
 
                   {/* Agent info bar */}
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-200">

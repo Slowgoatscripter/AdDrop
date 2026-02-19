@@ -42,12 +42,8 @@ jest.mock('@/lib/compliance/compliance-settings', () => ({
         },
       ],
     },
+    stateCode: 'MT',
   }),
-}));
-
-// Mock loadComplianceDocs to avoid file system access
-jest.mock('@/lib/compliance/docs', () => ({
-  loadComplianceDocs: jest.fn().mockResolvedValue(''),
 }));
 
 // Mock quality docs to avoid file system access
@@ -56,18 +52,50 @@ jest.mock('@/lib/quality/docs', () => ({
   loadQualityDocs: jest.fn().mockResolvedValue(''),
 }));
 
-// Mock quality engine to avoid complex dependencies
+// Mock quality engine
 jest.mock('@/lib/quality', () => ({
   checkAllPlatformQuality: jest.fn().mockReturnValue({ platforms: [], totalIssues: 0 }),
   scoreAllPlatformQuality: jest.fn().mockResolvedValue({ platforms: [], totalIssues: 0 }),
   mergeQualityResults: jest.fn().mockReturnValue({ platforms: [], totalIssues: 0 }),
-  autoFixQuality: jest.fn().mockImplementation((campaign) => Promise.resolve({
+  buildQualitySuggestions: jest.fn().mockReturnValue([]),
+  enforceConstraints: jest.fn().mockImplementation((campaign) => ({
     campaign,
-    qualityResult: { platforms: [], totalIssues: 0 },
+    constraints: [],
   })),
 }));
 
-import { generateCampaign } from '../generate';
+// Mock compliance regex scan
+jest.mock('@/lib/compliance/regex-scan', () => ({
+  scanForProhibitedTerms: jest.fn().mockReturnValue([]),
+}));
+
+// Mock compliance utils
+jest.mock('@/lib/compliance/utils', () => ({
+  extractAdCopyTexts: jest.fn().mockReturnValue([]),
+}));
+
+// Mock rewriteForCompliance
+jest.mock('@/lib/compliance/agent', () => ({
+  rewriteForCompliance: jest.fn().mockImplementation((campaign) => {
+    return Promise.resolve({
+      campaign,
+      complianceResult: {
+        platforms: [],
+        campaignVerdict: 'compliant',
+        violations: [],
+        autoFixes: [],
+        totalViolations: 0,
+        totalAutoFixes: 0,
+      },
+    });
+  }),
+}));
+
+import { generateCampaign, GenerateOptions } from '../generate';
+import { scoreAllPlatformQuality, buildQualitySuggestions, enforceConstraints } from '@/lib/quality';
+import { rewriteForCompliance } from '@/lib/compliance/agent';
+import { scanForProhibitedTerms } from '@/lib/compliance/regex-scan';
+import { extractAdCopyTexts } from '@/lib/compliance/utils';
 
 describe('generateCampaign', () => {
   const mockListing: ListingData = {
@@ -172,7 +200,7 @@ describe('generateCampaign', () => {
     expect(result).toHaveProperty('complianceResult');
   });
 
-  test('complianceResult has correct structure', async () => {
+  test('complianceResult has correct structure with rewrite fields', async () => {
     mockCreate.mockResolvedValue({
       choices: [
         {
@@ -186,13 +214,17 @@ describe('generateCampaign', () => {
     const result = await generateCampaign(mockListing);
 
     expect(result.complianceResult).toHaveProperty('platforms');
-    expect(result.complianceResult).toHaveProperty('totalChecks');
-    expect(result.complianceResult).toHaveProperty('totalPassed');
-    expect(result.complianceResult).toHaveProperty('hardViolations');
-    expect(result.complianceResult).toHaveProperty('softWarnings');
-    expect(result.complianceResult).toHaveProperty('allPassed');
+    expect(result.complianceResult).toHaveProperty('campaignVerdict');
+    expect(result.complianceResult).toHaveProperty('violations');
+    expect(result.complianceResult).toHaveProperty('autoFixes');
+    expect(result.complianceResult).toHaveProperty('totalViolations');
+    expect(result.complianceResult).toHaveProperty('totalAutoFixes');
+    expect(result.complianceResult).toHaveProperty('complianceRewriteApplied');
+    expect(result.complianceResult).toHaveProperty('source');
+    expect(result.complianceResult.complianceRewriteApplied).toBe(true);
+    expect(result.complianceResult.source).toBe('rewrite');
     expect(result.complianceResult.platforms).toBeInstanceOf(Array);
-    expect(result.complianceResult.totalChecks).toBeGreaterThan(0);
+    expect(['compliant', 'needs-review', 'non-compliant']).toContain(result.complianceResult.campaignVerdict);
   });
 
   test('calls OpenAI with correct model and parameters', async () => {
@@ -252,7 +284,7 @@ describe('generateCampaign', () => {
     expect(result1.id).not.toBe(result2.id);
   });
 
-  test('runs compliance check across all platforms', async () => {
+  test('runs compliance rewrite and returns compliant result', async () => {
     mockCreate.mockResolvedValue({
       choices: [
         {
@@ -265,30 +297,32 @@ describe('generateCampaign', () => {
 
     const result = await generateCampaign(mockListing);
 
+    // rewriteForCompliance should have been called
+    expect(rewriteForCompliance).toHaveBeenCalled();
     // Clean copy should pass all checks
-    expect(result.complianceResult.allPassed).toBe(true);
-    expect(result.complianceResult.hardViolations).toBe(0);
+    expect(result.complianceResult.campaignVerdict).toBe('compliant');
+    expect(result.complianceResult.totalViolations).toBe(0);
   });
 
-  test('detects violations in AI-generated copy', async () => {
-    const badResponse = {
-      ...mockAIResponse,
-      twitter: 'This exclusive neighborhood is family-friendly!',
-    };
+  test('handles compliance rewrite failure gracefully', async () => {
     mockCreate.mockResolvedValue({
       choices: [
         {
           message: {
-            content: JSON.stringify(badResponse),
+            content: JSON.stringify(mockAIResponse),
           },
         },
       ],
     });
 
+    // Make rewriteForCompliance throw
+    (rewriteForCompliance as jest.Mock).mockRejectedValueOnce(new Error('API error'));
+
     const result = await generateCampaign(mockListing);
 
-    expect(result.complianceResult.allPassed).toBe(false);
-    expect(result.complianceResult.hardViolations).toBeGreaterThan(0);
+    expect(result.complianceResult.campaignVerdict).toBe('needs-review');
+    expect(result.complianceResult.complianceRewriteApplied).toBe(false);
+    expect(result.complianceResult.source).toBe('rewrite');
   });
 
   test('throws error when OpenAI returns no content', async () => {
@@ -513,5 +547,132 @@ describe('generateCampaign', () => {
     // Hallucinated platforms should be stripped
     expect(result.instagram).toBeUndefined();
     expect(result.facebook).toBeUndefined();
+  });
+
+  test('passes tone and demographic to scoreAllPlatformQuality', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockAIResponse) } }],
+    });
+
+    const options: GenerateOptions = {
+      tone: 'luxury',
+      demographic: 'first-time-buyers',
+    };
+
+    await generateCampaign(mockListing, options);
+
+    expect(scoreAllPlatformQuality).toHaveBeenCalledWith(
+      expect.objectContaining({ listing: mockListing }),
+      mockListing,
+      'first-time-buyers',
+      'luxury',
+    );
+  });
+
+  test('scoreAllPlatformQuality called without tone/demographic when not provided', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockAIResponse) } }],
+    });
+
+    await generateCampaign(mockListing);
+
+    expect(scoreAllPlatformQuality).toHaveBeenCalledWith(
+      expect.objectContaining({ listing: mockListing }),
+      mockListing,
+      undefined,
+      undefined,
+    );
+  });
+
+  test('legacy platforms array signature still works', async () => {
+    const subset: PlatformId[] = ['twitter'];
+    const subsetResponse = {
+      twitter: mockAIResponse.twitter,
+      hashtags: mockAIResponse.hashtags,
+      callsToAction: mockAIResponse.callsToAction,
+      targetingNotes: mockAIResponse.targetingNotes,
+      sellingPoints: mockAIResponse.sellingPoints,
+    };
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(subsetResponse) } }],
+    });
+
+    const result = await generateCampaign(mockListing, subset);
+
+    expect(result.twitter).toBeDefined();
+    expect(result.selectedPlatforms).toEqual(['twitter']);
+  });
+
+  test('system message includes Fair Housing Act instruction', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockAIResponse) } }],
+    });
+
+    await generateCampaign(mockListing);
+    const systemMsg = mockCreate.mock.calls[0][0].messages[0];
+    expect(systemMsg.content).toContain('Fair Housing Act');
+    expect(systemMsg.content).toContain('protected classes');
+  });
+
+  // --- Two-Phase Pipeline Integration Tests ---
+
+  test('two-phase pipeline executes in correct order', async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(mockAIResponse) } }],
+    });
+
+    const options: GenerateOptions = {
+      tone: 'professional',
+      demographic: 'investors',
+    };
+
+    const result = await generateCampaign(mockListing, options);
+
+    // 1. Verify enforceConstraints was called (instant constraint enforcement)
+    expect(enforceConstraints).toHaveBeenCalledWith(
+      expect.objectContaining({
+        listing: mockListing,
+        id: expect.any(String),
+      }),
+      expect.objectContaining({ state: 'MT' })
+    );
+
+    // 2. Verify extractAdCopyTexts was called
+    expect(extractAdCopyTexts).toHaveBeenCalled();
+
+    // 3. Verify scanForProhibitedTerms was called
+    expect(scanForProhibitedTerms).toHaveBeenCalled();
+
+    // 4. Verify rewriteForCompliance was called (Phase 2)
+    expect(rewriteForCompliance).toHaveBeenCalled();
+
+    // 5. Verify quality checks run (read-only)
+    const { checkAllPlatformQuality, scoreAllPlatformQuality, mergeQualityResults } = require('@/lib/quality');
+    expect(checkAllPlatformQuality).toHaveBeenCalled();
+    expect(scoreAllPlatformQuality).toHaveBeenCalledWith(
+      expect.objectContaining({ listing: mockListing }),
+      mockListing,
+      'investors',
+      'professional'
+    );
+    expect(mergeQualityResults).toHaveBeenCalled();
+
+    // 6. Verify buildQualitySuggestions was called
+    expect(buildQualitySuggestions).toHaveBeenCalledWith({ platforms: [], totalIssues: 0 });
+
+    // 7. Verify the final campaign has new fields
+    expect(result.qualitySuggestions).toBeDefined();
+    expect(result.qualitySuggestions).toEqual([]);
+    expect(result.qualityConstraints).toBeDefined();
+    expect(result.qualityConstraints).toEqual([]);
+
+    // 8. Verify backward compatibility: qualityResult still present
+    expect(result.qualityResult).toBeDefined();
+    expect(result.qualityResult).toEqual({ platforms: [], totalIssues: 0 });
+
+    // 9. Verify compliance result has rewrite metadata
+    expect(result.complianceResult).toBeDefined();
+    expect(result.complianceResult.complianceRewriteApplied).toBe(true);
+    expect(result.complianceResult.source).toBe('rewrite');
   });
 });

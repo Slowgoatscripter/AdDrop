@@ -153,19 +153,19 @@
 | 103 | "Spouse required on lease" | marital-status | hard (MT) | Assumes/requires married status | MCA § 49-2-305 | "All occupants must be on lease" |
 | 104 | "Stable family household required" | marital-status | soft | Implies married couple preference | MCA § 49-2-305 | "Income and credit requirements apply" |
 
-## Political Beliefs / Creed (Montana-Specific)
+## Creed (Montana-Specific)
 
 | # | Term/Phrase | Category | Severity | Explanation | Law Citation | Compliant Alternative |
 |---|-----------|----------|----------|-------------|--------------|----------------------|
-| 105 | "Conservative community" | political-beliefs | soft | Political preference in housing | MCA § 49-2-305 (creed) | "Friendly community" |
-| 106 | "Liberal, progressive neighborhood" | political-beliefs | soft | Political demographics | MCA § 49-2-305 (creed) | "[Neighborhood name]" |
-| 107 | "Trump supporters welcome" | political-beliefs | hard (MT) | Explicit political preference | MCA § 49-2-305 (creed) | Remove entirely |
-| 108 | "MAGA community" | political-beliefs | hard (MT) | Explicit political identity marketing | MCA § 49-2-305 (creed) | Remove entirely |
-| 109 | "Red state values" / "blue state haven" | political-beliefs | soft | Political identity marketing | MCA § 49-2-305 (creed) | Remove entirely |
-| 110 | "Patriotic community" | political-beliefs | soft | Politically coded language | MCA § 49-2-305 (creed) | Remove from property ads |
-| 111 | "Faith-and-flag community" | political-beliefs | soft | Combines religious + political creed | MCA § 49-2-305 (creed) | "Active community" |
-| 112 | "Freedom-loving homesteaders" | political-beliefs | soft | Appeals to political-philosophical identity | MCA § 49-2-305 (creed) | "Acreage with off-grid features" |
-| 113 | "Eco-conscious residents only" | political-beliefs | soft | Creed requirement for housing | MCA § 49-2-305 (creed) | "Energy-efficient home with solar panels" |
+| 105 | "Conservative community" | creed | soft | Political preference in housing | MCA § 49-2-305 (creed) | "Friendly community" |
+| 106 | "Liberal, progressive neighborhood" | creed | soft | Political demographics | MCA § 49-2-305 (creed) | "[Neighborhood name]" |
+| 107 | "Trump supporters welcome" | steering | soft | Explicit political preference | 42 U.S.C. § 3604(c) (steering proxy); NAR Code of Ethics Art. 10 | Remove entirely |
+| 108 | "MAGA community" | steering | soft | Explicit political identity marketing | 42 U.S.C. § 3604(c) (steering proxy); NAR Code of Ethics Art. 10 | Remove entirely |
+| 109 | "Red state values" / "blue state haven" | creed | soft | Political identity marketing | MCA § 49-2-305 (creed) | Remove entirely |
+| 110 | "Patriotic community" | creed | soft | Politically coded language | MCA § 49-2-305 (creed) | Remove from property ads |
+| 111 | "Faith-and-flag community" | creed | soft | Combines religious + political creed | MCA § 49-2-305 (creed) | "Active community" |
+| 112 | "Freedom-loving homesteaders" | creed | soft | Appeals to political-philosophical identity | MCA § 49-2-305 (creed) | "Acreage with off-grid features" |
+| 113 | "Eco-conscious residents only" | creed | soft | Creed requirement for housing | MCA § 49-2-305 (creed) | "Energy-efficient home with solar panels" |
 
 ## Economic Exclusion
 
@@ -210,7 +210,7 @@
 | sex-gender | 13 |
 | age (Montana) | 9 |
 | marital-status (Montana) | 9 |
-| political-beliefs (Montana) | 9 |
+| creed (Montana) | 9 |
 | economic-exclusion | 5 |
 | misleading-claims | 8 |
 
@@ -256,7 +256,7 @@ All terms compiled from compliance documentation in this repository:
 - `state/montana/human-rights-act.md`
 - `state/montana/age-protections.md`
 - `state/montana/marital-status.md`
-- `state/montana/political-beliefs.md`
+- `state/montana/creed.md`
 - `industry/nar-ethics-guidelines.md`
 - `industry/common-pitfalls.md`
 

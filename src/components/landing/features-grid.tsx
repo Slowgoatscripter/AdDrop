@@ -21,7 +21,7 @@ const features = [
     icon: ShieldCheck,
     title: 'Compliance Built-In',
     description:
-      'Built-in fair housing compliance checking. Montana MLS rules checked. More states coming soon.',
+      'AI-powered fair housing compliance checking with auto-fix. Montana and Ohio MLS rules, with more states planned.',
     spotlight: true,
     image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
   },

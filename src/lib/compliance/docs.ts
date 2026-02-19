@@ -1,5 +1,5 @@
 // Server-only: this module uses Node.js fs/path and must not be imported from client components.
-// Import from '@/lib/compliance/engine' for client-safe functions.
+// Import from '@/lib/compliance/agent' for compliance checking functions.
 
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -26,7 +26,7 @@ export async function loadComplianceDocs(config: MLSComplianceConfig): Promise<s
   for (const docPath of allPaths) {
     try {
       const fullPath = path.resolve(process.cwd(), docPath);
-      const docsRoot = path.resolve(process.cwd(), 'docs');
+      const docsRoot = path.resolve(process.cwd(), 'compliance-docs');
 
       // Block path traversal: resolved path must be inside docs/
       if (!fullPath.startsWith(docsRoot + path.sep) && fullPath !== docsRoot) {

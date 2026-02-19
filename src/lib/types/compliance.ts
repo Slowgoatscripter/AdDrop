@@ -7,9 +7,10 @@ export type ViolationCategory =
   | 'sex-gender'
   | 'age'
   | 'marital-status'
-  | 'political-beliefs'
+  | 'creed'
   | 'economic-exclusion'
-  | 'misleading-claims';
+  | 'misleading-claims'
+  | 'military-status';
 
 export type ViolationSeverity = 'hard' | 'soft';
 
@@ -29,6 +30,8 @@ export interface MLSComplianceConfig {
   requiredDisclosures: string[];
   prohibitedTerms: ProhibitedTerm[];
   maxDescriptionLength?: number;
+  lastUpdated?: string;
+  version?: string;
   docPaths?: {
     federal: string[];
     state: string[];
@@ -62,4 +65,46 @@ export interface CampaignComplianceResult {
   hardViolations: number;
   softWarnings: number;
   allPassed: boolean;
+}
+
+// --- Compliance Agent Types (replaces regex engine) ---
+
+export interface ComplianceAgentViolation {
+  platform: string
+  term: string
+  category: ViolationCategory
+  severity: ViolationSeverity
+  explanation: string
+  law: string
+  isContextual: boolean // true for violations regex would miss
+}
+
+export interface ComplianceAutoFix {
+  platform: string
+  before: string
+  after: string
+  violationTerm: string
+  category: ViolationCategory
+}
+
+export interface PlatformComplianceVerdict {
+  platform: string
+  verdict: 'pass' | 'fail'
+  violationCount: number
+  autoFixCount: number
+}
+
+export type CampaignVerdict = 'compliant' | 'needs-review' | 'non-compliant'
+
+export interface ComplianceAgentResult {
+  platforms: PlatformComplianceVerdict[]
+  campaignVerdict: CampaignVerdict
+  violations: ComplianceAgentViolation[]
+  autoFixes: ComplianceAutoFix[]
+  totalViolations: number
+  totalAutoFixes: number
+  /** false if Phase 2 compliance rewrite failed -- output may be non-compliant */
+  complianceRewriteApplied?: boolean;
+  /** Distinguishes Phase 2 rewrite results from standalone scan results */
+  source?: 'rewrite' | 'scan';
 }

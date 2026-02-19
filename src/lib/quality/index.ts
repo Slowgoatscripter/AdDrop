@@ -8,7 +8,7 @@ export {
 } from './engine';
 
 // Re-export rules
-export { qualityRules, platformFormats } from './rules';
+export { formattingRules, platformFormats } from './rules';
 
 // Re-export server-only doc loader
 export { loadQualityDocs, buildQualityCheatSheet } from './docs';
@@ -18,3 +18,9 @@ export { scoreAllPlatformQuality, mergeQualityResults } from './scorer';
 
 // Re-export auto-fix
 export { autoFixQuality, autoFixTextRegex } from './auto-fix';
+
+// Re-export suggestions
+export { buildQualitySuggestions } from './suggestions';
+
+// Re-export constraint enforcement
+export { enforceConstraints } from './constraints';
