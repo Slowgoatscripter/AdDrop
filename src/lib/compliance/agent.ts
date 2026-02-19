@@ -372,10 +372,35 @@ Return a JSON object with two keys:
     // Only include platforms that were modified. Omit unchanged platforms.
   },
   "complianceResult": {
-    "platforms": [...],
+    "platforms": [
+      {
+        "platform": "string (e.g., 'twitter', 'instagram.casual')",
+        "verdict": "pass" | "fail",
+        "violationCount": number,
+        "autoFixCount": number
+      }
+    ],
     "campaignVerdict": "compliant" | "needs-review" | "non-compliant",
-    "violations": [...],
-    "autoFixes": [...],
+    "violations": [
+      {
+        "platform": "string",
+        "term": "string (exact problematic term/phrase found)",
+        "category": "steering" | "familial-status" | "disability" | "race-color-national-origin" | "religion" | "sex-gender" | "age" | "marital-status" | "creed" | "economic-exclusion" | "misleading-claims" | "military-status",
+        "severity": "hard" | "soft",
+        "explanation": "string",
+        "law": "string (applicable law or regulation)",
+        "isContextual": boolean
+      }
+    ],
+    "autoFixes": [
+      {
+        "platform": "string",
+        "before": "string (original text)",
+        "after": "string (fixed text)",
+        "violationTerm": "string (the term from violations[].term that this fix addresses)",
+        "category": "string"
+      }
+    ],
     "totalViolations": number,
     "totalAutoFixes": number
   }
