@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { EditableText } from './editable-text';
 import { ComplianceBadge } from './compliance-badge';
 import { QualityBadge } from './quality-badge';
@@ -64,13 +63,6 @@ export function CardEditPanel({
 
       {/* Additional fields */}
       {children}
-
-      {/* Character count */}
-      <div className="flex items-center justify-between pt-2 border-t">
-        <Badge variant="secondary" className="text-xs">
-          {content.length}{maxLength ? ` / ${maxLength}` : ''} characters
-        </Badge>
-      </div>
     </div>
   );
 }

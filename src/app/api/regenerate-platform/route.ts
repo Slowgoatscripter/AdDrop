@@ -34,7 +34,7 @@ function buildPlatformPrompt(platform: PlatformId, tone: string, listing: Listin
   const platformPrompts: Record<PlatformId, string> = {
     twitter: `You are a real estate marketing expert. Write a single Twitter/X post for this property listing.
 ${toneInstruction}
-Keep it under 280 characters. Include relevant hashtags. Be engaging and concise.
+HARD LIMIT: max 280 characters. Include relevant hashtags. Be engaging and concise.
 Return only the tweet text as a plain JSON string — no markdown, no explanation.
 
 Listing:
@@ -42,7 +42,8 @@ ${summary}`,
 
     instagram: `You are a real estate marketing expert. Write an Instagram caption for this property listing.
 ${toneInstruction}
-Keep it under 2,200 characters. Include emojis where appropriate and relevant hashtags at the end.
+HARD LIMIT: max 2,200 characters total. The first 125 characters are visible before "more" — front-load the hook there.
+Include emojis where appropriate and relevant hashtags at the end.
 Be engaging, warm, and highlight the lifestyle this home offers.
 Return only the caption text as a plain JSON string — no markdown, no explanation.
 
@@ -51,7 +52,8 @@ ${summary}`,
 
     facebook: `You are a real estate marketing expert. Write a Facebook post for this property listing.
 ${toneInstruction}
-Keep it under 400 words. Be conversational and highlight key selling points. Include a call to action.
+The first 477 characters are visible before "see more" — front-load the hook. Aim for 400-600 characters total.
+Be conversational and highlight key selling points. Include a call to action.
 Return only the post text as a plain JSON string — no markdown, no explanation.
 
 Listing:
@@ -59,7 +61,7 @@ ${summary}`,
 
     zillow: `You are a real estate listing expert. Write a compelling Zillow property description.
 ${toneInstruction}
-Keep it between 150-400 words. Focus on the property's best features, neighborhood, and lifestyle benefits.
+HARD LIMIT: max 4,500 characters. Focus on the property's best features, neighborhood, and lifestyle benefits.
 Use clear, descriptive language that helps buyers visualize living there.
 Return only the description text as a plain JSON string — no markdown, no explanation.
 
@@ -68,7 +70,7 @@ ${summary}`,
 
     realtorCom: `You are a real estate listing expert. Write a compelling Realtor.com property description.
 ${toneInstruction}
-Keep it between 150-400 words. Highlight unique features, recent updates, and location advantages.
+HARD LIMIT: max 5,000 characters. Highlight unique features, recent updates, and location advantages.
 Write for motivated home buyers searching on Realtor.com.
 Return only the description text as a plain JSON string — no markdown, no explanation.
 
@@ -77,7 +79,7 @@ ${summary}`,
 
     homesComTrulia: `You are a real estate listing expert. Write a property description for Homes.com/Trulia.
 ${toneInstruction}
-Keep it between 150-350 words. Emphasize lifestyle, community, and property highlights.
+HARD LIMIT: max 4,000 characters. Emphasize lifestyle, community, and property highlights.
 Make it inviting and informative for buyers browsing these platforms.
 Return only the description text as a plain JSON string — no markdown, no explanation.
 
@@ -86,7 +88,7 @@ ${summary}`,
 
     mlsDescription: `You are a real estate MLS copywriter. Write a professional MLS property description.
 ${toneInstruction}
-Keep it between 200-500 words. Be factual, detailed, and professional. Mention key specs, features,
+HARD LIMIT: max 2,000 characters. Be factual, detailed, and professional. Mention key specs, features,
 and property highlights. Avoid subjective language where possible. This will be seen by agents.
 Return only the MLS description text as a plain JSON string — no markdown, no explanation.
 
@@ -95,7 +97,7 @@ ${summary}`,
 
     googleAds: `You are a paid search advertising expert. Write a Google Ads headline and description for this property.
 ${toneInstruction}
-Headline: max 30 characters. Description: max 90 characters.
+HARD LIMITS: Headline: max 30 characters. Description: max 90 characters.
 Return as a JSON object with keys "headline" and "description". No markdown, no explanation.
 
 Listing:
@@ -103,7 +105,7 @@ ${summary}`,
 
     metaAd: `You are a Meta (Facebook/Instagram) ads expert. Write ad copy for this property listing.
 ${toneInstruction}
-Include: primaryText (max 125 chars), headline (max 40 chars), description (max 30 chars).
+HARD LIMITS: primaryText (max 125 chars, truncated after this), headline (max 40 chars), description (max 30 chars).
 Return as a JSON object with keys "primaryText", "headline", "description". No markdown, no explanation.
 
 Listing:
@@ -111,7 +113,7 @@ ${summary}`,
 
     magazineFullPage: `You are a luxury real estate print advertising expert. Write a full-page magazine ad for this property.
 ${toneInstruction}
-Include a compelling headline, rich descriptive body (200-350 words), and a strong call to action.
+Include a compelling headline (max 10 words), rich descriptive body (200-350 words), and a strong call to action (max 10 words).
 Return as a JSON object with keys "headline", "body", "cta". No markdown, no explanation.
 
 Listing:
@@ -119,7 +121,7 @@ ${summary}`,
 
     magazineHalfPage: `You are a real estate print advertising expert. Write a half-page magazine ad for this property.
 ${toneInstruction}
-Include a punchy headline, concise body (100-150 words), and a call to action.
+Include a punchy headline (max 10 words), concise body (100-150 words), and a call to action (max 10 words).
 Return as a JSON object with keys "headline", "body", "cta". No markdown, no explanation.
 
 Listing:

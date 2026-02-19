@@ -33,6 +33,31 @@ export function CampaignActions({ campaignId, campaignName }: CampaignActionsPro
   const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [exporting, setExporting] = useState<'pdf' | 'csv' | null>(null)
+
+  async function handleExport(format: 'pdf' | 'csv') {
+    setExporting(format)
+    try {
+      const res = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId, format }),
+      })
+      if (!res.ok) throw new Error('Export failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const ext = format === 'pdf' ? 'pdf' : 'csv'
+      a.download = `${campaignName || 'campaign'}.${ext}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error(`${format.toUpperCase()} export failed`)
+    } finally {
+      setExporting(null)
+    }
+  }
 
   async function handleDelete() {
     setIsDeleting(true)
@@ -78,26 +103,28 @@ export function CampaignActions({ campaignId, campaignName }: CampaignActionsPro
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
+            disabled={exporting === 'pdf'}
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              toast.info('PDF export coming soon')
+              handleExport('pdf')
             }}
             className="flex items-center gap-2 cursor-pointer"
           >
             <FileText className="w-4 h-4" />
-            Export PDF
+            {exporting === 'pdf' ? 'Exporting…' : 'Export PDF'}
           </DropdownMenuItem>
           <DropdownMenuItem
+            disabled={exporting === 'csv'}
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              toast.info('CSV export coming soon')
+              handleExport('csv')
             }}
             className="flex items-center gap-2 cursor-pointer"
           >
             <Table2 className="w-4 h-4" />
-            Export CSV
+            {exporting === 'csv' ? 'Exporting…' : 'Export CSV'}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

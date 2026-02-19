@@ -61,10 +61,12 @@ export async function POST(
         .eq('id', id);
     }
 
-    const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || ''}/share/${shareToken}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '';
+    const shareUrl = `${appUrl}/share/${shareToken}`;
     const address = campaign.listing?.address;
     const addressStr = address ? `${address.street}, ${address.city}, ${address.state} ${address.zip}` : 'Property Campaign';
     const platforms = campaign.selectedPlatforms?.join(', ') || 'Multiple platforms';
+    const heroPhoto = campaign.listing?.photos?.[0];
 
     // Send emails individually
     const resend = new Resend(process.env.RESEND_API_KEY);
@@ -76,6 +78,7 @@ export async function POST(
           subject: `Campaign: ${addressStr}`,
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+              ${heroPhoto ? `<img src="${heroPhoto}" alt="${addressStr}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 16px;" />` : ''}
               <h2>${addressStr}</h2>
               ${campaign.listing?.price ? `<p style="font-size: 18px; color: #16a34a;">$${campaign.listing.price.toLocaleString()}</p>` : ''}
               ${campaign.listing ? `<p>${campaign.listing.beds} bed &middot; ${campaign.listing.baths} bath &middot; ${campaign.listing.sqft?.toLocaleString()} sqft</p>` : ''}

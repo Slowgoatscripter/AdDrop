@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { AdCardWrapper } from './ad-card-wrapper';
 import { ToneSwitcher } from './tone-switcher';
 import { MockupImage } from './mockup-image';
@@ -48,9 +47,6 @@ export function InstagramCard({
   const [expanded, setExpanded] = useState(false);
 
   const currentCaption = content[selectedTone] || '';
-  const characterCount = currentCaption.length;
-  const isOverLimit = characterCount > 2200;
-
   // Stable engagement numbers derived from listing price
   const seed = listing?.price ?? 450000;
   const likeCount = seededRandom(seed, 150, 400);
@@ -220,16 +216,11 @@ export function InstagramCard({
       photoUrl={photos[0]}
       photoPlatform="instagram"
       toneSwitcher={
-        <div className="space-y-2">
-          <ToneSwitcher
-            tones={tones}
-            selected={selectedTone}
-            onSelect={(t) => setSelectedTone(t as AdTone)}
-          />
-          <Badge variant={isOverLimit ? 'destructive' : 'secondary'} className="text-xs">
-            {characterCount} / 2200 characters
-          </Badge>
-        </div>
+        <ToneSwitcher
+          tones={tones}
+          selected={selectedTone}
+          onSelect={(t) => setSelectedTone(t as AdTone)}
+        />
       }
     >
       {mockupContent}

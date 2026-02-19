@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { AdCardWrapper } from './ad-card-wrapper';
 import { ToneSwitcher } from './tone-switcher';
 import { MockupImage } from './mockup-image';
@@ -198,16 +197,11 @@ export function FacebookCard({
       photoUrl={photos[0]}
       photoPlatform="facebook"
       toneSwitcher={
-        <div className="space-y-2">
-          <ToneSwitcher
-            tones={tones}
-            selected={selectedTone}
-            onSelect={setSelectedTone}
-          />
-          <Badge variant="outline" className="text-xs">
-            {currentContent.length} characters
-          </Badge>
-        </div>
+        <ToneSwitcher
+          tones={tones}
+          selected={selectedTone}
+          onSelect={setSelectedTone}
+        />
       }
     >
       {mockupContent}

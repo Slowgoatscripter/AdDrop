@@ -119,7 +119,6 @@ export function RealtorCard({
             </button>
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">{content.length} characters</p>
       </div>
 
       {/* Agent footer */}

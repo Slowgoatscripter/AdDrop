@@ -72,7 +72,9 @@
       "Bash(echo:*)",
       "Bash(npm install:*)",
       "Bash(dir \"C:\\\\Users\\\\dutte\\\\OneDrive\\\\Desktop\\\\Projects\\\\RealEstate Add Gen\\\\src\\\\app\\\\api\\\\campaign\")",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git -C:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   outputFileTracingIncludes: {
-    '/api/*': ['./ad-docs/**/*'],
+    '/api/*': ['./ad-docs/**/*', './node_modules/sharp/**/*'],
   },
   async headers() {
     return [

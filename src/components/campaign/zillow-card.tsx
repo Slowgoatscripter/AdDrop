@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { AdCardWrapper } from './ad-card-wrapper';
 import { MockupImage } from './mockup-image';
 import { CardLayoutWrapper } from './card-layout-wrapper';
@@ -45,9 +44,6 @@ export function ZillowCard({
       <span className="text-white text-[10px] font-bold">Z</span>
     </div>
   );
-
-  const characterCount = content.length;
-  const isOverLimit = characterCount > 4500;
 
   const formattedPrice = listing?.price
     ? `$${listing.price.toLocaleString()}`
@@ -215,14 +211,7 @@ export function ZillowCard({
       onRevert={onRevert}
       platformId="zillow"
       charCountText={content}
-      toneSwitcher={
-        <Badge
-          variant={isOverLimit ? 'destructive' : 'secondary'}
-          className="text-xs"
-        >
-          {characterCount} characters
-        </Badge>
-      }
+      toneSwitcher={undefined}
     >
       {mockupContent}
     </AdCardWrapper>

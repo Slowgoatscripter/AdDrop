@@ -167,9 +167,6 @@ export function HomesTruliaCard({
             </button>
           )}
         </div>
-        <span className="mt-1.5 inline-block text-[10px] text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
-          {content.length} chars
-        </span>
       </div>
 
       {/* Agent footer */}

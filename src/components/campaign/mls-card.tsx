@@ -68,14 +68,6 @@ export function MlsCard({
   const broker = listing?.broker || 'N/A';
   const photos = listing?.photos || [];
 
-  const charCount = description.length;
-  const charColor =
-    charCount < 1000
-      ? 'text-amber-600'
-      : charCount > 4000
-      ? 'text-red-600'
-      : 'text-green-600';
-
   const platformIcon = <MlsIcon />;
 
   const mockupContent = (
@@ -158,16 +150,6 @@ export function MlsCard({
             {description}
           </p>
         </div>
-      </div>
-
-      {/* Character count badge + range note */}
-      <div className="flex items-center gap-2 mb-3">
-        <span
-          className={`text-xs font-semibold tabular-nums ${charColor}`}
-        >
-          {charCount} chars
-        </span>
-        <span className="text-[10px] text-slate-400">(Recommended: 1,000-4,000)</span>
       </div>
 
       {/* Agent/broker attribution */}

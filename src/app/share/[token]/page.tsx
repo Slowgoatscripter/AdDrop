@@ -268,16 +268,16 @@ export default async function SharePage({ params }: SharePageProps) {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="relative w-full h-56 sm:h-72 md:h-80 bg-muted overflow-hidden">
+      <div className="relative w-full bg-muted overflow-hidden flex items-center justify-center">
         {heroPhoto ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={heroPhoto}
             alt={addr?.street || 'Property'}
-            className="w-full h-full object-cover"
+            className="w-full object-contain max-h-[70vh]"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+          <div className="w-full min-h-48 flex items-center justify-center text-muted-foreground">
             No Photo Available
           </div>
         )}

@@ -10,14 +10,14 @@ type TemplateEntry = string | ((config: { maxDescriptionLength?: number }) => st
 
 const PLATFORM_TEMPLATES: Record<PlatformId, TemplateEntry> = {
   instagram: `"instagram": {
-    "professional": "Instagram caption, professional tone, emoji-friendly, max 2200 chars",
-    "casual": "Instagram caption, casual/fun tone, emoji-friendly, max 2200 chars",
-    "luxury": "Instagram caption, luxury/aspirational tone, emoji-friendly, max 2200 chars"
+    "professional": "Instagram caption, professional tone, emoji-friendly, max 2200 chars (first 125 chars visible before 'more')",
+    "casual": "Instagram caption, casual/fun tone, emoji-friendly, max 2200 chars (first 125 chars visible before 'more')",
+    "luxury": "Instagram caption, luxury/aspirational tone, emoji-friendly, max 2200 chars (first 125 chars visible before 'more')"
   }`,
   facebook: `"facebook": {
-    "professional": "Facebook post, professional tone, lifestyle-focused, 500-800 words",
-    "casual": "Facebook post, casual conversational tone, 500-800 words",
-    "luxury": "Facebook post, luxury/aspirational tone, 500-800 words"
+    "professional": "Facebook post, professional tone, lifestyle-focused, max 477 chars visible before 'see more' — aim for 400-600 chars total",
+    "casual": "Facebook post, casual conversational tone, max 477 chars visible before 'see more' — aim for 400-600 chars total",
+    "luxury": "Facebook post, luxury/aspirational tone, max 477 chars visible before 'see more' — aim for 400-600 chars total"
   }`,
   twitter: `"twitter": "Ultra-short tweet, max 280 chars, include key stats and link placeholder [LINK]"`,
   googleAds: `"googleAds": [
@@ -26,27 +26,27 @@ const PLATFORM_TEMPLATES: Record<PlatformId, TemplateEntry> = {
     { "headline": "Max 30 chars", "description": "Max 90 chars" }
   ]`,
   metaAd: `"metaAd": {
-    "primaryText": "Engaging ad copy for Meta/Facebook paid ad, 125 chars ideal",
+    "primaryText": "Engaging ad copy for Meta/Facebook paid ad, max 125 chars (truncated after this)",
     "headline": "Attention-grabbing headline, max 40 chars",
     "description": "Supporting description, max 30 chars"
   }`,
   magazineFullPage: `"magazineFullPage": {
-    "professional": { "headline": "Print headline", "body": "Full page ad body copy", "cta": "Call to action" },
-    "luxury": { "headline": "Print headline", "body": "Full page ad body copy", "cta": "Call to action" }
+    "professional": { "headline": "Print headline, max 10 words", "body": "Full page ad body copy, 200-350 words", "cta": "Call to action, max 10 words" },
+    "luxury": { "headline": "Print headline, max 10 words", "body": "Full page ad body copy, 200-350 words", "cta": "Call to action, max 10 words" }
   }`,
   magazineHalfPage: `"magazineHalfPage": {
-    "professional": { "headline": "Print headline", "body": "Condensed half page body", "cta": "Call to action" },
-    "luxury": { "headline": "Print headline", "body": "Condensed half page body", "cta": "Call to action" }
+    "professional": { "headline": "Print headline, max 10 words", "body": "Condensed half page body, 100-150 words", "cta": "Call to action, max 10 words" },
+    "luxury": { "headline": "Print headline, max 10 words", "body": "Condensed half page body, 100-150 words", "cta": "Call to action, max 10 words" }
   }`,
   postcard: `"postcard": {
-    "professional": { "front": { "headline": "Postcard front headline", "body": "Brief teaser", "cta": "Call to action" }, "back": "Back details text" },
-    "casual": { "front": { "headline": "Postcard front headline", "body": "Brief teaser", "cta": "Call to action" }, "back": "Back details text" }
+    "professional": { "front": { "headline": "Max 15 words", "body": "Brief teaser, max 20 words", "cta": "Call to action, max 10 words" }, "back": "Back details, 75-100 words" },
+    "casual": { "front": { "headline": "Max 15 words", "body": "Brief teaser, max 20 words", "cta": "Call to action, max 10 words" }, "back": "Back details, 75-100 words" }
   }`,
-  zillow: `"zillow": "Zillow-optimized listing description, SEO-focused, professional tone"`,
-  realtorCom: `"realtorCom": "Realtor.com-optimized description, warm and informative tone"`,
-  homesComTrulia: `"homesComTrulia": "Homes.com/Trulia description, detail-oriented, professional tone"`,
+  zillow: `"zillow": "Zillow-optimized listing description, SEO-focused, professional tone, max 4500 chars"`,
+  realtorCom: `"realtorCom": "Realtor.com-optimized description, warm and informative tone, max 5000 chars"`,
+  homesComTrulia: `"homesComTrulia": "Homes.com/Trulia description, detail-oriented, professional tone, max 4000 chars"`,
   mlsDescription: (config) =>
-    `"mlsDescription": "MLS-compliant description, max ${config.maxDescriptionLength || 1000} chars, professional tone. MUST include required disclosures. MUST NOT use prohibited terms."`,
+    `"mlsDescription": "MLS-compliant description, max ${config.maxDescriptionLength || 2000} chars, professional tone. MUST include required disclosures. MUST NOT use prohibited terms."`,
 };
 
 const STRATEGY_TEMPLATE = `"hashtags": ["15-20 hashtags mixing broad (#realestate), local, and niche"],

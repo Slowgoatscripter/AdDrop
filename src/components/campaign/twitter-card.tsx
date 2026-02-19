@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { AdCardWrapper } from './ad-card-wrapper';
 import { MockupImage } from './mockup-image';
 import { PhoneFrame } from './phone-frame';
@@ -43,9 +42,6 @@ export function TwitterCard({
   listing,
 }: TwitterCardProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const characterCount = content.length;
-  const isOverLimit = characterCount > 280;
-
   const seed = listing?.price ?? 450000;
   const replyCount = seededRandom(seed, 2, 12);
   const repostCount = seededRandom(seed + 1, 5, 30);
@@ -171,11 +167,7 @@ export function TwitterCard({
       charCountText={content}
       photoUrl={photos[0]}
       photoPlatform="twitter"
-      toneSwitcher={
-        <Badge variant={isOverLimit ? 'destructive' : 'secondary'} className="text-xs">
-          {characterCount} / 280 characters
-        </Badge>
-      }
+      toneSwitcher={undefined}
     >
       {mockupContent}
     </AdCardWrapper>

@@ -40,7 +40,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Failed to generate share link' }, { status: 500 });
     }
 
-    const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || ''}/share/${shareToken}`;
+    const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || ''}/share/${shareToken}`;
 
     return NextResponse.json({
       shareToken,
