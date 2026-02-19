@@ -34,7 +34,8 @@ export async function generateBundle(
     },
   });
 
-  const archive = archiver('zip', { zlib: { level: 6 } });
+  // Level 0 (store) — contents are already compressed (JPEG, PDF), so zlib is wasted CPU
+  const archive = archiver('zip', { zlib: { level: 0 } });
   archive.pipe(writable);
 
   const address = campaign.listing?.address?.street?.replace(/[^a-zA-Z0-9 ]/g, '').trim() || 'Campaign';
