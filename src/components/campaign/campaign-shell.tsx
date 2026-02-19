@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { SharePopover } from './share-popover';
 import { EmailModal } from './email-modal';
+import { BundleProgressModal } from './bundle-progress-modal';
 
 async function persistCampaignAds(id: string, generatedAds: CampaignKit) {
   try {
@@ -40,7 +41,7 @@ export function CampaignShell() {
   const [campaign, setCampaign] = useState<CampaignKit | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
-  const [bundling, setBundling] = useState(false);
+  const [bundleModalOpen, setBundleModalOpen] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [regeneratingPlatform, setRegeneratingPlatform] = useState<string | null>(null);
   const [campaignStatus, setCampaignStatus] = useState<string | null>(null);
@@ -650,35 +651,6 @@ export function CampaignShell() {
     );
   }
 
-  async function handleDownloadAll() {
-    setBundling(true);
-    try {
-      const res = await fetch('/api/export/bundle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaignId: campaign!.id }),
-      });
-      if (!res.ok) {
-        toast.error('Bundle download failed — please try again.');
-        return;
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const address = campaign!.listing?.address?.street || 'Campaign';
-      a.download = `${address}.zip`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('Downloaded!');
-    } catch (err) {
-      console.error('[campaign-shell] Bundle download failed:', err);
-      toast.error('Bundle download failed — please try again.');
-    } finally {
-      setBundling(false);
-    }
-  }
-
   async function handleExport(format: 'pdf' | 'csv') {
     setExporting(true);
     try {
@@ -718,11 +690,21 @@ export function CampaignShell() {
             <Button variant="outline" onClick={() => router.push('/create')}>New Campaign</Button>
             <Button variant="outline" onClick={() => handleExport('csv')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export CSV'}</Button>
             <Button variant="outline" onClick={() => handleExport('pdf')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export PDF'}</Button>
-            <Button onClick={handleDownloadAll} disabled={bundling}>{bundling ? 'Preparing…' : 'Download All'}</Button>
+            <Button onClick={() => setBundleModalOpen(true)}>Download All</Button>
             <SharePopover campaignId={campaign!.id} />
             <EmailModal campaignId={campaign!.id} />
           </div>
         </div>
+        <BundleProgressModal
+          open={bundleModalOpen}
+          onOpenChange={setBundleModalOpen}
+          campaignId={campaign!.id}
+          propertyAddress={
+            campaign!.listing?.address
+              ? `${campaign!.listing.address.street}, ${campaign!.listing.address.city}, ${campaign!.listing.address.state}`
+              : undefined
+          }
+        />
 
         {campaign.complianceResult && campaign.complianceResult.violations?.length > 0 && (
           <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
