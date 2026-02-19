@@ -55,6 +55,9 @@ export async function GET(request: NextRequest) {
 
         const zipBuffer = await generateBundle(campaign, onProgress);
 
+        // Signal uploading phase
+        sendEvent('progress', { phase: 'uploading', detail: 'Uploading to secure storage...', step: 5, totalSteps: 6 });
+
         // Clean up stale temp exports for this user
         const userFolder = user!.id;
         const { data: existing } = await supabase.storage
@@ -100,8 +103,8 @@ export async function GET(request: NextRequest) {
         sendEvent('progress', {
           phase: 'done',
           detail: 'Ready',
-          step: 5,
-          totalSteps: 5,
+          step: 6,
+          totalSteps: 6,
           downloadUrl: signedUrl.signedUrl,
         });
 

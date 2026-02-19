@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ImageIcon, Download, FileText, Archive, Check, MapPin } from 'lucide-react';
+import { ImageIcon, Download, FileText, Archive, Upload, Check, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Dialog,
@@ -24,7 +24,8 @@ const STEPS = [
   { id: 2, phase: 'originals', label: 'Saving originals', icon: Download },
   { id: 3, phase: 'pdf', label: 'Generating PDF', icon: FileText },
   { id: 4, phase: 'zip', label: 'Zipping files', icon: Archive },
-  { id: 5, phase: 'done', label: 'Ready to download', icon: Check },
+  { id: 5, phase: 'uploading', label: 'Preparing download', icon: Upload },
+  { id: 6, phase: 'done', label: 'Ready to download', icon: Check },
 ] as const;
 
 type Phase = (typeof STEPS)[number]['phase'];
