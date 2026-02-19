@@ -1,5 +1,7 @@
 import {
+  BookOpen,
   Facebook,
+  FileText,
   Home,
   Instagram,
   LayoutGrid,
@@ -17,7 +19,9 @@ const platforms = [
   { name: 'Zillow', icon: Home },
   { name: 'Realtor.com', icon: LayoutGrid },
   { name: 'Print', icon: Newspaper },
+  { name: 'Magazine', icon: BookOpen },
   { name: 'Direct Mail', icon: Mail },
+  { name: 'MLS Description', icon: FileText },
 ];
 
 export function PlatformBar() {

@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
+import { getSupportedStatesText, SUPPORTED_STATE_CODES } from '@/lib/compliance/supported-states';
 
 const features = [
   {
@@ -20,8 +21,7 @@ const features = [
   {
     icon: ShieldCheck,
     title: 'Compliance Built-In',
-    description:
-      'AI-powered fair housing compliance checking with auto-fix. Montana and Ohio MLS rules, with more states planned.',
+    description: `AI-powered fair housing compliance checking with auto-fix. ${getSupportedStatesText()} MLS rules, with more states planned.`,
     spotlight: true,
     image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
   },
@@ -36,7 +36,7 @@ const features = [
     icon: Download,
     title: 'One-Click Export',
     description:
-      'Download your entire campaign copy as a PDF. Copy, paste, and post.',
+      'Download your entire campaign as PDF, CSV, JSON, or a complete ZIP bundle with platform-sized photos.',
     spotlight: false,
   },
   {
@@ -133,6 +133,16 @@ export function FeaturesGrid() {
               <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
                 {spotlight2.description}
               </p>
+              <div className="flex items-center gap-2 mt-3">
+                {SUPPORTED_STATE_CODES.map((code) => (
+                  <span
+                    key={code}
+                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gold/15 text-gold border border-gold/25"
+                  >
+                    {code}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 

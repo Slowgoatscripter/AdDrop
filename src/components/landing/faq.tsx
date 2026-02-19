@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
 import type { FAQItem as FAQItemType } from '@/lib/types/settings';
+import { getSupportedStatesText } from '@/lib/compliance/supported-states';
 
 const defaultFaqs: FAQItemType[] = [
   {
@@ -28,8 +29,7 @@ const defaultFaqs: FAQItemType[] = [
   },
   {
     question: 'Is the ad copy compliant with fair housing laws?',
-    answer:
-      'AdDrop includes built-in compliance checking that helps identify and suggests corrections for problematic language. Currently optimized for Montana MLS requirements, with more states coming soon.',
+    answer: `AdDrop includes built-in compliance checking that helps identify and suggests corrections for problematic language. Currently supports ${getSupportedStatesText()} MLS requirements, with more states planned.`,
   },
   {
     question: 'Can I edit the generated ads?',
@@ -82,7 +82,22 @@ interface FAQProps {
   faqs?: FAQItemType[];
 }
 
+const COMPLIANCE_QUESTION = 'Is the ad copy compliant with fair housing laws?';
+
+function getDynamicFaqs(faqs: FAQItemType[]): FAQItemType[] {
+  return faqs.map((faq) =>
+    faq.question === COMPLIANCE_QUESTION
+      ? {
+          ...faq,
+          answer: `AdDrop includes built-in compliance checking that helps identify and suggests corrections for problematic language. Currently supports ${getSupportedStatesText()} MLS requirements, with more states planned.`,
+        }
+      : faq
+  );
+}
+
 export function FAQ({ faqs = defaultFaqs }: FAQProps) {
+  const resolvedFaqs = getDynamicFaqs(faqs);
+
   return (
     <section className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
@@ -113,7 +128,7 @@ export function FAQ({ faqs = defaultFaqs }: FAQProps) {
           {/* Right: FAQ accordion */}
           <div>
             <div className="border-t border-gold/10">
-              {faqs.map((faq) => (
+              {resolvedFaqs.map((faq) => (
                 <FAQItem
                   key={faq.question}
                   question={faq.question}
