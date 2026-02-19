@@ -16,8 +16,10 @@ const PLATFORM_TO_PHOTO_MAP: Record<string, string[]> = {
 };
 
 export interface BundleProgress {
-  phase: string;
+  phase: 'photos' | 'originals' | 'pdf' | 'zip' | 'done';
   detail: string;
+  step: number;
+  totalSteps: number;
 }
 
 export async function generateBundle(
@@ -41,8 +43,6 @@ export async function generateBundle(
   // 1. Resize and add photos
   const photos = campaign.listing?.photos?.filter(Boolean) || [];
   if (photos.length > 0) {
-    onProgress?.({ phase: 'photos', detail: `Processing ${photos.length} photos...` });
-
     const selectedPlatforms = campaign.selectedPlatforms || [];
     const photoPlatformIds: string[] = [];
     for (const pid of selectedPlatforms) {
@@ -58,6 +58,8 @@ export async function generateBundle(
       ? photoPlatformIds
       : PLATFORM_DIMENSIONS.map(d => d.platform);
 
+    onProgress?.({ phase: 'photos', detail: `Resizing ${photos.length} photos for ${platformIds.length} platforms...`, step: 1, totalSteps: 5 });
+
     const resized = await resizeAllPhotos(photos, platformIds);
     for (const photo of resized) {
       archive.append(photo.buffer, { name: `${folderName}/${photo.filename}` });
@@ -65,7 +67,7 @@ export async function generateBundle(
 
     // Add originals
     for (let i = 0; i < photos.length; i++) {
-      onProgress?.({ phase: 'originals', detail: `Adding original ${i + 1}/${photos.length}...` });
+      onProgress?.({ phase: 'originals', detail: `Saving original ${i + 1} of ${photos.length}...`, step: 2, totalSteps: 5 });
       try {
         const res = await fetch(photos[i]);
         if (res.ok) {
@@ -80,11 +82,12 @@ export async function generateBundle(
   }
 
   // 2. Generate and add PDF
-  onProgress?.({ phase: 'pdf', detail: 'Generating campaign PDF...' });
+  onProgress?.({ phase: 'pdf', detail: 'Generating campaign PDF...', step: 3, totalSteps: 5 });
   const pdfBuffer = await generatePdfBuffer(campaign);
   archive.append(Buffer.from(pdfBuffer), { name: `${folderName}/Campaign-Full.pdf` });
 
   // 3. Finalize
+  onProgress?.({ phase: 'zip', detail: 'Compressing files...', step: 4, totalSteps: 5 });
   await archive.finalize();
 
   await new Promise<void>((resolve, reject) => {
