@@ -16,7 +16,7 @@ export async function requestPasswordChange() {
     if (!user || !user.email) return { error: 'Not authenticated', data: null }
 
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/callback?next=/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || ''}/auth/callback?next=/reset-password`,
     })
 
     if (error) return { error: error.message, data: null }

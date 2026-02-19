@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { sanitizeAuthError } from '@/lib/auth/sanitize-error'
@@ -11,7 +12,8 @@ import { Footer } from '@/components/nav/footer'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const [error, setError] = useState<string | null>(searchParams.get('error'))
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)

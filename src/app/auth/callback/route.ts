@@ -4,7 +4,25 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
+  const error = searchParams.get('error')
+  const errorCode = searchParams.get('error_code')
+  const errorDescription = searchParams.get('error_description')
   const nextParam = searchParams.get('next') ?? '/dashboard'
+
+  // Handle Supabase error redirects (e.g. expired OTP)
+  if (error) {
+    const isPasswordReset = nextParam === '/reset-password'
+    if (isPasswordReset) {
+      const url = new URL('/forgot-password', request.url)
+      url.searchParams.set('error', errorCode === 'otp_expired'
+        ? 'Your reset link has expired. Please request a new one.'
+        : errorDescription || 'Something went wrong. Please try again.')
+      return NextResponse.redirect(url)
+    }
+    const url = new URL('/login', request.url)
+    url.searchParams.set('error', errorDescription || 'auth_callback_failed')
+    return NextResponse.redirect(url)
+  }
 
   // SECURITY: Validate redirect target to prevent open redirect (CRIT-2)
   // Must be a relative path starting with / and not protocol-relative //
