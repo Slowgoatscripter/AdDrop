@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { requireAdmin } from '@/lib/supabase/auth-helpers';
 import { scanTextWithAgent } from '@/lib/compliance/agent';
 import { getComplianceSettings } from '@/lib/compliance/compliance-settings';
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     const body = await request.json();

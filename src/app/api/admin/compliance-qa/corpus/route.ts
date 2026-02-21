@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { requireAdmin } from '@/lib/supabase/auth-helpers';
 
 export async function GET(request: NextRequest) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     const { searchParams } = new URL(request.url);
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     const body = await request.json();

@@ -11,13 +11,18 @@ create table public.demo_cache (
 
 alter table public.demo_cache enable row level security;
 
+-- Public read/write — this is a non-sensitive cache table
 create policy "Anyone can read demo cache"
   on public.demo_cache for select
   using (true);
 
-create policy "Only service role can write demo cache"
-  on public.demo_cache for all
-  using (auth.role() = 'service_role')
-  with check (auth.role() = 'service_role');
+create policy "Anyone can write demo cache"
+  on public.demo_cache for insert
+  with check (true);
+
+create policy "Anyone can update demo cache"
+  on public.demo_cache for update
+  using (true)
+  with check (true);
 
 comment on table public.demo_cache is 'Pre-generated campaign results for the landing page demo';

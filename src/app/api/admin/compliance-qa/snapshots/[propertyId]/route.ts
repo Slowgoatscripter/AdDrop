@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { requireAdmin } from '@/lib/supabase/auth-helpers';
 import { generateCampaign } from '@/lib/ai/generate';
 
 // ---------------------------------------------------------------------------
@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ propertyId: string }> }
 ) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     const { propertyId } = await params;
@@ -47,7 +47,7 @@ export async function POST(
   { params }: { params: Promise<{ propertyId: string }> }
 ) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     const { propertyId } = await params;
@@ -156,7 +156,7 @@ export async function PATCH(
   { params }: { params: Promise<{ propertyId: string }> }
 ) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     // propertyId is available from the route but the body identifies the snapshot

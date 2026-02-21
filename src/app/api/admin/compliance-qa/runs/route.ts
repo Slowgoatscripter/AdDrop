@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { requireAdmin } from '@/lib/supabase/auth-helpers';
 
 export async function GET(request: NextRequest) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     // Parse query parameters

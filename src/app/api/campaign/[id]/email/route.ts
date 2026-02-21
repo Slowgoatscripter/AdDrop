@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
 import { Resend } from 'resend';
+import { z } from 'zod';
 import { CampaignKit } from '@/lib/types';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailSchema = z.string().email();
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 export async function POST(
   request: NextRequest,
@@ -30,7 +40,7 @@ export async function POST(
       return NextResponse.json({ error: 'Maximum 10 recipients per send' }, { status: 400 });
     }
     for (const email of to) {
-      if (!emailRegex.test(email.trim())) {
+      if (!emailSchema.safeParse(email.trim()).success) {
         return NextResponse.json({ error: `Invalid email: ${email}` }, { status: 400 });
       }
     }
@@ -78,12 +88,12 @@ export async function POST(
           subject: `Campaign: ${addressStr}`,
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-              ${heroPhoto ? `<img src="${heroPhoto}" alt="${addressStr}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 16px;" />` : ''}
-              <h2>${addressStr}</h2>
-              ${campaign.listing?.price ? `<p style="font-size: 18px; color: #16a34a;">$${campaign.listing.price.toLocaleString()}</p>` : ''}
-              ${campaign.listing ? `<p>${campaign.listing.beds} bed &middot; ${campaign.listing.baths} bath &middot; ${campaign.listing.sqft?.toLocaleString()} sqft</p>` : ''}
-              ${message ? `<p style="margin: 16px 0; padding: 12px; background: #f5f5f5; border-radius: 8px;">${message}</p>` : ''}
-              <p><strong>Platforms:</strong> ${platforms}</p>
+              ${heroPhoto ? `<img src="${escapeHtml(heroPhoto)}" alt="${escapeHtml(addressStr)}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 16px;" />` : ''}
+              <h2>${escapeHtml(addressStr)}</h2>
+              ${campaign.listing?.price ? `<p style="font-size: 18px; color: #16a34a;">$${escapeHtml(campaign.listing.price.toLocaleString())}</p>` : ''}
+              ${campaign.listing ? `<p>${escapeHtml(String(campaign.listing.beds))} bed &middot; ${escapeHtml(String(campaign.listing.baths))} bath &middot; ${escapeHtml(campaign.listing.sqft?.toLocaleString() ?? '')} sqft</p>` : ''}
+              ${message ? `<p style="margin: 16px 0; padding: 12px; background: #f5f5f5; border-radius: 8px;">${escapeHtml(message)}</p>` : ''}
+              <p><strong>Platforms:</strong> ${escapeHtml(platforms)}</p>
               <div style="margin: 24px 0;">
                 <a href="${shareUrl}" style="background: #0f172a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block;">View Campaign</a>
               </div>

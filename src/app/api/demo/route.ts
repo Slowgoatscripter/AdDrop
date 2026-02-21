@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit, getClientIp, RATE_LIMIT_CONFIGS } from '@/lib/rate-limit';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { getDemoCacheEntry } from '@/lib/demo/cache';
 
 export async function GET(request: NextRequest) {
   try {
     const ip = getClientIp(request as Request & { ip?: string });
-    const rateLimit = checkRateLimit(`demo:${ip}`, RATE_LIMIT_CONFIGS.demo);
+    const rateLimit = await checkRateLimit(`demo:${ip}`, 'demo');
 
     if (rateLimit.limited) {
       return NextResponse.json(

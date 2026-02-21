@@ -18,11 +18,12 @@ function getAnonClient() {
   );
 }
 
-function getServiceClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+function getWriteClient() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for demo cache writes. Set it in environment variables.');
+  }
+  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
 }
 
 interface DemoCacheRow {
@@ -85,7 +86,7 @@ export async function getDemoCacheEntry(propertyId?: string): Promise<DemoCacheE
   const row = data;
 
   // Increment view_count asynchronously using service client (bypasses RLS)
-  const serviceClient = getServiceClient();
+  const serviceClient = getWriteClient();
   void serviceClient
     .from('demo_cache')
     .update({ view_count: row.view_count + 1 })
@@ -129,7 +130,7 @@ export async function refreshDemoCache(propertyId: string): Promise<void> {
   const platforms = [...ALL_PLATFORM_IDS];
   const { finalCampaign, rawCampaign } = await generateWithDiff(property, platforms);
 
-  const serviceClient = getServiceClient();
+  const serviceClient = getWriteClient();
   const { error } = await serviceClient.from('demo_cache').upsert(
     {
       property_id: propertyId,

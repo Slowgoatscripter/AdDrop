@@ -5,6 +5,7 @@ const isDev = process.env.NODE_ENV === 'development';
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  productionBrowserSourceMaps: false,
   outputFileTracingIncludes: {
     '/api/*': ['./ad-docs/**/*', './node_modules/sharp/**/*'],
   },
@@ -31,6 +32,8 @@ const nextConfig: NextConfig = {
               "frame-src https://challenges.cloudflare.com",
               "object-src 'none'",
               "base-uri 'self'",
+              "report-uri /api/csp-report",
+              "report-to csp-endpoint",
             ].join('; '),
           },
         ],

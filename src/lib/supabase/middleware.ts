@@ -63,10 +63,14 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
+  const isApiAdminRoute = pathname.startsWith('/api/admin')
 
-  // Protect admin routes
-  if (pathname.startsWith('/admin')) {
+  // Protect admin routes (both UI /admin and API /api/admin)
+  if (pathname.startsWith('/admin') || isApiAdminRoute) {
     if (!user) {
+      if (isApiAdminRoute) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      }
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
@@ -76,6 +80,9 @@ export async function updateSession(request: NextRequest) {
     const userRole = await resolveUserRole(supabase, user.id)
 
     if (userRole !== 'admin') {
+      if (isApiAdminRoute) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
       const url = request.nextUrl.clone()
       url.pathname = '/'
       return NextResponse.redirect(url)
@@ -90,6 +97,9 @@ export async function updateSession(request: NextRequest) {
 
       if (nextLevel === 'aal2' && currentLevel !== 'aal2') {
         // MFA enrolled but not verified this session -> challenge
+        if (isApiAdminRoute) {
+          return NextResponse.json({ error: 'MFA required' }, { status: 403 })
+        }
         const url = request.nextUrl.clone()
         url.pathname = '/mfa-challenge'
         url.searchParams.set('next', pathname)
@@ -97,7 +107,10 @@ export async function updateSession(request: NextRequest) {
       }
 
       if (nextLevel === 'aal1') {
-        // No MFA enrolled -> send to enrollment page
+        // No MFA enrolled
+        if (isApiAdminRoute) {
+          return NextResponse.json({ error: 'MFA required' }, { status: 403 })
+        }
         const url = request.nextUrl.clone()
         url.pathname = '/settings/security'
         return NextResponse.redirect(url)

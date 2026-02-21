@@ -69,8 +69,8 @@ export default async function Home() {
           stats={s['landing.stats'] as LandingStat[]}
         />
         <PlatformBar />
-        <HowItWorks />
         <InteractiveDemo />
+        <HowItWorks />
         <ShowcaseCarousel />
         <SocialProof />
         <FeaturesGrid />

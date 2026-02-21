@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     if (listing.description) {
       listing.description = listing.description
         .split('\n')
-        .filter(line => !/^\s*(ignore|forget|disregard|instead|override|system:|assistant:)/i.test(line))
+        .filter(line => !/(ignore|forget|disregard|instead|override|system:|assistant:)/i.test(line))
         .join('\n')
         .slice(0, 5000);
     }

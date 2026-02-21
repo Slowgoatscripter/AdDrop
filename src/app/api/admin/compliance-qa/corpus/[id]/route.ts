@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { requireAdmin } from '@/lib/supabase/auth-helpers';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     const { id } = await params;
@@ -56,7 +56,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     const { id } = await params;

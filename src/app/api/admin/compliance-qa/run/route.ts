@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { requireAdmin } from '@/lib/supabase/auth-helpers';
 import { generateCampaign } from '@/lib/ai/generate';
 import { scanTextWithAgent } from '@/lib/compliance/agent';
 import { getComplianceSettings } from '@/lib/compliance/compliance-settings';
@@ -34,7 +34,7 @@ async function runWithConcurrency<T>(
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, supabase, error } = await requireAuth();
+    const { user, supabase, error } = await requireAdmin();
     if (error) return error;
 
     const body: RunRequest = await request.json().catch(() => ({} as any));
