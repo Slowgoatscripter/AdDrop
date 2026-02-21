@@ -24,8 +24,7 @@ function revertAutoFixes(campaign: CampaignKit, autoFixes: ComplianceAutoFix[]):
     // Replace all occurrences of `after` with `before` in the platform's JSON representation
     const platformStr = JSON.stringify(platformData);
     const reverted = platformStr.split(fix.after).join(fix.before);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (raw as any)[platform] = JSON.parse(reverted);
+    (raw as unknown as Record<string, unknown>)[platform] = JSON.parse(reverted);
   }
 
   return raw;
