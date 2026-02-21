@@ -85,4 +85,5 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   generate: { limit: 20, windowMs: 60_000 },    // 20 req/min for generation
   scrape: { limit: 20, windowMs: 60_000 },      // 20 req/min for scraping
   export: { limit: 10, windowMs: 60_000 },      // 10 req/min for exports
+  demo: { limit: 30, windowMs: 60_000 },        // 30 req/min for landing page demo
 }
