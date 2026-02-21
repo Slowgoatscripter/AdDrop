@@ -70,7 +70,14 @@ export function Hero({
           {/* ── Left column ── */}
           <div className="text-center lg:text-left">
             {/* Title — 300ms clip reveal */}
-            <h1 className="mb-6 pr-4 text-[clamp(4rem,10vw,8rem)] leading-[0.9] tracking-tight">
+            {/* SEO H1 — keyword-rich, visible to crawlers */}
+            <h1 className="sr-only">AI Real Estate Ad Generator — AdDrop</h1>
+
+            {/* Visual brand display */}
+            <div
+              aria-hidden="true"
+              className="mb-6 pr-4 text-[clamp(4rem,10vw,8rem)] leading-[0.9] tracking-tight"
+            >
               <motion.span
                 className="inline-block font-sans font-bold text-cream"
                 initial={a ? { clipPath: 'inset(0 100% 0 0)' } : undefined}
@@ -87,7 +94,7 @@ export function Hero({
               >
                 {titleAccent}
               </motion.span>
-            </h1>
+            </div>
 
             {/* Tagline — 800ms */}
             <motion.p

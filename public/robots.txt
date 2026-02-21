@@ -5,3 +5,11 @@ Disallow: /settings
 Disallow: /api/
 Disallow: /create
 Disallow: /campaign/
+Disallow: /share/
+Disallow: /login
+Disallow: /signup
+Disallow: /mfa-challenge
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://addrop.app/sitemap.xml

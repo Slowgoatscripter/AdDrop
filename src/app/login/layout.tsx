@@ -1,0 +1,16 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Log In',
+  description:
+    'Log in to your AdDrop account to manage your real estate ad campaigns.',
+  robots: { index: false, follow: false },
+};
+
+export default function LoginLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}
