@@ -25,6 +25,16 @@ function getServiceClient() {
   );
 }
 
+interface DemoCacheRow {
+  property_id: string;
+  campaign_result: unknown;
+  compliance_result: unknown;
+  quality_result: unknown;
+  raw_campaign: unknown;
+  generated_at: string;
+  view_count: number;
+}
+
 export interface DemoCacheEntry {
   propertyId: string;
   campaign: CampaignKit;
@@ -34,41 +44,7 @@ export interface DemoCacheEntry {
   generatedAt: string;
 }
 
-export async function getDemoCacheEntry(propertyId?: string): Promise<DemoCacheEntry | null> {
-  const supabase = getAnonClient();
-
-  let query = supabase.from('demo_cache').select('*');
-
-  if (propertyId) {
-    query = query.eq('property_id', propertyId).single();
-  } else {
-    query = query.order('view_count', { ascending: true }).limit(1).single();
-  }
-
-  const { data, error } = await query;
-
-  if (error || !data) {
-    return null;
-  }
-
-  // Increment view_count asynchronously using service client (bypasses RLS)
-  const serviceClient = getServiceClient();
-  serviceClient
-    .from('demo_cache')
-    .update({ view_count: data.view_count + 1 })
-    .eq('property_id', data.property_id)
-    .then(() => {
-      // Trigger background refresh if thresholds met
-      const newViewCount = data.view_count + 1;
-      const ageMs = Date.now() - new Date(data.generated_at).getTime();
-      if (newViewCount >= VIEW_COUNT_REFRESH_THRESHOLD || ageMs >= AGE_REFRESH_THRESHOLD_MS) {
-        refreshDemoCache(data.property_id).catch((err) =>
-          console.error('[demo-cache] Background refresh failed:', err)
-        );
-      }
-    })
-    .catch((err) => console.error('[demo-cache] Failed to increment view_count:', err));
-
+function rowToEntry(data: DemoCacheRow): DemoCacheEntry {
   return {
     propertyId: data.property_id,
     campaign: data.campaign_result as CampaignKit,
@@ -79,22 +55,66 @@ export async function getDemoCacheEntry(propertyId?: string): Promise<DemoCacheE
   };
 }
 
-export async function getAllDemoCacheEntries(): Promise<DemoCacheEntry[]> {
+export async function getDemoCacheEntry(propertyId?: string): Promise<DemoCacheEntry | null> {
   const supabase = getAnonClient();
-  const { data, error } = await supabase.from('demo_cache').select('*').order('generated_at', { ascending: false });
 
-  if (error || !data) {
-    return [];
+  let data: DemoCacheRow | null = null;
+
+  if (propertyId) {
+    const result = await supabase
+      .from('demo_cache')
+      .select('*')
+      .eq('property_id', propertyId)
+      .single();
+    data = result.data as DemoCacheRow | null;
+  } else {
+    // Get the entry with the lowest view_count (least recently served)
+    const result = await supabase
+      .from('demo_cache')
+      .select('*')
+      .order('view_count', { ascending: true })
+      .limit(1);
+    const rows = result.data as DemoCacheRow[] | null;
+    data = rows && rows.length > 0 ? rows[0] : null;
   }
 
-  return data.map((row) => ({
-    propertyId: row.property_id,
-    campaign: row.campaign_result as CampaignKit,
-    compliance: row.compliance_result as ComplianceAgentResult,
-    quality: row.quality_result as CampaignQualityResult | null,
-    rawCampaign: row.raw_campaign as CampaignKit,
-    generatedAt: row.generated_at,
-  }));
+  if (!data) {
+    return null;
+  }
+
+  const row = data;
+
+  // Increment view_count asynchronously using service client (bypasses RLS)
+  const serviceClient = getServiceClient();
+  void serviceClient
+    .from('demo_cache')
+    .update({ view_count: row.view_count + 1 })
+    .eq('property_id', row.property_id)
+    .then(() => {
+      // Trigger background refresh if thresholds met
+      const newViewCount = row.view_count + 1;
+      const ageMs = Date.now() - new Date(row.generated_at).getTime();
+      if (newViewCount >= VIEW_COUNT_REFRESH_THRESHOLD || ageMs >= AGE_REFRESH_THRESHOLD_MS) {
+        refreshDemoCache(row.property_id).catch((err: unknown) =>
+          console.error('[demo-cache] Background refresh failed:', err)
+        );
+      }
+    });
+
+  return rowToEntry(row);
+}
+
+export async function getAllDemoCacheEntries(): Promise<DemoCacheEntry[]> {
+  const supabase = getAnonClient();
+  const { data } = await supabase
+    .from('demo_cache')
+    .select('*')
+    .order('generated_at', { ascending: false });
+
+  const rows = data as DemoCacheRow[] | null;
+  if (!rows) return [];
+
+  return rows.map(rowToEntry);
 }
 
 export async function refreshDemoCache(propertyId: string): Promise<void> {
@@ -135,4 +155,3 @@ export async function seedDemoCache(): Promise<void> {
     )
   );
 }
-
