@@ -59,6 +59,7 @@ export function DemoPlatformCard({
   index = 0,
 }: DemoPlatformCardProps) {
   const meta = PLATFORM_META[platform];
+  if (!meta) return null;
   const Icon = meta.icon;
   const isGoogleAds = platform === 'googleAds';
   const googleAdParsed = isGoogleAds ? parseGoogleAdsContent(content) : null;

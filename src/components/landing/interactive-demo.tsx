@@ -8,7 +8,7 @@ import { DemoPipeline } from './demo-pipeline';
 import { DemoPlatformCard } from './demo-platform-card';
 import { DemoLockedCards } from './demo-locked-cards';
 import { DemoComplianceDiff } from './demo-compliance-diff';
-import { SAMPLE_PROPERTIES, DEMO_PLATFORMS } from '@/lib/demo/sample-properties';
+import { SAMPLE_PROPERTIES, DEMO_PLATFORMS, ALL_PLATFORM_IDS } from '@/lib/demo/sample-properties';
 import type { CampaignKit, AdTone, GoogleAd, MetaAd, PrintAd, PlatformId } from '@/lib/types/campaign';
 import type { ComplianceAgentResult, ComplianceAutoFix } from '@/lib/types/compliance';
 import type { CampaignQualityResult } from '@/lib/types/quality';
@@ -88,10 +88,12 @@ function getDisplayPlatforms(compliance: ComplianceAgentResult | undefined): Pla
 
   // Find platforms with violations that aren't in the defaults
   const flaggedPlatforms = new Set(
-    compliance.autoFixes.map((f) => f.platform.toLowerCase())
+    compliance.autoFixes.map((f) => f.platform)
   );
   const nonDefaultFlagged = [...flaggedPlatforms].filter(
-    (p) => !defaults.includes(p as PlatformId)
+    (p): p is PlatformId =>
+      !defaults.includes(p as PlatformId) &&
+      ALL_PLATFORM_IDS.includes(p as PlatformId)
   ) as PlatformId[];
 
   if (nonDefaultFlagged.length === 0) return defaults;
