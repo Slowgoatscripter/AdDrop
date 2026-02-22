@@ -9,7 +9,7 @@ import { DemoPlatformCard } from './demo-platform-card';
 import { DemoLockedCards } from './demo-locked-cards';
 import { DemoComplianceDiff } from './demo-compliance-diff';
 import { SAMPLE_PROPERTIES, DEMO_PLATFORMS } from '@/lib/demo/sample-properties';
-import type { CampaignKit, AdTone, GoogleAd } from '@/lib/types/campaign';
+import type { CampaignKit, AdTone, GoogleAd, MetaAd, PrintAd, PlatformId } from '@/lib/types/campaign';
 import type { ComplianceAgentResult, ComplianceAutoFix } from '@/lib/types/compliance';
 import type { CampaignQualityResult } from '@/lib/types/quality';
 import Link from 'next/link';
@@ -38,7 +38,6 @@ function getPlatformContent(campaign: CampaignKit, platform: string): string {
     case 'facebook': {
       const data = campaign[platform as 'instagram' | 'facebook'];
       if (!data) return '';
-      // data is Record<AdTone, string> — pick 'professional' for demo
       if (typeof data === 'string') return data;
       return (data as Record<AdTone, string>).professional ?? Object.values(data)[0] ?? '';
     }
@@ -48,9 +47,69 @@ function getPlatformContent(campaign: CampaignKit, platform: string): string {
       const ad = ads[0] as GoogleAd;
       return `${ad.headline}\n${ad.description}`;
     }
+    case 'twitter':
+    case 'zillow':
+    case 'realtorCom':
+    case 'homesComTrulia':
+    case 'mlsDescription': {
+      const text = campaign[platform as keyof CampaignKit];
+      return typeof text === 'string' ? text : '';
+    }
+    case 'metaAd': {
+      const meta = campaign.metaAd as MetaAd | undefined;
+      if (!meta) return '';
+      return `${meta.headline}\n${meta.description}`;
+    }
+    case 'magazineFullPage':
+    case 'magazineHalfPage': {
+      const mag = campaign[platform as 'magazineFullPage' | 'magazineHalfPage'] as Record<string, PrintAd> | undefined;
+      if (!mag) return '';
+      const ad = mag.professional ?? mag.luxury ?? Object.values(mag)[0];
+      if (!ad) return '';
+      return `${ad.headline}\n${ad.body}`;
+    }
+    case 'postcard': {
+      const pc = campaign.postcard as Record<string, { front: PrintAd; back: string }> | undefined;
+      if (!pc) return '';
+      const variant = pc.professional ?? pc.casual ?? Object.values(pc)[0];
+      if (!variant) return '';
+      return `${variant.front.headline}\n${variant.front.body}`;
+    }
     default:
       return '';
   }
+}
+
+/** Pick which 3 platforms to display — swap in flagged platforms for clean defaults */
+function getDisplayPlatforms(compliance: ComplianceAgentResult | undefined): PlatformId[] {
+  const defaults: PlatformId[] = [...DEMO_PLATFORMS];
+
+  if (!compliance?.autoFixes?.length) return defaults;
+
+  // Find platforms with violations that aren't in the defaults
+  const flaggedPlatforms = new Set(
+    compliance.autoFixes.map((f) => f.platform.toLowerCase())
+  );
+  const nonDefaultFlagged = [...flaggedPlatforms].filter(
+    (p) => !defaults.includes(p as PlatformId)
+  ) as PlatformId[];
+
+  if (nonDefaultFlagged.length === 0) return defaults;
+
+  // Find which defaults are clean (no violations) — candidates for swapping out
+  const cleanDefaults = defaults.filter((d) => !flaggedPlatforms.has(d));
+
+  // Swap clean defaults out for flagged non-defaults (up to available clean slots)
+  const result = [...defaults];
+  const swapCount = Math.min(nonDefaultFlagged.length, cleanDefaults.length);
+  for (let i = 0; i < swapCount; i++) {
+    const idxToSwap = result.indexOf(cleanDefaults[i]);
+    if (idxToSwap !== -1) {
+      result[idxToSwap] = nonDefaultFlagged[i];
+    }
+  }
+
+  return result;
 }
 
 /** Get compliance info for a specific platform */
@@ -275,20 +334,29 @@ export function InteractiveDemo() {
               transition={{ duration: 0.5 }}
               className="space-y-10"
             >
-              {/* Platform cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {DEMO_PLATFORMS.map((platform, idx) => (
-                  <DemoPlatformCard
-                    key={platform}
-                    platform={platform}
-                    content={getPlatformContent(demoData.campaign, platform)}
-                    hashtags={platform !== 'googleAds' ? demoData.campaign.hashtags?.slice(0, 5) : undefined}
-                    compliance={{ passed: true, fixCount: demoData.compliance?.totalAutoFixes ?? 0 }}
-                    qualityScore={getQualityScore(demoData.quality)}
-                    index={idx}
-                  />
-                ))}
-              </div>
+              {/* Platform cards — dynamically includes flagged platforms */}
+              {(() => {
+                const displayPlatforms = getDisplayPlatforms(demoData.compliance);
+                const socialPlatforms = ['instagram', 'facebook', 'twitter'];
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {displayPlatforms.map((platform, idx) => {
+                      const platformCompliance = getPlatformCompliance(demoData.compliance, platform);
+                      return (
+                        <DemoPlatformCard
+                          key={platform}
+                          platform={platform}
+                          content={getPlatformContent(demoData.campaign, platform)}
+                          hashtags={socialPlatforms.includes(platform) ? demoData.campaign.hashtags?.slice(0, 5) : undefined}
+                          compliance={{ passed: platformCompliance.passed, fixCount: platformCompliance.fixCount }}
+                          qualityScore={getQualityScore(demoData.quality)}
+                          index={idx}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
               {/* Compliance diff */}
               <div className="max-w-2xl mx-auto">
@@ -296,7 +364,7 @@ export function InteractiveDemo() {
               </div>
 
               {/* Locked cards */}
-              <DemoLockedCards unlockedPlatforms={[...DEMO_PLATFORMS]} />
+              <DemoLockedCards unlockedPlatforms={getDisplayPlatforms(demoData.compliance)} />
 
               {/* CTAs */}
               <div className="text-center space-y-4">

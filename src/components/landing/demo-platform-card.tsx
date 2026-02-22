@@ -1,11 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Camera, ThumbsUp, Target, type LucideIcon } from 'lucide-react';
+import { Camera, ThumbsUp, Target, MessageCircle, Layers, BookOpen, Newspaper, Mail, Building2, Home, FileText, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { PlatformId } from '@/lib/types/campaign';
 
 interface DemoPlatformCardProps {
-  platform: 'instagram' | 'facebook' | 'googleAds';
+  platform: PlatformId;
   content: string;
   hashtags?: string[];
   compliance: { passed: boolean; fixCount: number };
@@ -13,10 +14,19 @@ interface DemoPlatformCardProps {
   index?: number;
 }
 
-const PLATFORM_META: Record<string, { label: string; icon: LucideIcon; color: string }> = {
+const PLATFORM_META: Record<PlatformId, { label: string; icon: LucideIcon; color: string }> = {
   instagram: { label: 'Instagram', icon: Camera, color: 'text-pink-400' },
   facebook: { label: 'Facebook', icon: ThumbsUp, color: 'text-blue-400' },
   googleAds: { label: 'Google Ads', icon: Target, color: 'text-yellow-400' },
+  twitter: { label: 'Twitter / X', icon: MessageCircle, color: 'text-sky-400' },
+  metaAd: { label: 'Meta Ad', icon: Layers, color: 'text-indigo-400' },
+  magazineFullPage: { label: 'Magazine Full', icon: BookOpen, color: 'text-amber-400' },
+  magazineHalfPage: { label: 'Magazine Half', icon: Newspaper, color: 'text-amber-300' },
+  postcard: { label: 'Postcard', icon: Mail, color: 'text-rose-400' },
+  zillow: { label: 'Zillow', icon: Building2, color: 'text-blue-300' },
+  realtorCom: { label: 'Realtor.com', icon: Home, color: 'text-red-400' },
+  homesComTrulia: { label: 'Homes / Trulia', icon: Home, color: 'text-emerald-400' },
+  mlsDescription: { label: 'MLS', icon: FileText, color: 'text-slate-400' },
 };
 
 function parseGoogleAdsContent(content: string): { headline: string; description: string } | null {
