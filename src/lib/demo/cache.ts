@@ -83,26 +83,7 @@ export async function getDemoCacheEntry(propertyId?: string): Promise<DemoCacheE
     return null;
   }
 
-  const row = data;
-
-  // Increment view_count asynchronously using service client (bypasses RLS)
-  const serviceClient = getWriteClient();
-  void serviceClient
-    .from('demo_cache')
-    .update({ view_count: row.view_count + 1 })
-    .eq('property_id', row.property_id)
-    .then(() => {
-      // Trigger background refresh if thresholds met
-      const newViewCount = row.view_count + 1;
-      const ageMs = Date.now() - new Date(row.generated_at).getTime();
-      if (newViewCount >= VIEW_COUNT_REFRESH_THRESHOLD || ageMs >= AGE_REFRESH_THRESHOLD_MS) {
-        refreshDemoCache(row.property_id).catch((err: unknown) =>
-          console.error('[demo-cache] Background refresh failed:', err)
-        );
-      }
-    });
-
-  return rowToEntry(row);
+  return rowToEntry(data);
 }
 
 export async function getAllDemoCacheEntries(): Promise<DemoCacheEntry[]> {

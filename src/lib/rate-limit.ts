@@ -1,19 +1,25 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+const hasRedis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
 
-export const rateLimiters: Record<string, Ratelimit> = {
-  auth: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, '60 s') }),
-  generate: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, '60 s') }),
-  scrape: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, '60 s') }),
-  export: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, '60 s') }),
-  demo: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, '60 s') }),
-  email: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, '60 s') }),
-};
+const redis = hasRedis
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+  : null;
+
+export const rateLimiters: Record<string, Ratelimit> = redis
+  ? {
+      auth: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, '60 s') }),
+      generate: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, '60 s') }),
+      scrape: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, '60 s') }),
+      export: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, '60 s') }),
+      demo: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, '60 s') }),
+      email: new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, '60 s') }),
+    }
+  : {};
 
 export async function checkRateLimit(
   key: string,
