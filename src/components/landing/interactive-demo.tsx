@@ -81,20 +81,35 @@ function getPlatformContent(campaign: CampaignKit, platform: string): string {
 }
 
 /** Pick which 3 platforms to display — swap in flagged platforms for clean defaults */
+/** Normalize compliance platform strings to PlatformId.
+ *  Compliance data uses formats like "MagazineFullPage.Professional.Headline"
+ *  or "MagazineFullPage" — we need to map these to camelCase PlatformId values. */
+function normalizePlatformName(raw: string): PlatformId | null {
+  // Take the first segment (before any dot) and convert to camelCase
+  const base = raw.split('.')[0];
+  // Try direct match first
+  if (ALL_PLATFORM_IDS.includes(base as PlatformId)) return base as PlatformId;
+  // Convert PascalCase to camelCase and try again
+  const camel = base.charAt(0).toLowerCase() + base.slice(1);
+  if (ALL_PLATFORM_IDS.includes(camel as PlatformId)) return camel as PlatformId;
+  return null;
+}
+
 function getDisplayPlatforms(compliance: ComplianceAgentResult | undefined): PlatformId[] {
   const defaults: PlatformId[] = [...DEMO_PLATFORMS];
 
   if (!compliance?.autoFixes?.length) return defaults;
 
   // Find platforms with violations that aren't in the defaults
-  const flaggedPlatforms = new Set(
-    compliance.autoFixes.map((f) => f.platform)
-  );
+  const flaggedPlatforms = new Set<PlatformId>();
+  for (const f of compliance.autoFixes) {
+    const id = normalizePlatformName(f.platform);
+    if (id) flaggedPlatforms.add(id);
+  }
+
   const nonDefaultFlagged = [...flaggedPlatforms].filter(
-    (p): p is PlatformId =>
-      !defaults.includes(p as PlatformId) &&
-      ALL_PLATFORM_IDS.includes(p as PlatformId)
-  ) as PlatformId[];
+    (p) => !defaults.includes(p)
+  );
 
   if (nonDefaultFlagged.length === 0) return defaults;
 
@@ -116,12 +131,11 @@ function getDisplayPlatforms(compliance: ComplianceAgentResult | undefined): Pla
 
 /** Get compliance info for a specific platform */
 function getPlatformCompliance(compliance: ComplianceAgentResult, platform: string) {
-  const norm = platform.toLowerCase();
   const verdict = compliance.platforms?.find(
-    (p) => p.platform.toLowerCase() === norm,
+    (p) => normalizePlatformName(p.platform) === platform,
   );
   const fixCount = compliance.autoFixes?.filter(
-    (f) => f.platform.toLowerCase() === norm,
+    (f) => normalizePlatformName(f.platform) === platform,
   ).length ?? 0;
   // If we have total fixes but none matched this platform name,
   // distribute them — the compliance diff section shows the real details
