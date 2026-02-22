@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
       campaign: entry.campaign,
       compliance: entry.compliance,
       quality: entry.quality,
-      rawCampaign: entry.rawCampaign,
       generatedAt: entry.generatedAt,
     });
   } catch (error) {

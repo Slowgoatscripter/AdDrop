@@ -37,8 +37,8 @@ export async function checkRateLimit(
     };
   } catch (err) {
     console.error('Rate limit check failed:', err);
-    // Fail closed for sensitive endpoints, open for others
-    if (['auth', 'generate', 'email'].includes(limiterName)) {
+    // Fail closed for sensitive and public-facing endpoints
+    if (['auth', 'generate', 'email', 'demo'].includes(limiterName)) {
       return { limited: true, remaining: 0, retryAfter: 60 };
     }
     return { limited: false, remaining: 999, retryAfter: 0 };
