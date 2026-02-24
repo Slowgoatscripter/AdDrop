@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Shield } from 'lucide-react'
+import { User, Shield, CreditCard } from 'lucide-react'
 
 const navItems = [
   { href: '/settings/account', label: 'Account', icon: User },
   { href: '/settings/security', label: 'Security', icon: Shield },
+  { href: '/settings/billing', label: 'Billing', icon: CreditCard },
 ]
 
 export function SettingsNav() {
