@@ -2,8 +2,8 @@ import Image from 'next/image';
 import { Check } from 'lucide-react';
 
 const valuePoints = [
-  'Free beta account',
-  '2 campaigns per week',
+  'Free tier available',
+  '2 campaigns per week to start',
   'No credit card required',
   'Compliance-checked',
 ];

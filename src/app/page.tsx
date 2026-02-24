@@ -7,6 +7,7 @@ import { InteractiveDemo } from '@/components/landing/interactive-demo';
 import { SocialProof } from '@/components/landing/social-proof';
 import { FeaturesGrid } from '@/components/landing/features-grid';
 import { WhoItsFor } from '@/components/landing/who-its-for';
+import { PricingSection } from '@/components/landing/pricing-section';
 import { FAQ } from '@/components/landing/faq';
 import { CTAFooter } from '@/components/landing/cta-footer';
 import { MobileCTABar } from '@/components/landing/mobile-cta-bar';
@@ -19,7 +20,7 @@ import { Footer } from '@/components/nav/footer';
 export const metadata: Metadata = {
   title: 'AI Real Estate Ad Generator — AdDrop',
   description:
-    'AdDrop generates complete real estate ad campaigns in minutes. Enter your property details and get copy for Instagram, Facebook, Google Ads, print, direct mail, and 8+ more platforms. Free during beta.',
+    'AdDrop generates complete real estate ad campaigns in minutes. Enter your property details and get copy for Instagram, Facebook, Google Ads, print, direct mail, and 8+ more platforms. Free tier available.',
   alternates: { canonical: 'https://addrop.app' },
   openGraph: {
     title: 'AI Real Estate Ad Generator — AdDrop',
@@ -75,6 +76,7 @@ export default async function Home() {
         <SocialProof />
         <FeaturesGrid />
         <WhoItsFor />
+        <PricingSection />
         <FAQ faqs={faqs} />
         <CTAFooter
           headline={s['landing.cta_headline'] as string}
