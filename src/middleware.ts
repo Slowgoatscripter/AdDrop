@@ -17,8 +17,10 @@ export async function middleware(request: NextRequest) {
     return new NextResponse(null, { status: 405 })
   }
 
-  // CSRF origin validation
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+  // CSRF origin validation (skip for webhook routes — they use signature verification)
+  const pathname = request.nextUrl.pathname
+  const isWebhookRoute = pathname.startsWith('/api/webhooks/')
+  if (!isWebhookRoute && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
     const origin = request.headers.get('origin');
     const host = request.headers.get('host');
     if (origin && host) {
