@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { getUserTier, requireTierFeature } from '@/lib/stripe/gate';
 import { randomUUID } from 'crypto';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,6 +18,10 @@ export async function PUT(
   try {
     const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
+
+    const tier = await getUserTier(supabase, user!.id);
+    const gateError = requireTierFeature(tier, 'share');
+    if (gateError) return gateError;
 
     const { id } = await params;
     if (!uuidRegex.test(id)) {
@@ -60,6 +65,10 @@ export async function DELETE(
   try {
     const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
+
+    const tier = await getUserTier(supabase, user!.id);
+    const gateError = requireTierFeature(tier, 'share');
+    if (gateError) return gateError;
 
     const { id } = await params;
     if (!uuidRegex.test(id)) {

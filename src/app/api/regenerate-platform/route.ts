@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { ListingData, PlatformId, ALL_PLATFORMS } from '@/lib/types';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { getUserTier, requireTierFeature } from '@/lib/stripe/gate';
 
 const VALID_PLATFORMS = new Set<string>(ALL_PLATFORMS);
 
@@ -142,8 +143,12 @@ ${summary}`,
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, error: authError } = await requireAuth();
+    const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
+
+    const tier = await getUserTier(supabase, user!.id);
+    const gateError = requireTierFeature(tier, 'regenerate');
+    if (gateError) return gateError;
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
