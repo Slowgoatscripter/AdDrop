@@ -102,7 +102,7 @@ function InstagramFrame({ children }: { children: React.ReactNode }) {
 
 function FacebookFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full border border-gray-700 rounded-lg overflow-hidden bg-surface">
+    <div className="w-full border border-gray-700 rounded-2xl overflow-hidden bg-surface">
       {/* Browser chrome */}
       <div className="h-8 bg-gray-800 border-b border-gray-700 flex items-center px-3 gap-2">
         <div className="flex gap-1.5">
@@ -125,7 +125,7 @@ function FacebookFrame({ children }: { children: React.ReactNode }) {
 
 function GoogleAdsFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full border border-gray-700 rounded-md overflow-hidden bg-surface">
+    <div className="w-full border border-gray-700 rounded-2xl overflow-hidden bg-surface">
       {/* Minimal browser bar */}
       <div className="h-6 bg-gray-800 border-b border-gray-700 flex items-center px-2">
         <div className="text-xs text-gray-400">Ad</div>
@@ -142,7 +142,7 @@ function DirectMailFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative w-full max-w-[400px] mx-auto">
       {/* Postcard with stamp */}
-      <div className="relative bg-surface border-2 border-gray-700 rounded-sm shadow-lg">
+      <div className="relative bg-surface border-2 border-gray-700 rounded-2xl shadow-lg">
         {/* Stamp corner */}
         <div className="absolute top-3 right-3 w-12 h-14 border border-gray-600 bg-gray-800/80 flex flex-col items-center justify-center rotate-2 shadow-sm">
           <div className="border border-dashed border-gold/30 w-10 h-12 flex flex-col items-center justify-center gap-0.5">
@@ -160,7 +160,7 @@ function DirectMailFrame({ children }: { children: React.ReactNode }) {
 
 function MagazineFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full max-w-[450px] mx-auto border-4 border-gray-700 bg-surface shadow-2xl">
+    <div className="w-full max-w-[450px] mx-auto border-4 border-gray-700 bg-surface shadow-2xl rounded-2xl overflow-hidden">
       {children}
     </div>
   );
@@ -213,7 +213,7 @@ export function ShowcaseCarousel() {
       case 'Magazine':
         return <MagazineFrame>{content}</MagazineFrame>;
       default:
-        return <div className="border border-border rounded-lg overflow-hidden">{content}</div>;
+        return <div className="border border-border rounded-2xl overflow-hidden">{content}</div>;
     }
   };
 
@@ -266,7 +266,7 @@ export function ShowcaseCarousel() {
               className="grid md:grid-cols-[45%_55%] gap-8"
             >
               {/* Left: Property Photo */}
-              <div className="relative h-[400px] md:h-[600px] rounded-lg overflow-hidden">
+              <div className="relative h-[400px] md:h-[600px] rounded-2xl overflow-hidden">
                 <Image
                   src={slide.propertyImage}
                   fill

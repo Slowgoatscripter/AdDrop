@@ -8,21 +8,21 @@ const steps = [
   {
     number: '01',
     icon: Search,
-    title: 'Enter Property Details',
+    title: 'Pour In Your Property',
     description:
       'Add your property address, photos, and key details. It only takes a minute to get started.',
   },
   {
     number: '02',
     icon: Sparkles,
-    title: 'AI builds your campaign',
+    title: 'Watch It Form',
     description:
       'Our AI generates platform-optimized ad copy in multiple tones — professional, casual, luxury — each tailored to your listing.',
   },
   {
     number: '03',
     icon: Download,
-    title: 'Download & publish',
+    title: 'Let It Drop',
     description:
       'Export all your ad copy as a PDF — ready to copy, paste, and publish across platforms.',
   },
@@ -48,10 +48,10 @@ export function HowItWorks() {
         </p>
 
         <div className="relative">
-          {/* Vertical gold line (desktop only) */}
+          {/* Vertical teal-gold gradient line (desktop only) */}
           <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2">
             <motion.div
-              className="w-full bg-gold origin-top"
+              className="w-full bg-gradient-to-b from-gold via-teal to-gold origin-top"
               style={{ scaleY: lineScaleY, height: '100%' }}
             />
           </div>
@@ -68,8 +68,8 @@ export function HowItWorks() {
                     isEven ? 'md:justify-end' : 'md:justify-start'
                   }`}
                 >
-                  {/* Gold dot at junction (desktop only) */}
-                  <div className="hidden md:block absolute left-1/2 top-8 -translate-x-1/2 w-3 h-3 rounded-full bg-gold z-10" />
+                  {/* Droplet dot at junction (desktop only) */}
+                  <div className="hidden md:block absolute left-1/2 top-8 -translate-x-1/2 w-3 h-3.5 droplet-shape bg-gold z-10" />
 
                   {/* Card */}
                   <div
@@ -83,8 +83,8 @@ export function HowItWorks() {
                         {step.number}
                       </span>
 
-                      {/* Icon */}
-                      <div className="w-12 h-12 rounded-lg bg-gold/10 flex items-center justify-center mb-4 relative z-10">
+                      {/* Icon — droplet shape */}
+                      <div className="w-12 h-14 droplet-shape bg-gold/10 border border-gold/30 flex items-center justify-center mb-4 relative z-10">
                         <step.icon className="w-6 h-6 text-gold" />
                       </div>
 

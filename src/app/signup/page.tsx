@@ -90,9 +90,9 @@ function SignupContent() {
   if (success) {
     return (
       <main className="flex-1 flex items-center justify-center p-6 bg-background">
-        <div className="w-full max-w-sm text-center">
-          <div className="flex justify-center mb-4">
-            <Mail className="w-12 h-12 text-gold" />
+        <div className="w-full max-w-sm bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl p-8 text-center">
+          <div className="w-14 h-14 mx-auto mb-4 droplet-shape bg-gold/10 border border-gold/20 flex items-center justify-center">
+            <Mail className="w-6 h-6 text-gold" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
           <p className="text-sm text-muted-foreground mb-6">
@@ -112,8 +112,11 @@ function SignupContent() {
 
   return (
     <main className="flex-1 flex items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl p-8">
         <div className="text-center mb-8">
+          <div className="w-14 h-14 mx-auto mb-4 droplet-shape bg-gold/10 border border-gold/20 flex items-center justify-center">
+            <UserPlus className="w-6 h-6 text-gold" />
+          </div>
           <p className="text-sm text-muted-foreground mt-1">Create your account</p>
         </div>
 

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AdCardMockup } from './ad-card-mockup';
 import type { LandingStat } from '@/lib/types/settings';
+import { RippleButton } from '@/components/ui/ripple-button';
 
 interface HeroProps {
   titlePrefix?: string;
@@ -31,7 +32,7 @@ export function Hero({
   titleAccent = 'Drop',
   tagline = 'Your Listing. 12 Platforms. Minimal Effort.',
   description = 'Create a free account, enter your property details, and get a complete ad campaign — Instagram, Facebook, Google, print, direct mail — typically ready in a few minutes.',
-  ctaText = 'Start Creating — Free',
+  ctaText = 'Drop Your First Ad',
   ctaHref = '/create',
   stats,
 }: HeroProps) {
@@ -122,11 +123,14 @@ export function Hero({
               animate={a ? { opacity: 1, scale: 1 } : undefined}
               transition={a ? { delay: 1.2, type: 'spring', stiffness: 300, damping: 20 } : undefined}
             >
-              <Link
-                href={ctaHref}
-                className="inline-block border-2 border-gold bg-transparent text-gold uppercase tracking-wider text-sm font-bold px-10 py-4 transition-all duration-300 hover:bg-gold hover:text-background"
-              >
-                {ctaText}
+              <Link href={ctaHref}>
+                <RippleButton
+                  className="border-2 border-gold bg-transparent text-gold uppercase tracking-wider text-sm font-bold px-10 py-4 hover:bg-gold hover:text-background rounded-full"
+                  variant="ghost"
+                  size="lg"
+                >
+                  {ctaText}
+                </RippleButton>
               </Link>
             </motion.div>
 

@@ -79,19 +79,19 @@ export function FeaturesGrid() {
       className="relative py-24 px-6 border-t border-border/50 overflow-hidden"
       style={{
         backgroundImage:
-          'radial-gradient(circle, hsl(38 40% 30% / 0.07) 1px, transparent 1px)',
+          'radial-gradient(circle, hsl(var(--teal-muted) / 0.07) 1px, transparent 1px)',
         backgroundSize: '24px 24px',
       }}
     >
       <div className="max-w-7xl mx-auto">
         <h2 className="font-serif text-4xl md:text-5xl text-center mb-12">
-          Everything You Need
+          What&apos;s In The Drop
         </h2>
 
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Spotlight 1: Small spotlight with background image */}
-          <div className="relative md:col-span-1 md:row-span-1 rounded-xl overflow-hidden min-h-[280px] group">
+          <div className="relative md:col-span-1 md:row-span-1 rounded-2xl overflow-hidden min-h-[280px] group transition-all duration-300 hover:border-teal/20 hover:shadow-lg hover:shadow-teal/5">
             <Image
               src={spotlight1Image}
               fill
@@ -114,7 +114,7 @@ export function FeaturesGrid() {
           </div>
 
           {/* Spotlight 2: Wide spotlight with background image */}
-          <div className="relative md:col-span-2 md:row-span-1 rounded-xl overflow-hidden min-h-[280px] group">
+          <div className="relative md:col-span-2 md:row-span-1 rounded-2xl overflow-hidden min-h-[280px] group transition-all duration-300 hover:border-teal/20 hover:shadow-lg hover:shadow-teal/5">
             <Image
               src={spotlight2Image}
               fill
@@ -147,7 +147,7 @@ export function FeaturesGrid() {
           </div>
 
           {/* Tall Card 1 */}
-          <div className="md:col-span-1 md:row-span-2 bg-surface rounded-xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-colors duration-300">
+          <div className="md:col-span-1 md:row-span-2 bg-surface rounded-2xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-all duration-300 hover:border-teal/20 hover:shadow-lg hover:shadow-teal/5">
             <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
               <Standard1Icon className="w-5 h-5 text-gold" />
             </div>
@@ -160,7 +160,7 @@ export function FeaturesGrid() {
           </div>
 
           {/* Card 2 */}
-          <div className="md:col-span-1 md:row-span-1 bg-surface rounded-xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-colors duration-300">
+          <div className="md:col-span-1 md:row-span-1 bg-surface rounded-2xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-all duration-300 hover:border-teal/20 hover:shadow-lg hover:shadow-teal/5">
             <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
               <Standard2Icon className="w-5 h-5 text-gold" />
             </div>
@@ -173,7 +173,7 @@ export function FeaturesGrid() {
           </div>
 
           {/* Card 3 */}
-          <div className="md:col-span-1 md:row-span-1 bg-surface rounded-xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-colors duration-300">
+          <div className="md:col-span-1 md:row-span-1 bg-surface rounded-2xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-all duration-300 hover:border-teal/20 hover:shadow-lg hover:shadow-teal/5">
             <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
               <Standard3Icon className="w-5 h-5 text-gold" />
             </div>
@@ -186,7 +186,7 @@ export function FeaturesGrid() {
           </div>
 
           {/* Wide Card 4 */}
-          <div className="md:col-span-2 md:row-span-1 bg-surface rounded-xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-colors duration-300">
+          <div className="md:col-span-2 md:row-span-1 bg-surface rounded-2xl p-6 border-l-2 border-l-gold/20 hover:bg-surface-hover transition-all duration-300 hover:border-teal/20 hover:shadow-lg hover:shadow-teal/5">
             <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-4">
               <Standard4Icon className="w-5 h-5 text-gold" />
             </div>

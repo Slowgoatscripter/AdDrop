@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Plus,
+  Droplets,
   FileText,
   SlidersHorizontal,
 } from 'lucide-react'
@@ -172,8 +172,8 @@ export default async function DashboardPage({
             href="/create"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-gold text-background font-medium hover:bg-gold/90 transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            Create New Campaign
+            <Droplets className="w-4 h-4" />
+            Drop a New Campaign
           </Link>
 
           {/* Search and filter bar — only shown when there are campaigns */}
@@ -185,7 +185,7 @@ export default async function DashboardPage({
           {!hasAnyRawCampaigns ? (
             <div className="text-center py-12 border border-border rounded-lg bg-muted/30">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No campaigns yet. Create your first ad!</p>
+              <p className="text-muted-foreground">No campaigns yet. Ready to make your first drop?</p>
             </div>
           ) : campaigns.length === 0 ? (
             /* No results after filtering */

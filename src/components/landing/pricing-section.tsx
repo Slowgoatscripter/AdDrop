@@ -71,7 +71,7 @@ export function PricingSection() {
             return (
               <div
                 key={tier.name}
-                className={`relative rounded-xl p-8 flex flex-col ${
+                className={`relative rounded-2xl p-8 flex flex-col ${
                   tier.highlight
                     ? 'bg-surface border-2 border-gold/40 shadow-lg shadow-gold/5'
                     : 'bg-surface border border-border/50'
@@ -114,9 +114,7 @@ export function PricingSection() {
                 <ul className="space-y-3 mb-8 flex-1">
                   {tier.features.map((feature) => (
                     <li key={feature} className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full border border-gold/40 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-2.5 h-2.5 text-gold" />
-                      </div>
+                      <span className="w-2 h-2.5 droplet-shape bg-gold inline-block mr-2 shrink-0" />
                       <span className="text-sm text-muted-foreground">{feature}</span>
                     </li>
                   ))}

@@ -29,7 +29,7 @@ export function PlatformBar() {
   const duplicatedPlatforms = [...platforms, ...platforms];
 
   return (
-    <section className="relative py-16 border-y border-border/50 overflow-hidden bg-gradient-to-r from-transparent via-surface/50 to-transparent">
+    <section className="relative py-16 border-y border-border/50 overflow-hidden bg-teal-muted/20 border-y border-teal/10">
       <div className="max-w-7xl mx-auto px-6">
         <p className="font-serif tracking-[0.25em] text-gold-light/60 text-xs uppercase text-center mb-12">
           Generate ads for

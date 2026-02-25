@@ -37,7 +37,7 @@ export function WhoItsFor() {
           {personas.map((persona) => (
             <div
               key={persona.title}
-              className="bg-surface rounded-xl overflow-hidden group"
+              className="bg-surface rounded-2xl overflow-hidden group"
             >
               {/* Image top section */}
               <div className="relative h-40 overflow-hidden">
@@ -51,9 +51,9 @@ export function WhoItsFor() {
                 <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
               </div>
 
-              {/* Gold icon badge overlapping image bottom */}
+              {/* Droplet icon badge overlapping image bottom */}
               <div className="relative -mt-6 ml-6">
-                <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
+                <div className="w-12 h-14 droplet-shape bg-gold/10 border border-gold/20 flex items-center justify-center">
                   <persona.icon className="w-6 h-6 text-gold" />
                 </div>
               </div>
