@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { CreditCard, ExternalLink, AlertTriangle, Crown, Zap } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { LiquidProgress } from '@/components/ui/liquid-progress'
 import { getBillingInfo } from './actions'
 import type { BillingInfo } from '@/lib/types/subscription'
 
@@ -235,18 +236,7 @@ export default function BillingPage() {
           {!isUnlimited && (
             <>
               {/* Progress bar */}
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    usagePercent >= 90
-                      ? 'bg-destructive'
-                      : usagePercent >= 70
-                        ? 'bg-amber-500'
-                        : 'bg-gold'
-                  }`}
-                  style={{ width: `${usagePercent}%` }}
-                />
-              </div>
+              <LiquidProgress value={usagePercent} />
 
               <p className="text-xs text-muted-foreground">
                 {billing.usage.remaining === 0
