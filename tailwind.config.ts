@@ -57,6 +57,11 @@ export default {
   				bright: 'hsl(var(--gold-bright))',
   			},
   			sage: 'hsl(var(--sage))',
+  			teal: {
+  				DEFAULT: 'hsl(var(--teal))',
+  				light: 'hsl(var(--teal-light))',
+  				muted: 'hsl(var(--teal-muted))',
+  			},
   			surface: {
   				DEFAULT: 'hsl(var(--surface))',
   				hover: 'hsl(var(--surface-hover))',
@@ -71,6 +76,7 @@ export default {
   			}
   		},
   		borderRadius: {
+  			'2xl': '1rem',
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
@@ -84,10 +90,20 @@ export default {
   				'0%, 100%': { boxShadow: '0 0 0 0 hsl(var(--gold) / 0.5)' },
   				'50%': { boxShadow: '0 0 0 10px hsl(var(--gold) / 0)' },
   			},
+  			'droplet-bounce': {
+  				'0%, 100%': { transform: 'translateY(0) scaleX(1) scaleY(1)' },
+  				'50%': { transform: 'translateY(-8px) scaleX(0.95) scaleY(1.05)' },
+  			},
+  			ripple: {
+  				'0%': { transform: 'scale(0)', opacity: '0.6' },
+  				'100%': { transform: 'scale(4)', opacity: '0' },
+  			},
   		},
   		animation: {
   			marquee: 'marquee 30s linear infinite',
   			'pulse-gold': 'pulse-gold 2s ease-in-out infinite',
+  			'droplet-bounce': 'droplet-bounce 1.2s ease-in-out infinite',
+  			ripple: 'ripple 0.6s ease-out forwards',
   		},
   	}
   },

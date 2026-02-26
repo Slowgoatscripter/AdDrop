@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Users, Settings, LogOut, FlaskConical, MessageSquare, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { DropletIcon } from '@/components/ui/droplet-icon'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -25,10 +26,11 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="hidden md:flex w-60 h-screen fixed left-0 top-0 bg-card border-r border-border flex-col">
+    <aside className="hidden md:flex w-60 h-screen fixed left-0 top-0 bg-card/80 backdrop-blur-sm border-r border-border flex-col">
       <div className="p-4 border-b border-border">
-        <Link href="/admin" className="text-lg font-bold text-gold">
+        <Link href="/admin" className="text-lg font-bold text-gold flex items-center">
           AdDrop
+          <DropletIcon size={8} className="ml-0.5 opacity-80" />
         </Link>
         <p className="text-xs text-muted-foreground mt-0.5">Admin Panel</p>
       </div>
@@ -42,7 +44,7 @@ export function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
                 isActive
-                  ? 'bg-gold/10 text-gold'
+                  ? 'bg-teal-muted/50 text-gold'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               }`}
             >

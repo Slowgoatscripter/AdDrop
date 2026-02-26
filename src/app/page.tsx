@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import { Hero } from '@/components/landing/hero';
 import { PlatformBar } from '@/components/landing/platform-bar';
-import { HowItWorks } from '@/components/landing/how-it-works';
 import { ShowcaseCarousel } from '@/components/landing/showcase-carousel';
 import { InteractiveDemo } from '@/components/landing/interactive-demo';
-import { SocialProof } from '@/components/landing/social-proof';
 import { FeaturesGrid } from '@/components/landing/features-grid';
 import { WhoItsFor } from '@/components/landing/who-its-for';
 import { FAQ } from '@/components/landing/faq';
@@ -19,7 +17,7 @@ import { Footer } from '@/components/nav/footer';
 export const metadata: Metadata = {
   title: 'AI Real Estate Ad Generator — AdDrop',
   description:
-    'AdDrop generates complete real estate ad campaigns in minutes. Enter your property details and get copy for Instagram, Facebook, Google Ads, print, direct mail, and 8+ more platforms. Free during beta.',
+    'AdDrop generates complete real estate ad campaigns in minutes. Enter your property details and get copy for Instagram, Facebook, Google Ads, print, direct mail, and 8+ more platforms. Free tier available.',
   alternates: { canonical: 'https://addrop.app' },
   openGraph: {
     title: 'AI Real Estate Ad Generator — AdDrop',
@@ -70,9 +68,7 @@ export default async function Home() {
         />
         <PlatformBar />
         <InteractiveDemo />
-        <HowItWorks />
         <ShowcaseCarousel />
-        <SocialProof />
         <FeaturesGrid />
         <WhoItsFor />
         <FAQ faqs={faqs} />

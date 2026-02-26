@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateUserRole, toggleRateLimitExempt } from '@/app/admin/users/actions'
+import { updateUserRole, toggleRateLimitExempt, overrideUserTier } from '@/app/admin/users/actions'
 import { RoleBadge } from './role-badge'
 import { Search } from 'lucide-react'
 import type { Profile } from '@/lib/types/admin'
@@ -41,6 +41,22 @@ export function UsersTable({ profiles, currentUserId }: UsersTableProps) {
     })
   }
 
+  function handleTierChange(userId: string, newTier: 'free' | 'pro' | 'enterprise') {
+    startTransition(async () => {
+      try {
+        await overrideUserTier(userId, newTier)
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Failed to override tier')
+      }
+    })
+  }
+
+  const tierBadgeClasses: Record<string, string> = {
+    free: 'bg-muted text-muted-foreground',
+    pro: 'bg-gold/20 text-gold',
+    enterprise: 'bg-purple-500/20 text-purple-400',
+  }
+
   return (
     <div>
       <div className="relative mb-4">
@@ -61,6 +77,7 @@ export function UsersTable({ profiles, currentUserId }: UsersTableProps) {
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Name</th>
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Email</th>
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Role</th>
+              <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Tier</th>
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Joined</th>
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Rate Limit</th>
               <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Actions</th>
@@ -77,6 +94,25 @@ export function UsersTable({ profiles, currentUserId }: UsersTableProps) {
                 </td>
                 <td className="px-4 py-3">
                   <RoleBadge role={profile.role} />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${tierBadgeClasses[profile.subscription_tier || 'free']}`}>
+                      {(profile.subscription_tier || 'free').charAt(0).toUpperCase() + (profile.subscription_tier || 'free').slice(1)}
+                    </span>
+                    <select
+                      value={profile.subscription_tier || 'free'}
+                      onChange={(e) =>
+                        handleTierChange(profile.id, e.target.value as 'free' | 'pro' | 'enterprise')
+                      }
+                      disabled={isPending}
+                      className="text-xs px-2 py-1 rounded bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 disabled:opacity-50"
+                    >
+                      <option value="free">Free</option>
+                      <option value="pro">Pro</option>
+                      <option value="enterprise">Enterprise</option>
+                    </select>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
                   {new Date(profile.created_at).toLocaleDateString()}
@@ -121,7 +157,7 @@ export function UsersTable({ profiles, currentUserId }: UsersTableProps) {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   No users found
                 </td>
               </tr>

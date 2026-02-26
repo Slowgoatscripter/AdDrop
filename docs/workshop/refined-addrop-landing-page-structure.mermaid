@@ -1,0 +1,22 @@
+flowchart TD
+    A["🎯 Hero<br/>Value proposition & CTA"] --> B["🏢 Platform Bar<br/>Marquee of supported platforms"]
+    B --> C["🎮 Interactive Demo<br/>See it in action"] 
+    C --> D["🎠 Showcase Carousel<br/>See what AdDrop creates"]
+    D --> E["🎯 Features Grid<br/>Key selling points"]
+    E --> F["👤 Who It's For<br/>Target audience"]
+    F --> G["❓ FAQ<br/>Common questions"]
+    G --> H["🚀 CTA Footer<br/>Final conversion push"]
+    
+    subgraph removed ["Moved/Removed"]
+        I["💰 Pricing → /pricing page"]
+        J["📋 How It Works → removed"]
+        K["👥 Social Proof → removed"]
+    end
+    
+    classDef core fill:#065f46,stroke:#10b981,color:#ecfdf5,font-weight:bold
+    classDef secondary fill:#1e40af,stroke:#3b82f6,color:#dbeafe
+    classDef removed fill:#7f1d1d,stroke:#dc2626,color:#fecaca
+    
+    class A,C,D core
+    class B,E,F,G,H secondary  
+    class I,J,K removed

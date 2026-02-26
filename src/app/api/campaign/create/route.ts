@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ListingData, PlatformId, ALL_PLATFORMS } from '@/lib/types';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
 import { getCampaignUsage } from '@/lib/usage/campaign-limits';
+import { getUserTier } from '@/lib/stripe/gate';
 
 const ListingSchema = z.object({
   address: z.object({
@@ -44,6 +45,8 @@ export async function POST(request: NextRequest) {
   try {
     const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
+
+    const tier = await getUserTier(supabase, user!.id);
 
     // Rate limit check — count 'generating' campaigns as used slots
     const usage = await getCampaignUsage(supabase, user!.id);
@@ -113,6 +116,7 @@ export async function POST(request: NextRequest) {
         generated_ads: null,
         platform: Array.isArray(platforms) ? platforms.join(',') : 'all',
         status: 'generating',
+        generated_at_tier: tier,
       });
 
     if (insertError) {

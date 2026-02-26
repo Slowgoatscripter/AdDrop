@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { CampaignKit } from '@/lib/types';
 import type { ComplianceAgentResult } from '@/lib/types/compliance';
 import type { QualitySuggestion } from '@/lib/types/quality';
+import type { SubscriptionTier } from '@/lib/stripe/config';
+import { TIER_FEATURES } from '@/lib/stripe/config';
 import { createClient } from '@/lib/supabase/client';
 import { PropertyHeader } from './property-header';
 import { CampaignTabs } from './campaign-tabs';
@@ -16,6 +18,7 @@ import { toast } from 'sonner';
 import { SharePopover } from './share-popover';
 import { EmailModal } from './email-modal';
 import { BundleProgressModal } from './bundle-progress-modal';
+import { UpgradePrompt } from '@/components/ui/upgrade-prompt';
 
 async function persistCampaignAds(id: string, generatedAds: CampaignKit) {
   try {
@@ -50,6 +53,8 @@ export function CampaignShell() {
   const [platforms, setPlatforms] = useState<string[]>([]);
   const [campaignName, setCampaignName] = useState<string>('');
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [userTier, setUserTier] = useState<SubscriptionTier>('free');
+  const [generatedAtTier, setGeneratedAtTier] = useState<SubscriptionTier>('free');
   const generationTriggered = useRef(false);
   useEffect(() => {
     async function loadCampaign() {
@@ -60,16 +65,32 @@ export function CampaignShell() {
         // Try loading from database first
         const supabase = createClient();
 
-        // Fetch userId for photo uploads
+        // Fetch userId for photo uploads + subscription tier for gating
         const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) setUserId(authUser.id);
+        if (authUser) {
+          setUserId(authUser.id);
+          // Fetch user's subscription tier from profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('subscription_tier')
+            .eq('id', authUser.id)
+            .single();
+          if (profileData?.subscription_tier) {
+            setUserTier(profileData.subscription_tier as SubscriptionTier);
+          }
+        }
         const { data, error } = await supabase
           .from('campaigns')
-          .select('generated_ads, status, error_message, listing_data, platform, name')
+          .select('generated_ads, status, error_message, listing_data, platform, name, generated_at_tier')
           .eq('id', id)
           .single();
 
         if (!error && data) {
+          // Store the tier at which this campaign was generated (for platform gating)
+          if (data.generated_at_tier) {
+            setGeneratedAtTier(data.generated_at_tier as SubscriptionTier);
+          }
+
           // Handle status-based flow (new redirect-first flow)
           if (data.status === 'generating') {
             setListingData(data.listing_data);
@@ -684,17 +705,30 @@ export function CampaignShell() {
   return (
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-2xl font-bold text-foreground">Campaign Kit</h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap items-center">
             <Button variant="outline" onClick={() => router.push('/create')}>New Campaign</Button>
-            <Button variant="outline" onClick={() => handleExport('csv')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export CSV'}</Button>
-            <Button variant="outline" onClick={() => handleExport('pdf')} disabled={exporting}>{exporting ? 'Exporting…' : 'Export PDF'}</Button>
-            <Button onClick={() => setBundleModalOpen(true)}>Download All</Button>
-            <SharePopover campaignId={campaign!.id} />
-            <EmailModal campaignId={campaign!.id} />
+            <Button variant="outline" onClick={() => handleExport('csv')} disabled={exporting || !TIER_FEATURES[userTier].export}>{exporting ? 'Exporting…' : 'Export CSV'}</Button>
+            <Button variant="outline" onClick={() => handleExport('pdf')} disabled={exporting || !TIER_FEATURES[userTier].export}>{exporting ? 'Exporting…' : 'Export PDF'}</Button>
+            <Button onClick={() => setBundleModalOpen(true)} disabled={!TIER_FEATURES[userTier].export}>Download All</Button>
+            {TIER_FEATURES[userTier].share ? (
+              <>
+                <SharePopover campaignId={campaign!.id} />
+                <EmailModal campaignId={campaign!.id} />
+              </>
+            ) : (
+              <Button variant="outline" disabled>Share</Button>
+            )}
           </div>
         </div>
+        {/* Upgrade prompts for gated features */}
+        {!TIER_FEATURES[userTier].export && (
+          <UpgradePrompt feature="export" />
+        )}
+        {!TIER_FEATURES[userTier].share && (
+          <UpgradePrompt feature="share" />
+        )}
         <BundleProgressModal
           open={bundleModalOpen}
           onOpenChange={setBundleModalOpen}
@@ -737,7 +771,7 @@ export function CampaignShell() {
         )}
 
         <PropertyHeader listing={campaign.listing} />
-        <CampaignTabs campaign={campaign} onReplace={handleReplace} onEditText={handleEditText} onRegenerate={handleRegenerate} regeneratingPlatform={regeneratingPlatform} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} onApplySuggestion={handleApplySuggestion} onDismissSuggestion={handleDismissSuggestion} onPhotosChange={handlePhotosChange} userId={userId} />
+        <CampaignTabs campaign={campaign} onReplace={handleReplace} onEditText={handleEditText} onRegenerate={handleRegenerate} regeneratingPlatform={regeneratingPlatform} qualitySuggestions={campaign.qualitySuggestions} qualityConstraints={campaign.qualityConstraints} onApplySuggestion={handleApplySuggestion} onDismissSuggestion={handleDismissSuggestion} onPhotosChange={handlePhotosChange} userId={userId} userTier={userTier} generatedAtTier={generatedAtTier} />
       </div>
     </div>
   );

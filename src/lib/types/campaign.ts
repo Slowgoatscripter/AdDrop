@@ -89,6 +89,8 @@ export interface CampaignKit {
   /** Auto-enforced hard constraints (char limits, disclosures) */
   qualityConstraints?: import('./quality').QualityConstraintViolation[];
   selectedPlatforms?: PlatformId[];
+  /** The subscription tier when this campaign was generated (for grandfathering) */
+  generated_at_tier?: import('../stripe/config').SubscriptionTier;
   stateCode?: string;
   // Strategy fields — always generated
   hashtags: string[];

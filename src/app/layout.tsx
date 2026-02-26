@@ -146,7 +146,7 @@ export default function RootLayout({
           position="bottom-left"
           theme="dark"
           toastOptions={{
-            className: 'bg-card border border-border text-cream shadow-lg',
+            className: 'bg-card/90 backdrop-blur-sm border border-border/50 text-cream shadow-lg rounded-2xl',
             duration: 4000,
           }}
         />
