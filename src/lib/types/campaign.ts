@@ -3,6 +3,8 @@ import { CampaignQualityResult } from './quality';
 
 export type AdTone = 'professional' | 'casual' | 'luxury';
 
+export type AudioTone = 'conversational' | 'authoritative' | 'friendly';
+
 export interface AdVariation {
   platform: string;
   tone?: AdTone;
@@ -29,6 +31,20 @@ export interface PrintAd {
   cta: string;
 }
 
+export interface RadioScript {
+  script: string;
+  wordCount: number;
+  estimatedDuration: number;
+  notes?: string;
+  voiceStyle?: string;
+  musicSuggestion?: string;
+}
+
+/** Radio ad content keyed by time slot (e.g. '30s', '60s') then by AudioTone */
+export interface RadioAdsContent {
+  [timeSlot: string]: Record<AudioTone, RadioScript>;
+}
+
 // --- Platform Selection Types ---
 
 export type PlatformId =
@@ -36,9 +52,10 @@ export type PlatformId =
   | 'googleAds' | 'metaAd'
   | 'magazineFullPage' | 'magazineHalfPage' | 'postcard'
   | 'zillow' | 'realtorCom' | 'homesComTrulia'
-  | 'mlsDescription';
+  | 'mlsDescription'
+  | 'radioAds';
 
-export type PlatformCategory = 'social' | 'paid' | 'print' | 'listings' | 'mls';
+export type PlatformCategory = 'social' | 'paid' | 'print' | 'listings' | 'mls' | 'audio';
 
 export const ALL_PLATFORMS: PlatformId[] = [
   'instagram', 'facebook', 'twitter',
@@ -46,6 +63,7 @@ export const ALL_PLATFORMS: PlatformId[] = [
   'magazineFullPage', 'magazineHalfPage', 'postcard',
   'zillow', 'realtorCom', 'homesComTrulia',
   'mlsDescription',
+  'radioAds',
 ];
 
 export interface PlatformOption {
@@ -81,6 +99,7 @@ export interface CampaignKit {
   realtorCom?: string;
   homesComTrulia?: string;
   mlsDescription?: string;
+  radioAds?: RadioAdsContent;
   // Metadata
   complianceResult: ComplianceAgentResult;
   qualityResult?: CampaignQualityResult;
