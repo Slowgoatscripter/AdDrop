@@ -10,7 +10,7 @@ const defaultFaqs: FAQItemType[] = [
   {
     question: 'Is AdDrop really free?',
     answer:
-      'Yes — AdDrop is completely free during beta. Create a free account, get 2 campaigns per week, and never see a credit card form. We want you to try it and tell us what you think.',
+      'Yes — AdDrop has a generous free tier. Create a free account, get 2 campaigns per month across 5 platforms, and never see a credit card form. Need more? Pro and Enterprise plans unlock all 12+ platforms and higher limits.',
   },
   {
     question: 'Why do I need an account?',
@@ -39,7 +39,7 @@ const defaultFaqs: FAQItemType[] = [
   {
     question: 'What platforms are supported?',
     answer:
-      "Instagram, Facebook, Google Ads, Twitter/X, Zillow, Realtor.com, print ads, direct mail postcards, magazine ads, and more. We're adding new platforms regularly.",
+      "Instagram, Facebook, Google Ads, Twitter/X, Zillow, Realtor.com, print ads, direct mail postcards, magazine ads, and more. Free accounts get 5 platforms; Pro and Enterprise unlock all 12+.",
   },
 ];
 

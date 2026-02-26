@@ -105,19 +105,38 @@ Comparing current vs. target:
 - ❌ Requires new route, footer link changes, navigation updates
 - ⚠️ Overengineered for what the task asks
 
-## Recommendation
+## Decision
 
-**Approach A: Verify and Close.** The current section order already matches the target. The task was likely filed before the HowItWorks, SocialProof, and Pricing removal commits landed, and those removals achieved the intended flow. FAQ should stay — it's included in the workshop architecture document, provides SEO value, and handles conversion objections.
+**Approach A accepted: Keep FAQ, update content to reflect current non-beta state.**
 
-## Implementation Scope
+The section order is already correct. The additional work is removing all beta-era language from the FAQ and CTA footer to reflect the launched product with Free / Pro / Enterprise tiers.
 
-If Approach A is accepted, implementation is a verification-only task:
+## Changes Made
 
-1. **Confirm current order** — Read `page.tsx` and verify section order matches target
-2. **Visual verification** — Run dev server and scroll through the page to confirm flow feels natural
-3. **Build check** — Run `npm run build` to verify no issues
+### 1. FAQ Default Answers (`src/components/landing/faq.tsx`)
 
-No files need modification. The task can be closed as already-complete.
+| Question | Before | After |
+|----------|--------|-------|
+| "Is AdDrop really free?" | "completely free during beta … 2 campaigns per week" | "generous free tier … 2 campaigns per month across 5 platforms … Pro and Enterprise plans" |
+| "What platforms are supported?" | "We're adding new platforms regularly" | "Free accounts get 5 platforms; Pro and Enterprise unlock all 12+" |
+
+Other FAQ items unchanged — they contained no beta language.
+
+### 2. FAQ Settings Defaults (`src/lib/settings/defaults.ts`)
+
+Same two FAQ answers updated to match the component defaults. Also updated:
+- `landing.cta_beta` → Changed from "Free during beta. 2 campaigns per week." to "Free to start. 2 campaigns per month."
+- Added `landing.cta_description` key with the default description text.
+
+### 3. CTA Footer (`src/components/landing/cta-footer.tsx`)
+
+- Value point "2 campaigns per week to start" → "2 campaigns per month to start"
+- Removed legacy `betaNotice` prop — simplified to just `description`
+- Cleaned up the prop fallback chain
+
+### 4. Landing Page (`src/app/page.tsx`)
+
+- `CTAFooter` now passes `description` prop instead of legacy `betaNotice`
 
 ## Architecture Notes
 
@@ -135,7 +154,23 @@ The `<Footer>` renders outside `<main>` and is always the final element on the p
 | Interactive Demo at 3rd position | ✅ Already at position 3 |
 | Features Grid after core value demo | ✅ Position 5, after Demo (3) and Showcase (4) |
 | Who It's For after core value demo | ✅ Position 6, after Demo (3) and Showcase (4) |
-| Visual flow feels natural and logical | ✅ Hero → credibility → demo → proof → features → audience → CTA |
+| Visual flow feels natural and logical | ✅ Hero → credibility → demo → proof → features → audience → FAQ → CTA |
+| FAQ kept and updated | ✅ Beta language removed, tier info added |
+
+## Out-of-Scope Beta References (flagged for separate task)
+
+These files still contain beta language but are outside the landing page scope:
+
+| File | Beta Reference |
+|------|---------------|
+| `src/components/create/beta-limit-reached.tsx` | "You've hit your beta limit" |
+| `src/components/auth/beta-signup-banner.tsx` | "Create a free beta account" |
+| `src/components/nav/app-header.tsx` | Renders `<BetaBadge />` |
+| `src/components/ui/beta-badge.tsx` | Beta badge component |
+| `src/app/layout.tsx` | Metadata contains "Free during beta" |
+| `src/app/(legal)/terms/page.tsx` | "Beta Service" section |
+
+These should be addressed in a dedicated "remove beta branding" task.
 
 ---
 

@@ -75,7 +75,7 @@ export default async function Home() {
         <CTAFooter
           headline={s['landing.cta_headline'] as string}
           ctaText={s['landing.cta_text'] as string}
-          betaNotice={s['landing.cta_beta'] as string}
+          description={(s['landing.cta_description'] as string) || undefined}
         />
         <MobileCTABar />
       </main>
