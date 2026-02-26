@@ -1,0 +1,29 @@
+flowchart TD
+    A[Hero Section] --> B[Platform Bar]
+    B --> C[Interactive Demo]
+    C --> D[How It Works]
+    D --> E[Showcase Carousel]
+    E --> F[Social Proof]
+    F --> G[Features Grid]
+    G --> H[Who It's For]
+    H --> I[Pricing Section]
+    I --> J[FAQ]
+    J --> K[CTA Footer]
+    
+    A1["🎯 Title, tagline, description<br/>📊 Stats<br/>🔘 Primary CTA"] -.-> A
+    B1["🏢 Supported platform logos<br/>⚠️  (has outline issue)"] -.-> B
+    C1["🎮 Zero-friction demo<br/>📱 Sample property card<br/>⚡ AI pipeline animation"] -.-> C
+    D1["📋 3-step process<br/>🔍 Enter MLS → 🤖 AI generates → 📥 Download"] -.-> D
+    E1["🎠 Interactive carousel<br/>📷 Platform mockups<br/>🏠 Example ad outputs"] -.-> E
+    F1["👥 Social proof elements"] -.-> F
+    G1["🎯 2x3 feature grid<br/>✨ Key selling points"] -.-> G
+    H1["👤 Target audience section"] -.-> H
+    I1["💰 Pricing information"] -.-> I
+    J1["❓ FAQ section"] -.-> J
+    K1["🚀 Final conversion push"] -.-> K
+    
+    classDef section fill:#1e293b,stroke:#334155,color:#e2e8f0
+    classDef detail fill:#0f172a,stroke:#475569,color:#cbd5e1,font-size:11px
+    
+    class A,B,C,D,E,F,G,H,I,J,K section
+    class A1,B1,C1,D1,E1,F1,G1,H1,I1,J1,K1 detail
