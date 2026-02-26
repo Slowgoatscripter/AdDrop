@@ -10,7 +10,7 @@ export default function TermsPage() {
     <>
       {/*
         @generated-by: legal-pages
-        @generated-date: 2026-02-12
+        @generated-date: 2026-02-26
         @jurisdictions: global-baseline, us-general
         @page-type: terms-of-service
         @skill-version: 1.0
@@ -18,7 +18,7 @@ export default function TermsPage() {
       */}
 
       <h1>Terms of Service</h1>
-      <p><strong>Effective date:</strong> February 12, 2026</p>
+      <p><strong>Effective date:</strong> February 26, 2026</p>
 
       <p>
         Welcome to AdDrop. These Terms of Service (&ldquo;Terms&rdquo;) govern your access to
@@ -52,13 +52,20 @@ export default function TermsPage() {
         including Instagram, Facebook, Google Ads, print advertising, direct mail, and more.
       </p>
       <p>
-        <strong>Beta Service:</strong> AdDrop is currently in beta. During beta:
+        <strong>Service Plans:</strong> AdDrop offers both free and paid
+        subscription plans. Each plan includes specific usage limits (such as
+        the number of campaigns you may create per month) and feature
+        access. Current plan details, limits, and pricing are described on
+        our <Link href="/pricing">Pricing</Link> page. We may update plan
+        offerings, limits, and pricing at any time with notice as described
+        in Section 2.
       </p>
       <ul>
-        <li>The service is free of charge</li>
-        <li>Usage is limited to 2 campaigns per user per rolling 7-day period</li>
-        <li>Features may change, be added, or removed without notice</li>
-        <li>The service is provided on an &ldquo;as available&rdquo; basis with no uptime guarantees</li>
+        <li>Features may change, be added, or removed with reasonable notice</li>
+        <li>
+          The service is provided on an &ldquo;as available&rdquo; basis —
+          see Section 8 for warranty disclaimers
+        </li>
       </ul>
       <p>
         We reserve the right to modify, suspend, or discontinue any aspect of the service
