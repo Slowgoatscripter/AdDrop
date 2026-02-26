@@ -2,7 +2,7 @@
 
 import { Star, Check } from 'lucide-react'
 
-export function BetaSignupBanner() {
+export function SignupBanner() {
   return (
     <div className="bg-surface border-l-2 border-gold rounded-lg p-4 mb-6">
       <div className="flex items-center gap-2 mb-2">
@@ -10,14 +10,14 @@ export function BetaSignupBanner() {
         <h3 className="text-sm font-semibold text-foreground">You&apos;re one step away</h3>
       </div>
       <p className="text-sm text-muted-foreground mb-3">
-        Create a free beta account to start generating ads. No credit card needed.
+        Create a free account to start generating ads. No credit card needed.
       </p>
       <ul className="space-y-1.5">
         {[
-          '2 campaigns per week',
+          '2 campaigns per month',
           'All 12+ platforms',
           'Built-in compliance checks',
-          'Free during beta',
+          'Free to start',
         ].map((item) => (
           <li key={item} className="flex items-center gap-2 text-sm text-foreground/80">
             <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
