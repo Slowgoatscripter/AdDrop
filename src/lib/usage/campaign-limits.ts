@@ -1,10 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { TIER_LIMITS, type SubscriptionTier } from '@/lib/stripe/config'
 
-// Deprecated: kept for reference during migration
-// export const BETA_CAMPAIGN_LIMIT = 2
-// export const BETA_WINDOW_DAYS = 7
-
 export interface UsageInfo {
   used: number
   limit: number
