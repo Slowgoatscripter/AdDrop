@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { PricingTable } from '@/components/pricing/pricing-table'
+import { AppHeader } from '@/components/nav/app-header'
+import { Footer } from '@/components/nav/footer'
 import type { SubscriptionTier } from '@/lib/stripe/config'
 
 export const metadata: Metadata = {
@@ -38,34 +40,38 @@ export default async function PricingPage() {
   }
 
   return (
-    <main className="min-h-screen py-20 px-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="font-serif text-4xl md:text-5xl text-cream mb-4">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Start free. Upgrade when you need more platforms, campaigns, and
-            premium features.
-          </p>
-        </div>
+    <>
+      <AppHeader variant="landing" />
+      <main className="min-h-screen pt-24 pb-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="font-serif text-4xl md:text-5xl text-cream mb-4">
+              Simple, Transparent Pricing
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Start free. Upgrade when you need more platforms, campaigns, and
+              premium features.
+            </p>
+          </div>
 
-        <PricingTable
-          currentTier={currentTier}
-          priceConfig={priceConfig}
-        />
+          <PricingTable
+            currentTier={currentTier}
+            priceConfig={priceConfig}
+          />
 
-        {/* FAQ / extra info */}
-        <div className="mt-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            All plans include fair housing compliance checking.{' '}
-            <a href="/faq" className="text-gold hover:text-gold-bright underline underline-offset-4">
-              Questions?
-            </a>
-          </p>
+          {/* FAQ / extra info */}
+          <div className="mt-16 text-center">
+            <p className="text-sm text-muted-foreground">
+              All plans include fair housing compliance checking.{' '}
+              <a href="/faq" className="text-gold hover:text-gold-bright underline underline-offset-4">
+                Questions?
+              </a>
+            </p>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+      <Footer />
+    </>
   )
 }
