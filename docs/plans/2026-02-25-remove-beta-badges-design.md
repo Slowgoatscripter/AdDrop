@@ -169,11 +169,11 @@ This is in JSON-LD structured data that search engines read.
 ### 8. Update Terms of Service
 
 **File:** `src/app/(legal)/terms/page.tsx` (lines 54-62)
-**Action:** Replace the "Beta Service" section with a "Service Tiers" section describing the current Free/Pro/Enterprise model. Key changes:
-- Remove "AdDrop is currently in beta"
-- Replace "The service is free of charge" with "AdDrop offers free and paid tiers"
-- Update "2 campaigns per user per rolling 7-day period" to "Free tier: 2 campaigns per month"
-- Keep the "Features may change" and "as available" disclaimers (those apply regardless of beta)
+**Action:** Replace the "Beta Service" section with a "Service Tiers" section describing the current Free/Pro/Enterprise model. This was confirmed as the preferred approach over simply trimming the beta language. Key changes:
+- Replace `<strong>Beta Service:</strong> AdDrop is currently in beta. During beta:` with `<strong>Service Tiers:</strong> AdDrop offers free and paid plans:`
+- Replace `The service is free of charge` with `Free tier: 2 campaigns per month, 5 platforms per campaign`
+- Replace `Usage is limited to 2 campaigns per user per rolling 7-day period` with `Pro and Enterprise tiers offer higher limits and additional features`
+- Keep the "Features may change" and "as available" disclaimers (those apply regardless of tier)
 
 ### 9. Update admin settings label
 
@@ -226,3 +226,8 @@ This is in JSON-LD structured data that search engines read.
 | EDIT | `src/lib/supabase/middleware.ts` |
 
 **Total: 2 deletions, 2 renames, 11 edits = 15 file touches**
+
+## Resolved Questions
+
+1. **Welcome card benefits — "per week" or "per month"?** → **2 campaigns per month.** Matches `TIER_LIMITS.free.campaigns = 2` with the monthly reset cycle in `getCampaignUsage`.
+2. **Terms of Service "Beta Service" section — trim or rewrite?** → **Replace with a "Service Tiers" section** describing the current Free / Pro / Enterprise model. Keep general disclaimers about feature changes and availability.
