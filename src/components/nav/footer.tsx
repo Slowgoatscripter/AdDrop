@@ -9,6 +9,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col items-center gap-4 text-xs text-muted-foreground">
         <DropletIcon size={12} className="opacity-40" />
         <nav className="flex items-center gap-4">
+          <Link href="/pricing" className="hover:text-teal-light transition-colors">Pricing</Link>
           <Link href="/terms" className="hover:text-teal-light transition-colors">Terms</Link>
           <Link href="/privacy" className="hover:text-teal-light transition-colors">Privacy</Link>
           <Link href="/cookies" className="hover:text-teal-light transition-colors">Cookies</Link>
