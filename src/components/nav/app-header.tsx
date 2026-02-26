@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase/client'
 import { UserMenu } from './user-menu'
 import { MobileDrawer } from './mobile-drawer'
 import { appLinks, adminLinks, adminAppLink, adminSecondaryLinks, type NavLink } from './nav-links'
-import { BetaBadge } from '@/components/ui/beta-badge'
 import { DropletIcon } from '@/components/ui/droplet-icon'
 import { useFeedbackOptional } from '@/components/feedback/feedback-provider'
 
@@ -136,7 +135,6 @@ export function AppHeader({ variant, user: userProp }: AppHeaderProps) {
           <span className="text-xl font-bold italic text-gold font-serif">Drop</span>
           <DropletIcon size={8} className="ml-0.5 -mb-0.5 opacity-80" />
         </Link>
-        {variant === 'app' && <BetaBadge />}
 
         {/* Center/Right: Desktop nav + actions */}
         <div className="hidden md:flex items-center gap-1">
