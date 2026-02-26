@@ -185,6 +185,7 @@ describe('POST /api/generate', () => {
     const data = await response.json()
 
     expect(response.status).toBe(429)
+    expect(data.error).toBe('Campaign limit reached')
     expect(data.code).toBe('RATE_LIMITED')
     expect(data.usage.used).toBe(2)
     expect(data.usage.resetsAt).toBe(resetAt.toISOString())
