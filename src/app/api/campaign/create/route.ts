@@ -48,11 +48,11 @@ export async function POST(request: NextRequest) {
 
     const tier = await getUserTier(supabase, user!.id);
 
-    // Rate limit check — count 'generating' campaigns as used slots
+    // Campaign usage limit check — count 'generating' campaigns as used slots
     const usage = await getCampaignUsage(supabase, user!.id);
     if (usage.isLimited) {
       return NextResponse.json({
-        error: 'Beta campaign limit reached',
+        error: 'Campaign limit reached',
         code: 'RATE_LIMITED',
         usage: {
           used: usage.used,
