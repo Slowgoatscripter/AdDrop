@@ -121,12 +121,29 @@ export default function RootLayout({
                 applicationCategory: 'BusinessApplication',
                 operatingSystem: 'Web',
                 url: 'https://addrop.app',
-                offers: {
-                  '@type': 'Offer',
-                  price: '0',
-                  priceCurrency: 'USD',
-                  description: 'Free during beta',
-                },
+                offers: [
+                  {
+                    '@type': 'Offer',
+                    name: 'Free',
+                    price: '0',
+                    priceCurrency: 'USD',
+                    description: 'Free tier — 2 campaigns per month, 5 platforms',
+                  },
+                  {
+                    '@type': 'Offer',
+                    name: 'Pro',
+                    price: '9',
+                    priceCurrency: 'USD',
+                    description: 'Pro — 15 campaigns per month, all 12+ platforms',
+                  },
+                  {
+                    '@type': 'Offer',
+                    name: 'Enterprise',
+                    price: '29',
+                    priceCurrency: 'USD',
+                    description: 'Enterprise — 75 campaigns per month, team seats',
+                  },
+                ],
                 description:
                   'AI-powered real estate ad generator. Create complete marketing campaigns for Instagram, Facebook, Google Ads, print, and more from a single property listing.',
                 featureList: [
