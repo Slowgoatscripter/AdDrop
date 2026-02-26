@@ -74,6 +74,24 @@ export function Hero({
             {/* SEO H1 — keyword-rich, visible to crawlers */}
             <h1 className="sr-only">AI Real Estate Ad Generator — AdDrop</h1>
 
+            {/* V1 Launch Badge — remove after launch */}
+            <motion.div
+              className="inline-flex items-center justify-center lg:justify-start mb-4"
+              initial={a ? { opacity: 0, y: 10 } : undefined}
+              animate={a ? { opacity: 1, y: 0 } : undefined}
+              transition={a ? { delay: 0.2, duration: 0.4, ease } : undefined}
+            >
+              <span
+                className="inline-flex items-center gap-1.5 border border-gold/30 bg-gold/8
+                           text-gold text-xs uppercase tracking-widest px-3 py-1 rounded-full
+                           bg-[length:200%_100%] bg-gradient-to-r from-transparent via-gold/10 to-transparent
+                           animate-shimmer-gold"
+              >
+                <span className="text-gold/70">✦</span>
+                V1 Now Live
+              </span>
+            </motion.div>
+
             {/* Visual brand display */}
             <div
               aria-hidden="true"
