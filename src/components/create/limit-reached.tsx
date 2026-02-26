@@ -12,7 +12,7 @@ function formatResetDateTime(date: Date): string {
   })
 }
 
-export function BetaLimitReached({ resetsAt }: { resetsAt: Date | null }) {
+export function LimitReached({ resetsAt }: { resetsAt: Date | null }) {
   return (
     <div className="text-center py-12 px-6 max-w-md mx-auto">
       <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-6">
@@ -20,7 +20,7 @@ export function BetaLimitReached({ resetsAt }: { resetsAt: Date | null }) {
       </div>
 
       <h2 className="text-xl font-serif text-cream mb-3">
-        You&apos;ve hit your beta limit this week.
+        You&apos;ve reached your plan limit this month.
       </h2>
 
       {resetsAt && (
@@ -33,15 +33,23 @@ export function BetaLimitReached({ resetsAt }: { resetsAt: Date | null }) {
         </p>
       )}
 
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-gold/60 text-gold font-medium hover:bg-gold hover:text-background transition-colors"
-      >
-        View Your Campaigns
-      </Link>
+      <div className="flex flex-col items-center gap-3">
+        <Link
+          href="/pricing"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-gold text-background font-medium hover:bg-gold/90 transition-colors"
+        >
+          Need More Campaigns?
+        </Link>
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-gold/60 text-gold font-medium hover:bg-gold hover:text-background transition-colors"
+        >
+          View Your Campaigns
+        </Link>
+      </div>
 
       <p className="text-xs text-muted-foreground mt-8">
-        Want unlimited campaigns? We&apos;re working on premium plans. Stay tuned.
+        Upgrade your plan for more campaigns, or wait for your limit to reset.
       </p>
     </div>
   )
