@@ -35,8 +35,9 @@ The challenge is threefold:
 - Free: 5 platforms (Instagram, Facebook, MLS, Google Ads, X)
 - Pro ($9/mo): All 12+ platforms, exports, regeneration
 - Enterprise ($29/mo): Team seats + everything in Pro
-- `profiles.tier` column planned but not yet queried on client
+- `profiles` table exists in Supabase (columns: id, email, display_name, role, avatar_url, phone, company, created_at, updated_at). **No `tier` column yet** — needs a new migration.
 - No `UpgradeModal` component exists yet; `demo-locked-cards.tsx` shows a lock-overlay pattern
+- `/pricing` page exists and can serve as the upgrade CTA destination
 
 ### Campaign Tabs (`campaign-tabs.tsx`)
 - Mirrors `CATEGORIES` array with same structure
@@ -158,19 +159,29 @@ This component is reusable for future upgrade prompts (e.g., when free users hit
 
 ### 4. User Tier Detection
 
-The platform selector needs to know the user's tier. Since the tier system is designed but not fully implemented:
+The platform selector needs to know the user's tier. The `profiles` table exists but has no `tier` column yet.
 
-**Interim approach:** Add a `userTier` prop (`'free' | 'pro' | 'enterprise'`) to `PlatformSelector`, defaulting to `'free'`. The parent `MlsInputForm` receives `userId` already; the `CreatePage` server component can query `profiles.tier` and pass it down.
+**Required migration:** Add a `tier` column to the `profiles` table:
 
-**If `profiles.tier` column doesn't exist yet:** Default to `'free'` for all users. The upgrade modal CTA links to `/pricing` which can be a placeholder page until Stripe integration is complete.
+```sql
+-- supabase/migrations/20260226_add_profiles_tier.sql
+ALTER TABLE public.profiles
+  ADD COLUMN tier text NOT NULL DEFAULT 'free'
+  CHECK (tier IN ('free', 'pro', 'enterprise'));
+```
 
-**Prop threading:**
+Also update the `handle_new_user()` trigger if needed (new users default to `'free'`, which the DEFAULT handles).
+
+**Prop threading:** Add a `userTier` prop (`'free' | 'pro' | 'enterprise'`) to `PlatformSelector`, defaulting to `'free'`.
+
 ```
 CreatePage (server) → queries profiles.tier
   → MlsInputForm (userTier prop)
     → PropertyForm (userTier prop passthrough)
       → PlatformSelector (userTier prop)
 ```
+
+The upgrade modal CTA links to `/pricing` (confirmed to exist).
 
 ### 5. Accessibility
 
@@ -192,11 +203,12 @@ CreatePage (server) → queries profiles.tier
 
 | File | Change |
 |------|--------|
+| **NEW** `supabase/migrations/20260226_add_profiles_tier.sql` | Add `tier` column (`text`, default `'free'`, check constraint) to `profiles` table. |
 | `src/components/campaign/platform-selector.tsx` | Add `'audio'` to `CATEGORY_ORDER` and `CATEGORY_LABELS`. Render Radio Ads card in audio section with Pro badge, tooltip, and conditional upgrade behavior. Import `Radio` icon from lucide-react. Accept `userTier` prop. |
 | **NEW** `src/components/campaign/upgrade-modal.tsx` | Reusable upgrade prompt dialog with feature list and CTA to `/pricing`. |
 | `src/components/campaign/property-form.tsx` | Accept and pass through `userTier` prop to PlatformSelector. |
 | `src/components/mls-input-form.tsx` | Accept `userTier` prop and pass to PropertyForm. |
-| `src/app/create/page.tsx` | Query `profiles.tier` for the current user and pass to MlsInputForm. Fallback to `'free'` if column doesn't exist. |
+| `src/app/create/page.tsx` | Query `profiles.tier` for the current user and pass to MlsInputForm. |
 
 **Files NOT changed:**
 - `src/lib/types/campaign.ts` — no type system changes
@@ -211,12 +223,11 @@ CreatePage (server) → queries profiles.tier
 
 | Case | Handling |
 |------|----------|
-| `profiles.tier` column missing | Default to `'free'`; card always shows upgrade overlay |
-| `/pricing` page not built yet | Link to a placeholder or `#` with a toast "Coming soon" |
 | User upgrades to Pro mid-session | Page refresh picks up new tier; no real-time reactivity needed |
 | "All Platforms" preset | Does NOT include Radio Ads (it's not in `ALL_PLATFORMS`) |
 | Platform counter "X/12 selected" | Unchanged — Radio Ads is not a selectable platform |
 | Screen readers | Card announces as "Radio Ads, Pro feature" button, not checkbox |
+| Migration not yet applied | Query returns null for tier → default to `'free'` |
 
 ---
 
@@ -225,15 +236,15 @@ CreatePage (server) → queries profiles.tier
 1. **Radio ad generation backend** — prompt templates, output parsing, audio tone definitions
 2. **`'radioAds'` added to PlatformId** — when generation is ready
 3. **Audio tab in CampaignTabs** — when generated radio scripts need display
-4. **Stripe checkout integration** — upgrade modal CTA will link to real checkout
-5. **Real-time tier updates** — Supabase realtime subscription on `profiles.tier`
+4. **Real-time tier updates** — Supabase realtime subscription on `profiles.tier`
 
 ---
 
 ## Implementation Order
 
-1. Create `upgrade-modal.tsx` (independent, reusable)
-2. Modify `platform-selector.tsx` (add audio category, Radio Ads card, tier-conditional rendering)
-3. Thread `userTier` prop through `property-form.tsx` and `mls-input-form.tsx`
-4. Update `create/page.tsx` to query and pass user tier
-5. Manual QA: verify free vs. Pro states, tooltip, modal, accessibility
+1. Add `profiles.tier` migration (`supabase/migrations/20260226_add_profiles_tier.sql`)
+2. Create `upgrade-modal.tsx` (independent, reusable)
+3. Modify `platform-selector.tsx` (add audio category, Radio Ads card, tier-conditional rendering)
+4. Thread `userTier` prop through `property-form.tsx` and `mls-input-form.tsx`
+5. Update `create/page.tsx` to query `profiles.tier` and pass to MlsInputForm
+6. Manual QA: verify free vs. Pro states, tooltip, modal, accessibility
