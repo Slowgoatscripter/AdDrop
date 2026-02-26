@@ -52,11 +52,12 @@ export default function TermsPage() {
         including Instagram, Facebook, Google Ads, print advertising, direct mail, and more.
       </p>
       <p>
-        <strong>Beta Service:</strong> AdDrop is currently in beta. During beta:
+        <strong>Service Tiers:</strong> AdDrop offers free and paid tiers:
       </p>
       <ul>
-        <li>The service is free of charge</li>
-        <li>Usage is limited to 2 campaigns per user per rolling 7-day period</li>
+        <li><strong>Free:</strong> 2 campaigns per month, all platforms, no credit card required</li>
+        <li><strong>Pro:</strong> Higher campaign limits and priority support (see <Link href="/pricing">Pricing</Link>)</li>
+        <li><strong>Enterprise:</strong> Custom limits and dedicated support (contact sales)</li>
         <li>Features may change, be added, or removed without notice</li>
         <li>The service is provided on an &ldquo;as available&rdquo; basis with no uptime guarantees</li>
       </ul>
