@@ -186,7 +186,7 @@ export function LandingSettingsForm({ settings }: LandingSettingsFormProps) {
             <input className={inputClass} value={ctaText} onChange={(e) => setCtaText(e.target.value)} />
           </div>
           <div>
-            <label className={labelClass}>Beta Notice</label>
+            <label className={labelClass}>Subtitle Notice</label>
             <input className={inputClass} value={ctaBeta} onChange={(e) => setCtaBeta(e.target.value)} />
           </div>
         </div>
