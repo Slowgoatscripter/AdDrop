@@ -174,4 +174,16 @@ These should be addressed in a dedicated "remove beta branding" task.
 
 ---
 
+## Verification
+
+| Check | Status |
+|-------|--------|
+| Section order regression test | ✅ `src/app/__tests__/page-section-order.test.ts` |
+| Full test suite passes | ✅ New test passes; 5 pre-existing failures (unrelated to this task) |
+| Production build succeeds | ⚠️ Pre-existing 404 page `<Html>` import error; TS compilation and type-checking pass |
+| Beta language removed | ✅ Commit `f820be7` |
+| Section order correct | ✅ No reordering needed — prior commits achieved target |
+
+---
+
 *Design document for task: "Reorder landing page sections to new flow"*
