@@ -37,7 +37,7 @@ export const settingsDefaults: Record<string, unknown> = {
   'landing.cta_headline': 'Your Next Listing Deserves Better Marketing',
   'landing.cta_text': 'Create Your First Campaign',
   'landing.cta_description': 'In the time it takes to write one ad, AdDrop builds your entire campaign.',
-  // Legacy key kept for backwards compatibility with existing DB rows
+  // Legacy key — DB column is 'landing.cta_beta'; kept for backward compat with existing rows
   'landing.cta_beta': 'Free to start. 2 campaigns per month. No credit card required.',
   'presets.default': [
     {
