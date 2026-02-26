@@ -43,3 +43,11 @@ next-env.d.ts
 # IDE
 .idea
 .vscode
+
+# plans and workshop docs
+docs/plans/
+docs/workshop/
+
+# tooling artifacts
+.clawflow/
+nul
