@@ -12,6 +12,7 @@ describe('Landing page — section order', () => {
   // Target order: Hero → PlatformBar → InteractiveDemo → ShowcaseCarousel →
   //               FeaturesGrid → WhoItsFor → FAQ → CTAFooter → MobileCTABar → Footer
   const expectedOrder = [
+    '<LaunchBanner',
     '<Hero',
     '<PlatformBar',
     '<InteractiveDemo',

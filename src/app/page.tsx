@@ -8,6 +8,7 @@ import { WhoItsFor } from '@/components/landing/who-its-for';
 import { FAQ } from '@/components/landing/faq';
 import { CTAFooter } from '@/components/landing/cta-footer';
 import { MobileCTABar } from '@/components/landing/mobile-cta-bar';
+import { LaunchBanner } from '@/components/landing/launch-banner';
 import { AppHeader } from '@/components/nav/app-header';
 import { getSettings } from '@/lib/settings/server';
 import type { LandingStat, FAQItem } from '@/lib/types/settings';
@@ -58,6 +59,8 @@ export default async function Home() {
       )}
       <main className="min-h-screen">
         <AppHeader variant="landing" />
+        {/* V1 Launch — remove after launch period */}
+        <LaunchBanner />
         <Hero
           titlePrefix={s['landing.hero_title_prefix'] as string}
           titleAccent={s['landing.hero_title_accent'] as string}
