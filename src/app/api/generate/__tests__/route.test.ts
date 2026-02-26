@@ -186,6 +186,9 @@ describe('POST /api/generate', () => {
 
     expect(response.status).toBe(429)
     expect(data.code).toBe('RATE_LIMITED')
+    // v1: error message must NOT contain "Beta"
+    expect(data.error).toBe('Campaign limit reached')
+    expect(data.error).not.toContain('Beta')
     expect(data.usage.used).toBe(2)
     expect(data.usage.resetsAt).toBe(resetAt.toISOString())
     expect(mockGenerateCampaign).not.toHaveBeenCalled()
