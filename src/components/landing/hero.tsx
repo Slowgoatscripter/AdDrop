@@ -66,7 +66,7 @@ export function Hero({
       />
 
       {/* Content grid */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 lg:py-0">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-28 pb-20 lg:pt-0 lg:pb-0">
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] items-center gap-12 lg:gap-8">
           {/* ── Left column ── */}
           <div className="text-center lg:text-left">

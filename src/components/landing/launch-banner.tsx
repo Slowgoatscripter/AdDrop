@@ -34,7 +34,7 @@ export function LaunchBanner() {
       {visible && (
         <motion.div
           role="status"
-          className="relative z-40 bg-gold/5 border-b border-gold/20"
+          className="fixed z-40 top-14 md:top-[72px] left-0 right-0 bg-gold/5 border-b border-gold/20 backdrop-blur-sm"
           initial={a ? { opacity: 0, y: -10 } : undefined}
           animate={a ? { opacity: 1, y: 0 } : undefined}
           exit={a ? { opacity: 0, y: -10 } : undefined}
