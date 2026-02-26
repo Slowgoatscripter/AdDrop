@@ -19,7 +19,7 @@ import { Footer } from '@/components/nav/footer';
 export const metadata: Metadata = {
   title: 'AI Real Estate Ad Generator — AdDrop',
   description:
-    'AdDrop generates complete real estate ad campaigns in minutes. Enter your property details and get copy for Instagram, Facebook, Google Ads, print, direct mail, and 8+ more platforms. Free during beta.',
+    'AdDrop generates complete real estate ad campaigns in minutes. Enter your property details and get copy for Instagram, Facebook, Google Ads, print, direct mail, and 8+ more platforms.',
   alternates: { canonical: 'https://addrop.app' },
   openGraph: {
     title: 'AI Real Estate Ad Generator — AdDrop',
@@ -79,7 +79,7 @@ export default async function Home() {
         <CTAFooter
           headline={s['landing.cta_headline'] as string}
           ctaText={s['landing.cta_text'] as string}
-          betaNotice={s['landing.cta_beta'] as string}
+          notice={s['landing.cta_beta'] as string}
         />
         <MobileCTABar />
       </main>

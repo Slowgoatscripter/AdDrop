@@ -77,7 +77,7 @@ export function SocialProof() {
           Why Agents Choose AdDrop
         </h2>
         <p className="text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
-          One listing in. A complete ad campaign out. Free during beta.
+          One listing in. A complete ad campaign out. Free to get started.
 </p>
 
         <div className="grid md:grid-cols-3 gap-0">

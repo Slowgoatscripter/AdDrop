@@ -12,10 +12,10 @@ export function WelcomeCard() {
   return (
     <div className="border-l-2 border-l-gold bg-surface rounded-lg p-6 md:p-8">
       <h2 className="text-xl md:text-2xl font-serif text-cream mb-4">
-        Welcome to AdDrop Beta
+        Welcome to AdDrop
       </h2>
       <p className="text-muted-foreground mb-5">
-        You&apos;re in. Here&apos;s what you get:
+        Here&apos;s what you get:
       </p>
 
       <ul className="space-y-2.5 mb-6">

@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { Check } from 'lucide-react';
 
 const valuePoints = [
-  'Free beta account',
+  'Free account',
   '2 campaigns per week',
   'No credit card required',
   'Compliance-checked',
@@ -13,21 +13,19 @@ interface CTAFooterProps {
   description?: string;
   ctaText?: string;
   ctaHref?: string;
-  // Legacy prop for backwards compatibility
-  betaNotice?: string;
+  notice?: string;
 }
 
 export function CTAFooter({
   headline = 'Your Next Listing Deserves Better Marketing',
   description: descriptionProp,
-  betaNotice,
+  notice,
   ctaText = 'Create Your First Campaign — Free',
   ctaHref = '/create',
 }: CTAFooterProps) {
-  // Support both description (new) and betaNotice (legacy) props
   const description =
     descriptionProp ||
-    betaNotice ||
+    notice ||
     'In the time it takes to write one ad, AdDrop builds your entire campaign.';
   return (
     <section className="relative py-32 overflow-hidden">

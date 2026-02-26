@@ -1,6 +1,10 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 
-export const BETA_CAMPAIGN_LIMIT = 2
+export const CAMPAIGN_LIMIT = 2
+// TODO(tiers): rename to CAMPAIGN_WINDOW_DAYS and change value to 30 when the
+// account tiers system is implemented. The window and all "this week" copy are
+// intentionally deferred — changing the value without migrating the tier
+// enforcement logic would silently tighten limits for existing users.
 export const BETA_WINDOW_DAYS = 7
 
 export interface UsageInfo {
@@ -49,7 +53,7 @@ export async function getCampaignUsage(
 
   // 3. Calculate reset date from oldest campaign in window + 7 days
   let resetsAt: Date | null = null
-  if (used >= BETA_CAMPAIGN_LIMIT) {
+  if (used >= CAMPAIGN_LIMIT) {
     const { data: oldest } = await supabase
       .from('campaigns')
       .select('created_at')
@@ -69,10 +73,10 @@ export async function getCampaignUsage(
 
   return {
     used,
-    limit: BETA_CAMPAIGN_LIMIT,
-    remaining: Math.max(0, BETA_CAMPAIGN_LIMIT - used),
+    limit: CAMPAIGN_LIMIT,
+    remaining: Math.max(0, CAMPAIGN_LIMIT - used),
     resetsAt,
-    isLimited: used >= BETA_CAMPAIGN_LIMIT,
+    isLimited: used >= CAMPAIGN_LIMIT,
     isExempt: false,
   }
 }

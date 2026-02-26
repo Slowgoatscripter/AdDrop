@@ -26,7 +26,7 @@ export const settingsDefaults: Record<string, unknown> = {
     { value: 'Minutes', label: 'Not Hours' },
   ] as LandingStat[],
   'landing.faq': [
-    { question: 'Is AdDrop really free?', answer: 'Yes — AdDrop is completely free during beta. Create a free account, get 2 campaigns per week, and never see a credit card form.' },
+    { question: 'Is AdDrop really free?', answer: 'Yes — AdDrop offers a free tier. Create a free account, get 2 campaigns per week, and never see a credit card form.' },
     { question: 'Why do I need an account?', answer: 'Your account lets us save your campaigns, track your usage, and give you a dashboard to manage everything. Sign up with email and password. No credit card, no commitments.' },
     { question: 'What information do I need to get started?', answer: 'Just your property address, a few photos, and basic details like beds, baths, and price. AdDrop handles the rest.' },
     { question: 'How does the AI know what to write?', answer: "AdDrop's AI is designed for real estate marketing workflows. It understands platform best practices, character limits, tone variations, and fair housing compliance. It writes ads designed to sound polished and professional." },
@@ -36,7 +36,7 @@ export const settingsDefaults: Record<string, unknown> = {
   ] as FAQItem[],
   'landing.cta_headline': 'Your Next Listing Deserves Better Marketing',
   'landing.cta_text': 'Create Your First Campaign',
-  'landing.cta_beta': 'Free during beta. 2 campaigns per week. No credit card required.',
+  'landing.cta_beta': 'Free to get started. 2 campaigns per week. No credit card required.',
   'presets.default': [
     {
       name: 'Flathead Luxury Lakefront',

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const usage = await getCampaignUsage(supabase, user!.id);
     if (usage.isLimited) {
       return NextResponse.json({
-        error: 'Beta campaign limit reached',
+        error: 'Campaign limit reached',
         code: 'RATE_LIMITED',
         usage: {
           used: usage.used,

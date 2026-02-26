@@ -1,4 +1,4 @@
-import { getCampaignUsage, BETA_CAMPAIGN_LIMIT, BETA_WINDOW_DAYS } from './campaign-limits'
+import { getCampaignUsage, CAMPAIGN_LIMIT, BETA_WINDOW_DAYS } from './campaign-limits'
 
 type MockConfig = {
   profile: { role?: string; rate_limit_exempt?: boolean } | null
@@ -78,8 +78,8 @@ describe('getCampaignUsage', () => {
     expect(usage.isExempt).toBe(false)
     expect(usage.isLimited).toBe(false)
     expect(usage.used).toBe(1)
-    expect(usage.limit).toBe(BETA_CAMPAIGN_LIMIT)
-    expect(usage.remaining).toBe(BETA_CAMPAIGN_LIMIT - 1)
+    expect(usage.limit).toBe(CAMPAIGN_LIMIT)
+    expect(usage.remaining).toBe(CAMPAIGN_LIMIT - 1)
     expect(usage.resetsAt).toBeNull()
   })
 

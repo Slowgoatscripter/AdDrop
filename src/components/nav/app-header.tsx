@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase/client'
 import { UserMenu } from './user-menu'
 import { MobileDrawer } from './mobile-drawer'
 import { appLinks, adminLinks, adminAppLink, adminSecondaryLinks, type NavLink } from './nav-links'
-import { BetaBadge } from '@/components/ui/beta-badge'
 import { useFeedbackOptional } from '@/components/feedback/feedback-provider'
 
 interface AppHeaderUser {
@@ -133,7 +132,6 @@ export function AppHeader({ variant, user: userProp }: AppHeaderProps) {
           <span className="text-xl font-bold text-foreground">Ad</span>
           <span className="text-xl font-bold italic text-gold font-serif">Drop</span>
         </Link>
-        {variant === 'app' && <BetaBadge />}
 
         {/* Center/Right: Desktop nav + actions */}
         <div className="hidden md:flex items-center gap-1">

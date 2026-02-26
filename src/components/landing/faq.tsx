@@ -10,7 +10,7 @@ const defaultFaqs: FAQItemType[] = [
   {
     question: 'Is AdDrop really free?',
     answer:
-      'Yes — AdDrop is completely free during beta. Create a free account, get 2 campaigns per week, and never see a credit card form. We want you to try it and tell us what you think.',
+      'Yes — AdDrop offers a free tier. Create a free account, get 2 campaigns per week, and never see a credit card form.',
   },
   {
     question: 'Why do I need an account?',

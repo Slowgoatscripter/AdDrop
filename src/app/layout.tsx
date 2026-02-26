@@ -125,7 +125,7 @@ export default function RootLayout({
                   '@type': 'Offer',
                   price: '0',
                   priceCurrency: 'USD',
-                  description: 'Free during beta',
+                  description: 'Free tier available',
                 },
                 description:
                   'AI-powered real estate ad generator. Create complete marketing campaigns for Instagram, Facebook, Google Ads, print, and more from a single property listing.',

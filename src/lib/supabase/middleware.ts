@@ -133,7 +133,7 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Beta-gated routes — redirect to signup with return URL
+  // Auth-required routes — redirect to signup with return URL
   if (
     pathname.startsWith('/create') ||
     pathname.startsWith('/campaign')
