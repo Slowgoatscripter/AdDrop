@@ -98,12 +98,17 @@ export default {
   				'0%': { transform: 'scale(0)', opacity: '0.6' },
   				'100%': { transform: 'scale(4)', opacity: '0' },
   			},
+  			'shimmer-gold': {
+  				'0%': { backgroundPosition: '-200% 0' },
+  				'100%': { backgroundPosition: '200% 0' },
+  			},
   		},
   		animation: {
   			marquee: 'marquee 30s linear infinite',
   			'pulse-gold': 'pulse-gold 2s ease-in-out infinite',
   			'droplet-bounce': 'droplet-bounce 1.2s ease-in-out infinite',
   			ripple: 'ripple 0.6s ease-out forwards',
+  			'shimmer-gold': 'shimmer-gold 4s ease-in-out infinite',
   		},
   	}
   },
