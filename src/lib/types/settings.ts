@@ -17,7 +17,7 @@ export const SETTING_KEYS = {
   LANDING_FAQ: 'landing.faq',
   LANDING_CTA_HEADLINE: 'landing.cta_headline',
   LANDING_CTA_TEXT: 'landing.cta_text',
-  LANDING_CTA_BETA: 'landing.cta_beta',
+  LANDING_CTA_DESCRIPTION: 'landing.cta_description',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
