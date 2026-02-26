@@ -178,6 +178,16 @@ export function AppHeader({ variant, user: userProp }: AppHeaderProps) {
               </Link>
             ))}
 
+          {/* Landing nav: Pricing link (always visible) */}
+          {variant === 'landing' && (
+            <Link
+              href="/pricing"
+              className="text-sm text-cream/80 hover:text-gold transition-colors min-h-[44px] flex items-center px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold rounded-sm"
+            >
+              Pricing
+            </Link>
+          )}
+
           {/* Landing anonymous: Log In + Sign Up */}
           {variant === 'landing' && !user && (
             <>
