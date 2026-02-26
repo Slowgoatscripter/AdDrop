@@ -7,7 +7,6 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import { getCampaignUsage } from '@/lib/usage/campaign-limits'
-import { BetaUsageCard } from '@/components/dashboard/beta-usage-card'
 import { WelcomeCard } from '@/components/dashboard/welcome-card'
 import { StatsBar } from '@/components/dashboard/stats-bar'
 import { Breadcrumbs } from '@/components/nav/breadcrumbs'
@@ -148,9 +147,6 @@ export default async function DashboardPage({
         <p className="text-muted-foreground mt-1">Manage your real estate ad campaigns</p>
       </div>
 
-      {/* Beta usage card */}
-      <BetaUsageCard usage={usage} />
-
       {isNewUser ? (
         <WelcomeCard />
       ) : (
@@ -195,9 +191,8 @@ export default async function DashboardPage({
             <CampaignGrid campaigns={campaigns} />
           )}
 
-          {/* Beta footer */}
           <p className="text-xs text-muted-foreground text-center pt-4">
-            AdDrop Beta &mdash; 2 campaigns per week, free during beta.
+            AdDrop &mdash; 2 campaigns per month, free tier.
           </p>
         </>
       )}
