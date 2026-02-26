@@ -36,7 +36,7 @@ export default async function CreatePage() {
                     </h1>
                     {!usage.isExempt && (
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {usage.used} of {usage.limit} this week
+                        {usage.used} of {usage.limit} this month
                       </span>
                     )}
                   </div>

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 
 const benefits = [
-  '2 ad campaigns per week',
+  '2 ad campaigns per month',
   '12+ platforms per campaign',
   'Fair housing compliance built in',
   'Export-ready assets',
