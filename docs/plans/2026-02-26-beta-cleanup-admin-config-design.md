@@ -1,6 +1,6 @@
 # Clean Up Beta References in Settings & Admin Configuration
 
-**Status:** Draft
+**Status:** Approved
 **Date:** 2026-02-26
 **Tier:** L2
 **Priority:** Medium
@@ -31,7 +31,9 @@ This task is scoped to **admin settings and configuration defaults only**. It do
 | `src/components/admin/landing-settings-form.tsx` | `ctaBeta` state, `landing.cta_beta` field, "Beta Notice" label/input | Admin form field for editing the CTA footer's beta notice text |
 | `src/lib/settings/defaults.ts` | `'landing.cta_beta'` default value, FAQ answer mentioning "free during beta" | Default configuration values loaded when no DB override exists |
 | `src/lib/types/settings.ts` | `LANDING_CTA_BETA` constant | TypeScript setting key constant |
-| `src/app/page.tsx` | `betaNotice={s['landing.cta_beta']}` prop, metadata "Free during beta." | Landing page passes beta setting to CTAFooter |
+| `src/app/page.tsx` | `betaNotice={s['landing.cta_beta']}` prop | Landing page passes beta setting to CTAFooter |
+
+**Note:** `page.tsx` metadata ("Free during beta.") is out of scope — handled by the broader metadata cleanup task.
 
 ### Files Adjacent but Out of Scope
 
@@ -40,6 +42,7 @@ These files consume the values being cleaned up, so they need awareness but are 
 - `src/components/landing/cta-footer.tsx` — has `betaNotice` prop (already marked "legacy")
 - `src/components/landing/social-proof.tsx` — hardcoded "Free during beta."
 - `src/app/layout.tsx` — metadata description "Free during beta"
+- `src/app/page.tsx` metadata description — broader metadata cleanup task
 
 ---
 
@@ -67,9 +70,11 @@ These files consume the values being cleaned up, so they need awareness but are 
 
 ### 3.4 Landing Page: `page.tsx`
 
-**Current state:** Line 82: Passes `betaNotice={s['landing.cta_beta'] as string}` to `CTAFooter`. Line 22: Metadata says "Free during beta."
+**Current state:** Line 82: Passes `betaNotice={s['landing.cta_beta'] as string}` to `CTAFooter`.
 
-**What needs to change:** Stop passing the beta prop; use a v1-appropriate prop instead. Update metadata.
+**What needs to change:** Stop passing the beta prop; use a v1-appropriate prop instead.
+
+**Out of scope:** The metadata description on line 22 ("Free during beta.") is handled by the broader metadata cleanup task.
 
 ---
 
@@ -84,7 +89,7 @@ These files consume the values being cleaned up, so they need awareness but are 
 2. `defaults.ts`: Replace beta default with v1 text (e.g., "Create a free account and generate your first campaign in minutes.")
 3. `defaults.ts`: Update FAQ answer to remove "free during beta" language
 4. `landing-settings-form.tsx`: Rename `ctaBeta` → `ctaDescription`, label "Beta Notice" → "CTA Description"
-5. `page.tsx`: Pass `description={s['landing.cta_description']}` instead of `betaNotice`, update metadata
+5. `page.tsx`: Pass `description={s['landing.cta_description']}` instead of `betaNotice` (metadata update deferred to broader metadata cleanup)
 
 **Pros:**
 - Admin retains the ability to edit the CTA subtitle (useful for marketing changes)
@@ -92,10 +97,9 @@ These files consume the values being cleaned up, so they need awareness but are 
 - `CTAFooter` already accepts a `description` prop alongside the legacy `betaNotice`, so the consumer is ready
 
 **Cons:**
-- Requires a data migration or handling of stale `landing.cta_beta` rows in the DB
 - Slightly more files touched than pure removal
 
-**Risk mitigation:** The `defaults.ts` fallback system means if `landing.cta_description` has no DB value, it falls back to the new default. Old `landing.cta_beta` rows in the DB become inert.
+**Risk mitigation:** The `defaults.ts` fallback system means if `landing.cta_description` has no DB value, it falls back to the new default. Old `landing.cta_beta` rows in the DB become inert — no migration needed (see §6.5).
 
 ### Approach B: Remove Beta Field Entirely, No Replacement
 
@@ -202,14 +206,18 @@ With:
 description={s['landing.cta_description'] as string}
 ```
 
-Update metadata description to remove "Free during beta." — replace with "Free for agents."
+**Do NOT touch the metadata description** — that is handled by the broader metadata cleanup task.
 
 ### 6.5 Data Migration
 
-No formal migration required. The defaults system means:
-- If no DB row exists for `landing.cta_description`, the new default is used
-- Old `landing.cta_beta` DB rows become inert (never read)
-- Optionally, a cleanup query can remove stale rows: `DELETE FROM app_settings WHERE key = 'landing.cta_beta'`
+**Decision: No migration. Let stale rows go inert.**
+
+The defaults system handles this gracefully:
+- When code stops reading `landing.cta_beta`, any existing DB row just sits there doing nothing
+- If no DB row exists for `landing.cta_description`, the new default from `defaults.ts` is used automatically
+- No risk, no urgency — a cleanup query (`DELETE FROM app_settings WHERE key = 'landing.cta_beta'`) can be bundled into the tiers migration or routine DB maintenance later
+
+This avoids adding a migration step for a zero-risk scenario.
 
 ---
 
@@ -235,7 +243,8 @@ No formal migration required. The defaults system means:
 | Middleware "Beta-gated" comment | `middleware.ts` | Cosmetic; no behavior change |
 | Landing hardcoded beta strings | `social-proof.tsx`, `cta-footer.tsx` | Separate landing page cleanup task |
 | Terms page "Beta Service" text | `(legal)/terms/page.tsx` | Legal review needed |
-| App metadata "Free during beta" | `layout.tsx` | Separate metadata cleanup task |
+| App metadata "Free during beta" | `layout.tsx`, `page.tsx` | Broader metadata cleanup task |
+| Stale `landing.cta_beta` DB rows | `app_settings` table | Bundle into tiers migration or routine maintenance |
 
 ---
 
