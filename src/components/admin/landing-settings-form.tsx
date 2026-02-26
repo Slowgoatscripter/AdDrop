@@ -26,7 +26,7 @@ export function LandingSettingsForm({ settings }: LandingSettingsFormProps) {
   // CTA Footer
   const [ctaHeadline, setCtaHeadline] = useState(settings['landing.cta_headline'] as string)
   const [ctaText, setCtaText] = useState(settings['landing.cta_text'] as string)
-  const [ctaBeta, setCtaBeta] = useState(settings['landing.cta_beta'] as string)
+  const [ctaDescription, setCtaDescription] = useState(settings['landing.cta_description'] as string)
 
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -60,7 +60,7 @@ export function LandingSettingsForm({ settings }: LandingSettingsFormProps) {
           'landing.faq': faqs,
           'landing.cta_headline': ctaHeadline,
           'landing.cta_text': ctaText,
-          'landing.cta_beta': ctaBeta,
+          'landing.cta_description': ctaDescription,
         })
         setMessage({ type: 'success', text: 'Landing page settings saved.' })
         setTimeout(() => setMessage(null), 3000)
@@ -78,7 +78,7 @@ export function LandingSettingsForm({ settings }: LandingSettingsFormProps) {
           'landing.hero_title_prefix', 'landing.hero_title_accent',
           'landing.hero_tagline', 'landing.hero_description', 'landing.hero_cta',
           'landing.stats', 'landing.faq',
-          'landing.cta_headline', 'landing.cta_text', 'landing.cta_beta',
+          'landing.cta_headline', 'landing.cta_text', 'landing.cta_description',
         ])
         window.location.reload()
       } catch (err) {
@@ -186,8 +186,8 @@ export function LandingSettingsForm({ settings }: LandingSettingsFormProps) {
             <input className={inputClass} value={ctaText} onChange={(e) => setCtaText(e.target.value)} />
           </div>
           <div>
-            <label className={labelClass}>Beta Notice</label>
-            <input className={inputClass} value={ctaBeta} onChange={(e) => setCtaBeta(e.target.value)} />
+            <label className={labelClass}>CTA Description</label>
+            <input className={inputClass} value={ctaDescription} onChange={(e) => setCtaDescription(e.target.value)} />
           </div>
         </div>
       </div>
