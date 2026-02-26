@@ -7,7 +7,6 @@ import { InteractiveDemo } from '@/components/landing/interactive-demo';
 import { SocialProof } from '@/components/landing/social-proof';
 import { FeaturesGrid } from '@/components/landing/features-grid';
 import { WhoItsFor } from '@/components/landing/who-its-for';
-import { PricingSection } from '@/components/landing/pricing-section';
 import { FAQ } from '@/components/landing/faq';
 import { CTAFooter } from '@/components/landing/cta-footer';
 import { MobileCTABar } from '@/components/landing/mobile-cta-bar';
@@ -76,7 +75,6 @@ export default async function Home() {
         <SocialProof />
         <FeaturesGrid />
         <WhoItsFor />
-        <PricingSection />
         <FAQ faqs={faqs} />
         <CTAFooter
           headline={s['landing.cta_headline'] as string}
