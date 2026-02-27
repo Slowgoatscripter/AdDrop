@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { CampaignKit } from '@/lib/types';
+import { CampaignKit, RadioTimeSlot, RadioTone } from '@/lib/types';
 import type { ComplianceAgentResult } from '@/lib/types/compliance';
 import type { QualitySuggestion } from '@/lib/types/quality';
 import type { SubscriptionTier } from '@/lib/stripe/config';
@@ -250,6 +250,15 @@ export function CampaignShell() {
         realtorCom:     () => { if (updated.realtorCom) updated.realtorCom = r(updated.realtorCom); },
         homesComTrulia: () => { if (updated.homesComTrulia) updated.homesComTrulia = r(updated.homesComTrulia); },
         mlsDescription: () => { if (updated.mlsDescription) updated.mlsDescription = r(updated.mlsDescription); },
+        radioAds:       () => {
+          if (updated.radioAds) {
+            const slot = parts[1] as RadioTimeSlot;
+            const tone = parts[2] as RadioTone;
+            if (slot && tone && updated.radioAds[slot]?.[tone]) {
+              updated.radioAds[slot][tone].script = r(updated.radioAds[slot][tone].script);
+            }
+          }
+        },
         hashtags:       () => { updated.hashtags = updated.hashtags.map(r); },
         callsToAction:  () => { updated.callsToAction = updated.callsToAction.map(r); },
         targetingNotes: () => { updated.targetingNotes = r(updated.targetingNotes); },
@@ -329,6 +338,18 @@ export function CampaignShell() {
       if (googleMatch && updated.googleAds) {
         const idx = parseInt(googleMatch[1]);
         (updated.googleAds[idx] as unknown as Record<string, string>)[field] = newValue;
+      }
+
+      // Radio Ads: platform = 'radioAds', field = '30s.conversational.script'
+      if (platform === 'radioAds' && updated.radioAds) {
+        const [slot, tone, fieldName] = field.split('.') as [string, string, string];
+        const slotData = updated.radioAds[slot as RadioTimeSlot];
+        if (slotData) {
+          const toneData = slotData[tone as RadioTone];
+          if (toneData && fieldName === 'script') {
+            toneData.script = newValue;
+          }
+        }
       }
 
       setCampaign(updated);
@@ -524,6 +545,20 @@ export function CampaignShell() {
               );
               return true;
             }
+          }
+          return false;
+        }
+
+        // Radio Ads: radioAds.30s.conversational
+        if (root === 'radioAds' && parts[1] && parts[2] && obj.radioAds) {
+          const slot = parts[1] as RadioTimeSlot;
+          const tone = parts[2] as RadioTone;
+          if (obj.radioAds[slot]?.[tone] && typeof obj.radioAds[slot][tone].script === 'string') {
+            obj.radioAds[slot][tone].script = obj.radioAds[slot][tone].script.replace(
+              suggestion.currentText,
+              suggestion.suggestedRewrite!,
+            );
+            return true;
           }
           return false;
         }
