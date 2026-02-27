@@ -47,6 +47,23 @@ const PLATFORM_TEMPLATES: Record<PlatformId, TemplateEntry> = {
   homesComTrulia: `"homesComTrulia": "Homes.com/Trulia description, detail-oriented, professional tone, max 4000 chars"`,
   mlsDescription: (config) =>
     `"mlsDescription": "MLS-compliant description, max ${config.maxDescriptionLength || 2000} chars, professional tone. MUST include required disclosures. MUST NOT use prohibited terms."`,
+  radioAds: `"radioAds": {
+    "15s": {
+      "conversational": { "script": "Warm, conversational 15-second radio spot — max 35 words, single key message, natural spoken rhythm", "wordCount": 35, "estimatedDuration": "14-16 seconds" },
+      "authoritative": { "script": "Confident, authoritative 15-second radio spot — max 35 words, single key message, commanding tone", "wordCount": 35, "estimatedDuration": "14-16 seconds" },
+      "friendly": { "script": "Upbeat, friendly 15-second radio spot — max 35 words, single key message, welcoming energy", "wordCount": 35, "estimatedDuration": "14-16 seconds" }
+    },
+    "30s": {
+      "conversational": { "script": "Warm, conversational 30-second radio spot — max 75 words, include CTA with contact info, natural pacing", "wordCount": 75, "estimatedDuration": "28-32 seconds", "notes": "Production notes: pacing cues, emphasis words, pause points" },
+      "authoritative": { "script": "Confident, authoritative 30-second radio spot — max 75 words, include CTA with contact info, commanding delivery", "wordCount": 75, "estimatedDuration": "28-32 seconds", "notes": "Production notes: pacing cues, emphasis words, pause points" },
+      "friendly": { "script": "Upbeat, friendly 30-second radio spot — max 75 words, include CTA with contact info, warm energy", "wordCount": 75, "estimatedDuration": "28-32 seconds", "notes": "Production notes: pacing cues, emphasis words, pause points" }
+    },
+    "60s": {
+      "conversational": { "script": "Warm, conversational 60-second radio spot — max 150 words, full narrative arc with emotional hooks and strong CTA", "wordCount": 150, "estimatedDuration": "55-62 seconds", "notes": "Production notes: pacing, emphasis, pauses, transitions", "voiceStyle": "Voice talent direction: energy, pace, character", "musicSuggestion": "Background music: genre, tempo, mood, fade points" },
+      "authoritative": { "script": "Confident, authoritative 60-second radio spot — max 150 words, full narrative arc with market authority and strong CTA", "wordCount": 150, "estimatedDuration": "55-62 seconds", "notes": "Production notes: pacing, emphasis, pauses, transitions", "voiceStyle": "Voice talent direction: energy, pace, character", "musicSuggestion": "Background music: genre, tempo, mood, fade points" },
+      "friendly": { "script": "Upbeat, friendly 60-second radio spot — max 150 words, full narrative arc with community warmth and strong CTA", "wordCount": 150, "estimatedDuration": "55-62 seconds", "notes": "Production notes: pacing, emphasis, pauses, transitions", "voiceStyle": "Voice talent direction: energy, pace, character", "musicSuggestion": "Background music: genre, tempo, mood, fade points" }
+    }
+  }`,
 };
 
 const STRATEGY_TEMPLATE = `"hashtags": ["15-20 hashtags mixing broad (#realestate), local, and niche"],

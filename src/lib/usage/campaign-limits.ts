@@ -8,6 +8,7 @@ export interface UsageInfo {
   resetsAt: Date | null
   isLimited: boolean
   isExempt: boolean
+  tier: SubscriptionTier
 }
 
 export async function getCampaignUsage(
@@ -29,6 +30,7 @@ export async function getCampaignUsage(
       resetsAt: null,
       isLimited: false,
       isExempt: true,
+      tier: (profile?.subscription_tier ?? 'enterprise') as SubscriptionTier,
     }
   }
 
@@ -58,5 +60,6 @@ export async function getCampaignUsage(
     resetsAt: used >= tierLimit ? resetsAt : null,
     isLimited: used >= tierLimit,
     isExempt: false,
+    tier,
   }
 }
