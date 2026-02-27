@@ -7,7 +7,7 @@ import {
   Image,
   StyleSheet,
 } from '@react-pdf/renderer';
-import { CampaignKit, PrintAd } from '@/lib/types';
+import { CampaignKit, PrintAd, RadioTimeSlot, RadioScript } from '@/lib/types';
 
 /* ------------------------------------------------------------------ */
 /*  Colour Palette & Styles                                           */
@@ -167,7 +167,18 @@ const styles = StyleSheet.create({
     color: COLORS.accent,
     lineHeight: 1.6,
   },
+  metaText: {
+    fontSize: 9,
+    color: COLORS.muted,
+    marginBottom: 4,
+  },
 });
+
+const RADIO_TIME_SLOT_LABELS: Record<RadioTimeSlot, string> = {
+  '15s': '15 Second',
+  '30s': '30 Second',
+  '60s': '60 Second',
+};
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -200,6 +211,37 @@ function PrintAdBlock({ label, ad }: { label: string; ad: PrintAd }) {
       <Text style={styles.body}>{ad.body}</Text>
       <Text style={styles.label}>CTA</Text>
       <Text style={styles.ctaText}>{ad.cta}</Text>
+    </View>
+  );
+}
+
+function RadioScriptBlock({ tone, script }: { tone: string; script: RadioScript }) {
+  return (
+    <View style={{ marginBottom: 10 }}>
+      <Text style={styles.toneLabel}>{tone}</Text>
+      <Text style={styles.label}>Script</Text>
+      <Text style={styles.body}>{script.script}</Text>
+      <Text style={styles.metaText}>
+        {script.wordCount} words · ~{script.estimatedDuration}
+      </Text>
+      {script.voiceStyle && (
+        <View>
+          <Text style={styles.label}>Voice Style</Text>
+          <Text style={styles.body}>{script.voiceStyle}</Text>
+        </View>
+      )}
+      {script.musicSuggestion && (
+        <View>
+          <Text style={styles.label}>Music Suggestion</Text>
+          <Text style={styles.body}>{script.musicSuggestion}</Text>
+        </View>
+      )}
+      {script.notes && (
+        <View>
+          <Text style={styles.label}>Notes</Text>
+          <Text style={styles.body}>{script.notes}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -535,6 +577,41 @@ export function CampaignPdf({ campaign }: CampaignPdfProps) {
           )}
 
           <Footer label="Magazine" />
+        </Page>
+      )}
+
+      {/* ============================================================ */}
+      {/* RADIO ADS                                                     */}
+      {/* ============================================================ */}
+      {campaign.radioAds && Object.keys(campaign.radioAds).length > 0 && (
+        <Page size="LETTER" style={styles.page}>
+          <Text style={styles.pageTitle}>Radio Ads</Text>
+          <Text style={styles.pageSubtitle}>
+            Scripts by time slot &amp; tone
+          </Text>
+          <SectionDivider />
+
+          {(['15s', '30s', '60s'] as RadioTimeSlot[])
+            .filter((slot) => campaign.radioAds![slot])
+            .map((slot, slotIdx, filteredSlots) => (
+              <View key={slot} style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  {RADIO_TIME_SLOT_LABELS[slot]}
+                </Text>
+                {(
+                  Object.entries(campaign.radioAds![slot]) as [string, RadioScript][]
+                ).map(([tone, script]) => (
+                  <RadioScriptBlock
+                    key={tone}
+                    tone={tone}
+                    script={script}
+                  />
+                ))}
+                {slotIdx < filteredSlots.length - 1 && <SectionDivider />}
+              </View>
+            ))}
+
+          <Footer label="Radio Ads" />
         </Page>
       )}
 
