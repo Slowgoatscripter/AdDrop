@@ -21,6 +21,7 @@ import {
   Building2,
   Home,
   FileText,
+  Radio,
   Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ const PLATFORM_OPTIONS: PlatformOption[] = [
   { id: 'realtorCom', label: 'Realtor.com', icon: 'realtorCom', detail: 'Listing desc', category: 'listings' },
   { id: 'homesComTrulia', label: 'Homes / Trulia', icon: 'homesComTrulia', detail: 'Listing desc', category: 'listings' },
   { id: 'mlsDescription', label: 'MLS Description', icon: 'mlsDescription', detail: 'Compliant', category: 'mls' },
+  { id: 'radioAds', label: 'Radio Ads', icon: 'radioAds', detail: '3 durations × 3 tones', category: 'audio' },
 ];
 
 const PRESETS: PlatformPreset[] = [
@@ -76,6 +78,7 @@ function PlatformIcon({ platformId, className }: { platformId: string; className
     case 'realtorCom': return <Building2 {...iconProps} />;
     case 'homesComTrulia': return <Home {...iconProps} />;
     case 'mlsDescription': return <FileText {...iconProps} />;
+    case 'radioAds': return <Radio {...iconProps} />;
     default: return <Globe {...iconProps} />;
   }
 }
