@@ -1,6 +1,6 @@
 # RadioAdsCard Component Design
 
-**Status:** Proposed
+**Status:** Approved
 **Date:** 2026-02-26
 **Component:** `src/components/campaign/radioAds-card.tsx`
 
@@ -53,6 +53,8 @@ CardLayoutWrapper
 The acceptance criteria mentions wrapping with `LockedPlatformOverlay` for non-pro users. **This component does not exist yet.** The tier system is designed (see `2026-02-24-account-tiers-payments-design.md`) but not implemented. The landing page has `DemoLockedCards` with a blur + lock icon pattern, but no in-campaign overlay exists.
 
 **Recommendation:** Define the `LockedPlatformOverlay` interface in this component's props (accepting an `isLocked` boolean or similar), but implement it as a simple pass-through until the tier system is built. This follows YAGNI while keeping the API ready.
+
+**Decision:** Radio ads is a **Pro-and-up only** platform. Free users will see it locked.
 
 ---
 
@@ -255,8 +257,8 @@ The mockup should feel like a **radio script document** — no phone frame or br
 │     Conversational Tone              │
 ├──────────────────────────────────────┤
 │                                      │
-│  "Looking for your dream home in     │  ← Script text (serif or mono,
-│   Bozeman, Montana? This stunning    │     script-like feel)
+│  "Looking for your dream home in     │  ← Script text (system font,
+│   Bozeman, Montana? This stunning    │     consistent with rest of app)
 │   3-bedroom home on Oak Street       │
 │   offers panoramic mountain views    │
 │   and a gourmet kitchen. Listed at   │
@@ -280,17 +282,7 @@ The mockup should feel like a **radio script document** — no phone frame or br
 
 ### Copy Text
 
-Copy the current script's text. Optionally include metadata:
-
-```
-[30-Second Radio Ad — Conversational Tone]
-
-"Looking for your dream home in Bozeman, Montana?..."
-
-Word count: 38 | Estimated duration: ~14 seconds
-Voice style: Warm, conversational
-Music suggestion: Light acoustic background
-```
+Copy only the current script's text — no metadata, no formatting wrapper. Just `currentScript.script`.
 
 ---
 
