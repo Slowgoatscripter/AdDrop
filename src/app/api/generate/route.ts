@@ -97,6 +97,16 @@ export async function POST(request: NextRequest) {
       platforms = body.platforms as PlatformId[];
     }
 
+    // Pro subscription gate for radioAds
+    if (platforms?.includes('radioAds') && usage.tier !== 'pro' && usage.tier !== 'enterprise') {
+      return NextResponse.json({
+        error: 'Radio ads require a Pro or Enterprise subscription.',
+        code: 'SUBSCRIPTION_REQUIRED',
+        feature: 'radioAds',
+        currentTier: usage.tier,
+      }, { status: 403 });
+    }
+
     const campaign = await generateCampaign(listing, platforms);
 
     // Persist campaign to database for dashboard access and rate limiting
