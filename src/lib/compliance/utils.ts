@@ -74,6 +74,18 @@ export function extractPlatformTexts(campaign: CampaignKit): [string, string][] 
   if (campaign.homesComTrulia) texts.push(['homesComTrulia', campaign.homesComTrulia]);
   if (campaign.mlsDescription) texts.push(['mlsDescription', campaign.mlsDescription]);
 
+  // Radio Ads
+  if (campaign.radioAds) {
+    for (const [slot, tones] of Object.entries(campaign.radioAds)) {
+      for (const [tone, data] of Object.entries(tones)) {
+        if (data.script) texts.push([`radioAds.${slot}.${tone}.script`, data.script]);
+        if (data.notes) texts.push([`radioAds.${slot}.${tone}.notes`, data.notes]);
+        if (data.voiceStyle) texts.push([`radioAds.${slot}.${tone}.voiceStyle`, data.voiceStyle]);
+        if (data.musicSuggestion) texts.push([`radioAds.${slot}.${tone}.musicSuggestion`, data.musicSuggestion]);
+      }
+    }
+  }
+
   // Hashtags
   if (campaign.hashtags) {
     const hashtagText = campaign.hashtags.join(' ');
