@@ -135,6 +135,13 @@ Return as a JSON object: { front: { headline, tagline }, back: string }. No mark
 
 Listing:
 ${summary}`,
+
+    radioAds: `You are a real estate radio advertising expert. Write a radio ad script for this property.
+${toneInstruction}
+Return only the script text as a plain string. No markdown, no explanation.
+
+Listing:
+${summary}`,
   };
 
   return platformPrompts[platform];
