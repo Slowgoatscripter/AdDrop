@@ -217,6 +217,19 @@ export function MobileDrawer({ open, onClose, variant, user, onFeedbackClick }: 
 
             {/* Navigation links */}
             <div className="flex-1 py-2">
+              {/* Landing: Pricing link (always visible) */}
+              {variant === 'landing' && (
+                <div className="px-4 py-1">
+                  <Link
+                    href="/pricing"
+                    onClick={onClose}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-cream/80 hover:text-cream hover:bg-surface transition-colors min-h-[44px]"
+                  >
+                    Pricing
+                  </Link>
+                </div>
+              )}
+
               {/* Landing anonymous: CTA + auth links */}
               {variant === 'landing' && !user && (
                 <>
