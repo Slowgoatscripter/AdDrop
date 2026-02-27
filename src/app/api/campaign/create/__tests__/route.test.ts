@@ -71,6 +71,7 @@ describe('POST /api/campaign/create', () => {
       resetsAt: null,
       isLimited: false,
       isExempt: false,
+      tier: 'free',
     })
     mockGetUserTier.mockResolvedValue('free' as never)
     mockInsert.mockResolvedValue({ error: null })
@@ -85,6 +86,7 @@ describe('POST /api/campaign/create', () => {
       resetsAt: resetAt,
       isLimited: true,
       isExempt: false,
+      tier: 'free',
     })
 
     const request = new NextRequest('http://localhost:3000/api/campaign/create', {
