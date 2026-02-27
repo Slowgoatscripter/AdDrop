@@ -233,6 +233,15 @@ export function CampaignShell() {
         callsToAction:  () => { updated.callsToAction = updated.callsToAction.map(r); },
         targetingNotes: () => { updated.targetingNotes = r(updated.targetingNotes); },
         sellingPoints:  () => { updated.sellingPoints = updated.sellingPoints.map(r); },
+        radioAds:       () => {
+          if (updated.radioAds) {
+            const slot = parts[1] as import('@/lib/types').RadioTimeSlot;
+            const tone = parts[2] as import('@/lib/types').RadioTone;
+            if (slot && tone && updated.radioAds[slot]?.[tone]) {
+              updated.radioAds[slot][tone].script = r(updated.radioAds[slot][tone].script);
+            }
+          }
+        },
       };
 
       // Google Ads uses indexed key: googleAds[0], googleAds[1], etc.
@@ -308,6 +317,18 @@ export function CampaignShell() {
       if (googleMatch && updated.googleAds) {
         const idx = parseInt(googleMatch[1]);
         (updated.googleAds[idx] as unknown as Record<string, string>)[field] = newValue;
+      }
+
+      // Radio Ads: platform = 'radioAds', field = '30s.conversational.script'
+      if (platform === 'radioAds' && updated.radioAds) {
+        const [slot, tone, fieldName] = field.split('.') as [string, string, string];
+        const slotData = updated.radioAds[slot as import('@/lib/types').RadioTimeSlot];
+        if (slotData) {
+          const toneData = slotData[tone as import('@/lib/types').RadioTone];
+          if (toneData && fieldName === 'script') {
+            toneData.script = newValue;
+          }
+        }
       }
 
       setCampaign(updated);
@@ -503,6 +524,20 @@ export function CampaignShell() {
               );
               return true;
             }
+          }
+          return false;
+        }
+
+        // Radio Ads: radioAds.30s.conversational
+        if (root === 'radioAds' && parts[1] && parts[2] && obj.radioAds) {
+          const slot = parts[1] as import('@/lib/types').RadioTimeSlot;
+          const tone = parts[2] as import('@/lib/types').RadioTone;
+          if (obj.radioAds[slot]?.[tone] && typeof obj.radioAds[slot][tone].script === 'string') {
+            obj.radioAds[slot][tone].script = obj.radioAds[slot][tone].script.replace(
+              suggestion.currentText,
+              suggestion.suggestedRewrite!,
+            );
+            return true;
           }
           return false;
         }
