@@ -256,9 +256,9 @@ describe('buildOutputTemplate', () => {
     expect(template).toContain('max 500 chars');
   });
 
-  test('MLS template defaults to 1000 when maxDescriptionLength not provided', () => {
+  test('MLS template defaults to 2000 when maxDescriptionLength not provided', () => {
     const template = buildOutputTemplate(['mlsDescription'], {});
-    expect(template).toContain('max 1000 chars');
+    expect(template).toContain('max 2000 chars');
   });
 
   test('interpolates city name into hashtags', () => {
@@ -356,6 +356,12 @@ describe('radioAds template', () => {
     expect(template).toContain('14-16 seconds');
     expect(template).toContain('28-32 seconds');
     expect(template).toContain('55-62 seconds');
+  });
+
+  test('radioAds excluded when not in selected platforms', () => {
+    const template = buildOutputTemplate(['instagram', 'twitter'], {});
+    expect(template).not.toContain('"radioAds"');
+    expect(template).not.toContain('"15s"');
   });
 
   test('buildGenerationPrompt includes radioAds when selected', async () => {
