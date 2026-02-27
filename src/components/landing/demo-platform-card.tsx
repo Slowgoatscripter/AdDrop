@@ -27,6 +27,7 @@ const PLATFORM_META: Record<PlatformId, { label: string; icon: LucideIcon; color
   realtorCom: { label: 'Realtor.com', icon: Home, color: 'text-red-400' },
   homesComTrulia: { label: 'Homes / Trulia', icon: Home, color: 'text-emerald-400' },
   mlsDescription: { label: 'MLS', icon: FileText, color: 'text-slate-400' },
+  radioAds: { label: 'Radio Ads', icon: FileText, color: 'text-violet-400' },
 };
 
 function parseGoogleAdsContent(content: string): { headline: string; description: string } | null {

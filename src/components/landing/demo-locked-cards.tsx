@@ -13,6 +13,7 @@ import {
   Building,
   MapPin,
   FileText,
+  Radio,
   Lock,
   type LucideIcon,
 } from 'lucide-react';
@@ -36,6 +37,7 @@ const PLATFORM_INFO: Record<string, { label: string; icon: LucideIcon }> = {
   realtorCom: { label: 'Realtor.com', icon: Building },
   homesComTrulia: { label: 'Homes.com / Trulia', icon: MapPin },
   mlsDescription: { label: 'MLS Description', icon: FileText },
+  radioAds: { label: 'Radio Ads', icon: Radio },
 };
 
 export function DemoLockedCards({ unlockedPlatforms }: DemoLockedCardsProps) {
