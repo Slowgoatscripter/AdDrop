@@ -36,7 +36,8 @@ export type PlatformId =
   | 'googleAds' | 'metaAd'
   | 'magazineFullPage' | 'magazineHalfPage' | 'postcard'
   | 'zillow' | 'realtorCom' | 'homesComTrulia'
-  | 'mlsDescription';
+  | 'mlsDescription'
+  | 'radioAds';
 
 export type PlatformCategory = 'social' | 'paid' | 'print' | 'listings' | 'mls';
 
@@ -46,6 +47,7 @@ export const ALL_PLATFORMS: PlatformId[] = [
   'magazineFullPage', 'magazineHalfPage', 'postcard',
   'zillow', 'realtorCom', 'homesComTrulia',
   'mlsDescription',
+  'radioAds',
 ];
 
 export interface PlatformOption {
