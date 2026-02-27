@@ -17,6 +17,7 @@ import { HomesTruliaCard } from './homes-trulia-card';
 import { MlsCard } from './mls-card';
 import { MarketingCard } from './marketing-card';
 import { PhotosTab } from './photos-tab';
+import { RadioAdsCard } from './radioAds-card';
 
 interface CategoryConfig {
   value: string;
@@ -30,6 +31,7 @@ const CATEGORIES: CategoryConfig[] = [
   { value: 'print', label: 'Print', platforms: ['magazineFullPage', 'magazineHalfPage', 'postcard'] },
   { value: 'listings', label: 'Online Listings', platforms: ['zillow', 'realtorCom', 'homesComTrulia'] },
   { value: 'mls', label: 'MLS', platforms: ['mlsDescription'] },
+  { value: 'audio', label: 'Radio', platforms: ['radioAds'] },
 ];
 
 interface CampaignTabsProps {
@@ -256,6 +258,23 @@ export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRege
         <TabsContent value="mls" className="mt-4">
           {has(selected, 'mlsDescription') && campaign.mlsDescription && (
             <MlsCard description={campaign.mlsDescription} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'mlsDescription')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'mlsDescription')} onReplace={onReplace} onEditText={onEditText} />
+          )}
+        </TabsContent>
+      )}
+
+      {/* Radio */}
+      {visibleCategories.some((c) => c.value === 'audio') && (
+        <TabsContent value="audio" className="mt-4">
+          {has(selected, 'radioAds') && campaign.radioAds && (
+            <RadioAdsCard
+              content={campaign.radioAds}
+              listing={listing}
+              complianceResult={buildPlatformResult(agentResult, platformTexts, 'radioAds')}
+              qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'radioAds')}
+              onReplace={onReplace}
+              onRevert={onRevert}
+              onEditText={onEditText}
+            />
           )}
         </TabsContent>
       )}
