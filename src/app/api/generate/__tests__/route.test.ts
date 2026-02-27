@@ -113,6 +113,7 @@ describe('POST /api/generate', () => {
       resetsAt: null,
       isLimited: false,
       isExempt: false,
+      tier: 'free',
     })
     mockInsert.mockResolvedValue({ error: null })
   })
@@ -174,6 +175,7 @@ describe('POST /api/generate', () => {
       resetsAt: resetAt,
       isLimited: true,
       isExempt: false,
+      tier: 'free',
     })
 
     const request = new NextRequest('http://localhost:3000/api/generate', {
@@ -192,6 +194,111 @@ describe('POST /api/generate', () => {
     expect(data.usage.used).toBe(2)
     expect(data.usage.resetsAt).toBe(resetAt.toISOString())
     expect(mockGenerateCampaign).not.toHaveBeenCalled()
+  })
+
+  test('returns 403 when free user requests radioAds platform', async () => {
+    mockGetCampaignUsage.mockResolvedValueOnce({
+      used: 0,
+      limit: 2,
+      remaining: 2,
+      resetsAt: null,
+      isLimited: false,
+      isExempt: false,
+      tier: 'free',
+    })
+
+    const request = new NextRequest('http://localhost:3000/api/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        listing: mockListing,
+        platforms: ['instagram', 'radioAds'],
+      }),
+    })
+
+    const response = await POST(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(data.code).toBe('SUBSCRIPTION_REQUIRED')
+    expect(data.feature).toBe('radioAds')
+    expect(data.error).toContain('Pro')
+    expect(mockGenerateCampaign).not.toHaveBeenCalled()
+  })
+
+  test('allows pro user to generate radioAds without restriction', async () => {
+    mockGetCampaignUsage.mockResolvedValueOnce({
+      used: 0,
+      limit: 15,
+      remaining: 15,
+      resetsAt: null,
+      isLimited: false,
+      isExempt: false,
+      tier: 'pro',
+    })
+    mockGenerateCampaign.mockResolvedValue(mockCampaign as never)
+
+    const request = new NextRequest('http://localhost:3000/api/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        listing: mockListing,
+        platforms: ['radioAds'],
+      }),
+    })
+
+    const response = await POST(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(mockGenerateCampaign).toHaveBeenCalledWith(mockListing, ['radioAds'])
+  })
+
+  test('allows enterprise user to generate radioAds', async () => {
+    mockGetCampaignUsage.mockResolvedValueOnce({
+      used: 0,
+      limit: 75,
+      remaining: 75,
+      resetsAt: null,
+      isLimited: false,
+      isExempt: false,
+      tier: 'enterprise',
+    })
+    mockGenerateCampaign.mockResolvedValue(mockCampaign as never)
+
+    const request = new NextRequest('http://localhost:3000/api/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        listing: mockListing,
+        platforms: ['radioAds'],
+      }),
+    })
+
+    const response = await POST(request)
+    expect(response.status).toBe(200)
+  })
+
+  test('allows free user to generate non-radioAds platforms', async () => {
+    mockGetCampaignUsage.mockResolvedValueOnce({
+      used: 0,
+      limit: 2,
+      remaining: 2,
+      resetsAt: null,
+      isLimited: false,
+      isExempt: false,
+      tier: 'free',
+    })
+    mockGenerateCampaign.mockResolvedValue(mockCampaign as never)
+
+    const request = new NextRequest('http://localhost:3000/api/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        listing: mockListing,
+        platforms: ['instagram', 'facebook'],
+      }),
+    })
+
+    const response = await POST(request)
+    expect(response.status).toBe(200)
   })
 
   test('successfully generates campaign and returns 200', async () => {
