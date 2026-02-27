@@ -92,7 +92,8 @@ describe('CampaignPdf — Radio Ads section', () => {
   test('renders Radio Ads page title when campaign.radioAds is present', () => {
     const campaign = { ...baseCampaign, radioAds: makeRadioAds() };
     render(<CampaignPdf campaign={campaign} />);
-    expect(screen.getByText('Radio Ads')).toBeInTheDocument();
+    // "Radio Ads" appears as both the page title and the footer label
+    expect(screen.getAllByText('Radio Ads').length).toBeGreaterThanOrEqual(1);
   });
 
   test('does NOT render Radio Ads page when campaign.radioAds is undefined', () => {
