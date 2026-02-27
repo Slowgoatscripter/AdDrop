@@ -21,6 +21,7 @@ import {
   Building2,
   Home,
   FileText,
+  Radio,
   Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -77,6 +78,7 @@ function PlatformIcon({ platformId, className }: { platformId: string; className
     case 'realtorCom': return <Building2 {...iconProps} />;
     case 'homesComTrulia': return <Home {...iconProps} />;
     case 'mlsDescription': return <FileText {...iconProps} />;
+    case 'radioAds': return <Radio {...iconProps} />;
     default: return <Globe {...iconProps} />;
   }
 }
