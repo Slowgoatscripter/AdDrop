@@ -136,6 +136,14 @@ Return as a JSON object: { front: { headline, tagline }, back: string }. No mark
 
 Listing:
 ${summary}`,
+
+    radioAds: `You are a real estate radio advertising expert. Write a 30-second radio spot for this property.
+${toneInstruction}
+HARD LIMIT: max 75 words. Include a clear call to action with contact info. Write for natural spoken delivery.
+Return only the script text as a plain JSON string — no markdown, no explanation.
+
+Listing:
+${summary}`,
   };
 
   return platformPrompts[platform];

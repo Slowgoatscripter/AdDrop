@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Camera, ThumbsUp, Target, MessageCircle, Layers, BookOpen, Newspaper, Mail, Building2, Home, FileText, type LucideIcon } from 'lucide-react';
+import { Camera, ThumbsUp, Target, MessageCircle, Layers, BookOpen, Newspaper, Mail, Building2, Home, FileText, Radio, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { PlatformId } from '@/lib/types/campaign';
 
@@ -27,6 +27,7 @@ const PLATFORM_META: Record<PlatformId, { label: string; icon: LucideIcon; color
   realtorCom: { label: 'Realtor.com', icon: Home, color: 'text-red-400' },
   homesComTrulia: { label: 'Homes / Trulia', icon: Home, color: 'text-emerald-400' },
   mlsDescription: { label: 'MLS', icon: FileText, color: 'text-slate-400' },
+  radioAds: { label: 'Radio Ads', icon: Radio, color: 'text-violet-400' },
 };
 
 function parseGoogleAdsContent(content: string): { headline: string; description: string } | null {
