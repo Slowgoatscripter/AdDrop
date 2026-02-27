@@ -40,6 +40,10 @@ export interface RadioScript {
   musicSuggestion?: string;
 }
 
+export type RadioTimeSlot = '15s' | '30s' | '60s';
+/** Alias for AudioTone — explicit name for radio ad context */
+export type RadioTone = AudioTone;
+
 /** Radio ad content keyed by time slot (e.g. '30s', '60s') then by AudioTone */
 export interface RadioAdsContent {
   [timeSlot: string]: Record<AudioTone, RadioScript>;
