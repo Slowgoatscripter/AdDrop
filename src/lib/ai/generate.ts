@@ -127,6 +127,7 @@ export async function generateCampaign(
     ...(gen.realtorCom ? { realtorCom: gen.realtorCom } : {}),
     ...(gen.homesComTrulia ? { homesComTrulia: gen.homesComTrulia } : {}),
     ...(gen.mlsDescription ? { mlsDescription: gen.mlsDescription } : {}),
+    ...(gen.radioAds ? { radioAds: gen.radioAds } : {}),
     // Metadata
     complianceResult: { platforms: [], campaignVerdict: 'compliant' as const, violations: [], autoFixes: [], totalViolations: 0, totalAutoFixes: 0 },
     selectedPlatforms: targetPlatforms,
