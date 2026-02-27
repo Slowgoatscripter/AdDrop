@@ -15,6 +15,7 @@ import { ZillowCard } from './zillow-card';
 import { RealtorCard } from './realtor-card';
 import { HomesTruliaCard } from './homes-trulia-card';
 import { MlsCard } from './mls-card';
+import { RadioAdsCard } from './radioAds-card';
 import { MarketingCard } from './marketing-card';
 import { PhotosTab } from './photos-tab';
 import { LockedPlatformOverlay } from './locked-platform-overlay';
@@ -32,6 +33,7 @@ const CATEGORIES: CategoryConfig[] = [
   { value: 'print', label: 'Print', platforms: ['magazineFullPage', 'magazineHalfPage', 'postcard'] },
   { value: 'listings', label: 'Online Listings', platforms: ['zillow', 'realtorCom', 'homesComTrulia'] },
   { value: 'mls', label: 'MLS', platforms: ['mlsDescription'] },
+  { value: 'audio', label: 'Audio / Radio', platforms: ['radioAds'] },
 ];
 
 interface CampaignTabsProps {
@@ -283,6 +285,25 @@ export function CampaignTabs({ campaign, onReplace, onRevert, onEditText, onRege
           {has(selected, 'mlsDescription') && campaign.mlsDescription && (
             <LockedPlatformOverlay platformId="mlsDescription" userTier={userTier} generatedAtTier={generatedAtTier}>
               <MlsCard description={campaign.mlsDescription} listing={listing} complianceResult={buildPlatformResult(agentResult, platformTexts, 'mlsDescription')} qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'mlsDescription')} onReplace={onReplace} onEditText={onEditText} />
+            </LockedPlatformOverlay>
+          )}
+        </TabsContent>
+      )}
+
+      {/* Audio / Radio */}
+      {visibleCategories.some((c) => c.value === 'audio') && (
+        <TabsContent value="audio" className="mt-4">
+          {has(selected, 'radioAds') && campaign.radioAds && (
+            <LockedPlatformOverlay platformId="radioAds" userTier={userTier} generatedAtTier={generatedAtTier}>
+              <RadioAdsCard
+                content={campaign.radioAds}
+                listing={listing}
+                complianceResult={buildPlatformResult(agentResult, platformTexts, 'radioAds')}
+                qualityResult={buildPlatformQualityResult(qualitySuggestions, qualityConstraints, 'radioAds')}
+                onReplace={onReplace}
+                onRevert={onRevert}
+                onEditText={onEditText}
+              />
             </LockedPlatformOverlay>
           )}
         </TabsContent>

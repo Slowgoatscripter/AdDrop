@@ -256,9 +256,9 @@ describe('buildOutputTemplate', () => {
     expect(template).toContain('max 500 chars');
   });
 
-  test('MLS template defaults to 1000 when maxDescriptionLength not provided', () => {
+  test('MLS template defaults to 2000 when maxDescriptionLength not provided', () => {
     const template = buildOutputTemplate(['mlsDescription'], {});
-    expect(template).toContain('max 1000 chars');
+    expect(template).toContain('max 2000 chars');
   });
 
   test('interpolates city name into hashtags', () => {
@@ -283,5 +283,106 @@ describe('buildOutputTemplate', () => {
     expect(template.trimStart().startsWith('{')).toBe(true);
     expect(template.trimEnd().endsWith('}')).toBe(true);
     expect(template).toContain('"twitter"');
+  });
+});
+
+describe('radioAds template', () => {
+  test('buildOutputTemplate includes radioAds when selected', () => {
+    const template = buildOutputTemplate(['radioAds'], {});
+    expect(template).toContain('"radioAds"');
+  });
+
+  test('template contains all three time slots', () => {
+    const template = buildOutputTemplate(['radioAds'], {});
+    expect(template).toContain('"15s"');
+    expect(template).toContain('"30s"');
+    expect(template).toContain('"60s"');
+  });
+
+  test('template contains all three tone variations', () => {
+    const template = buildOutputTemplate(['radioAds'], {});
+    expect(template).toContain('"conversational"');
+    expect(template).toContain('"authoritative"');
+    expect(template).toContain('"friendly"');
+  });
+
+  test('template specifies correct word count limits', () => {
+    const template = buildOutputTemplate(['radioAds'], {});
+    expect(template).toContain('max 35 words');
+    expect(template).toContain('max 75 words');
+    expect(template).toContain('max 150 words');
+  });
+
+  test('15s format has only script, wordCount, estimatedDuration fields', () => {
+    const template = buildOutputTemplate(['radioAds'], {});
+    const fifteenSecIdx = template.indexOf('"15s"');
+    const thirtySecIdx = template.indexOf('"30s"');
+    const fifteenSecBlock = template.slice(fifteenSecIdx, thirtySecIdx);
+    expect(fifteenSecBlock).toContain('"script"');
+    expect(fifteenSecBlock).toContain('"wordCount"');
+    expect(fifteenSecBlock).toContain('"estimatedDuration"');
+    expect(fifteenSecBlock).not.toContain('"notes"');
+    expect(fifteenSecBlock).not.toContain('"voiceStyle"');
+    expect(fifteenSecBlock).not.toContain('"musicSuggestion"');
+  });
+
+  test('30s format adds notes but not voiceStyle or musicSuggestion', () => {
+    const template = buildOutputTemplate(['radioAds'], {});
+    const thirtySecIdx = template.indexOf('"30s"');
+    const sixtySecIdx = template.indexOf('"60s"');
+    const thirtySecBlock = template.slice(thirtySecIdx, sixtySecIdx);
+    expect(thirtySecBlock).toContain('"script"');
+    expect(thirtySecBlock).toContain('"wordCount"');
+    expect(thirtySecBlock).toContain('"estimatedDuration"');
+    expect(thirtySecBlock).toContain('"notes"');
+    expect(thirtySecBlock).not.toContain('"voiceStyle"');
+    expect(thirtySecBlock).not.toContain('"musicSuggestion"');
+  });
+
+  test('60s format includes all fields including voiceStyle and musicSuggestion', () => {
+    const template = buildOutputTemplate(['radioAds'], {});
+    const sixtySecIdx = template.indexOf('"60s"');
+    const sixtySecBlock = template.slice(sixtySecIdx);
+    expect(sixtySecBlock).toContain('"script"');
+    expect(sixtySecBlock).toContain('"wordCount"');
+    expect(sixtySecBlock).toContain('"estimatedDuration"');
+    expect(sixtySecBlock).toContain('"notes"');
+    expect(sixtySecBlock).toContain('"voiceStyle"');
+    expect(sixtySecBlock).toContain('"musicSuggestion"');
+  });
+
+  test('template contains correct estimated durations', () => {
+    const template = buildOutputTemplate(['radioAds'], {});
+    expect(template).toContain('14-16 seconds');
+    expect(template).toContain('28-32 seconds');
+    expect(template).toContain('55-62 seconds');
+  });
+
+  test('radioAds excluded when not in selected platforms', () => {
+    const template = buildOutputTemplate(['instagram', 'twitter'], {});
+    expect(template).not.toContain('"radioAds"');
+    expect(template).not.toContain('"15s"');
+  });
+
+  test('buildGenerationPrompt includes radioAds when selected', async () => {
+    const mockListing: ListingData = {
+      url: 'https://example.com/listing/789',
+      address: { street: '789 Radio Rd', city: 'Bozeman', state: 'MT', zip: '59715' },
+      price: 500000,
+      beds: 4,
+      baths: 3,
+      sqft: 2400,
+      propertyType: 'Single Family',
+      features: ['Open Floor Plan'],
+      description: 'Spacious home.',
+      photos: [],
+    };
+    const prompt = await buildGenerationPrompt(mockListing, undefined, undefined, {
+      platforms: ['radioAds'],
+    });
+    expect(prompt).toContain('"radioAds"');
+    expect(prompt).toContain('"15s"');
+    expect(prompt).toContain('"30s"');
+    expect(prompt).toContain('"60s"');
   });
 });

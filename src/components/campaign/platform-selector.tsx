@@ -41,7 +41,7 @@ const PLATFORM_OPTIONS: PlatformOption[] = [
   { id: 'realtorCom', label: 'Realtor.com', icon: 'realtorCom', detail: 'Listing desc', category: 'listings' },
   { id: 'homesComTrulia', label: 'Homes / Trulia', icon: 'homesComTrulia', detail: 'Listing desc', category: 'listings' },
   { id: 'mlsDescription', label: 'MLS Description', icon: 'mlsDescription', detail: 'Compliant', category: 'mls' },
-  { id: 'radioAds', label: 'Radio Ads', icon: 'radioAds', detail: '3 durations × 3 tones', category: 'audio' },
+  { id: 'radioAds', label: 'Radio Ads', icon: 'radioAds', detail: '15s/30s/60s', category: 'audio' },
 ];
 
 const PRESETS: PlatformPreset[] = [
@@ -58,7 +58,7 @@ const CATEGORY_LABELS: Record<PlatformCategory, string> = {
   print: 'Print',
   listings: 'Online Listings',
   mls: 'MLS',
-  audio: 'Audio',
+  audio: 'Audio / Radio',
 };
 
 const CATEGORY_ORDER: PlatformCategory[] = ['social', 'paid', 'print', 'listings', 'mls', 'audio'];
