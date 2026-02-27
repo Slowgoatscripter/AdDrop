@@ -15,7 +15,7 @@ export function WelcomeCard() {
         Welcome to AdDrop
       </h2>
       <p className="text-muted-foreground mb-5">
-        You&apos;re in. Here&apos;s what you get:
+        Here&apos;s what you get:
       </p>
 
       <ul className="space-y-2.5 mb-6">
