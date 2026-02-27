@@ -2,22 +2,22 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Remove the How It Works and Social Proof sections from the landing page to shorten it and eliminate sections without strong conversion value (no real testimonials yet).
+**Goal:** Remove the How It Works and Social Proof sections from the landing page to shorten it and eliminate sections with no real testimonials.
 
-**Architecture:** Simple deletion — remove two component files and strip their imports/JSX from the landing page. Both components are only used in `src/app/page.tsx`. Each section manages its own spacing via Tailwind (`py-24 px-6`), so no layout gaps will appear after removal. The `droplet-shape` CSS class used by how-it-works is shared across many other components and must NOT be removed.
+**Architecture:** Pure deletion — remove two imports and two JSX elements from `page.tsx`, then delete the two component files. No new code needed.
 
-**Tech Stack:** Next.js 15, React 19, TypeScript 5.9, Tailwind CSS
+**Tech Stack:** Next.js (App Router), React, TypeScript
 
 ---
 
-### Task 1: Remove imports and JSX from the landing page
+### Task 1: Remove imports and JSX from `page.tsx`
 
 **Files:**
-- Modify: `src/app/page.tsx` (lines 4, 7, 73, 75)
+- Modify: `src/app/page.tsx`
 
 **Step 1: Remove the HowItWorks import**
 
-In `src/app/page.tsx`, delete this entire line (currently line 4):
+In `src/app/page.tsx`, delete this line:
 
 ```typescript
 import { HowItWorks } from '@/components/landing/how-it-works';
@@ -25,53 +25,33 @@ import { HowItWorks } from '@/components/landing/how-it-works';
 
 **Step 2: Remove the SocialProof import**
 
-In the same file, delete this entire line (currently line 7, will shift to line 6 after step 1):
+In the same file, delete this line:
 
 ```typescript
 import { SocialProof } from '@/components/landing/social-proof';
 ```
 
-**Step 3: Remove `<HowItWorks />` from JSX**
+> **Note:** Do NOT remove the `LandingStat` type import — it is still used by the `<Hero>` component on line 69.
 
-In the JSX return block, delete the line containing `<HowItWorks />`. It sits between `<InteractiveDemo />` and `<ShowcaseCarousel />`. The result should be:
+**Step 3: Remove the `<HowItWorks />` JSX element**
 
-```tsx
-        <InteractiveDemo />
-        <ShowcaseCarousel />
-```
-
-**Step 4: Remove `<SocialProof />` from JSX**
-
-In the JSX return block, delete the line containing `<SocialProof />`. It sits between `<ShowcaseCarousel />` and `<FeaturesGrid />`. The result should be:
+In the JSX return, delete this line (between `<InteractiveDemo />` and `<ShowcaseCarousel />`):
 
 ```tsx
-        <ShowcaseCarousel />
-        <FeaturesGrid />
+        <HowItWorks />
 ```
 
-**Step 5: Verify the file looks correct**
+**Step 4: Remove the `<SocialProof />` JSX element**
 
-After all edits, the complete imports block should be:
+In the JSX return, delete this line (between `<ShowcaseCarousel />` and `<FeaturesGrid />`):
 
-```typescript
-import type { Metadata } from 'next';
-import { Hero } from '@/components/landing/hero';
-import { PlatformBar } from '@/components/landing/platform-bar';
-import { ShowcaseCarousel } from '@/components/landing/showcase-carousel';
-import { InteractiveDemo } from '@/components/landing/interactive-demo';
-import { FeaturesGrid } from '@/components/landing/features-grid';
-import { WhoItsFor } from '@/components/landing/who-its-for';
-import { FAQ } from '@/components/landing/faq';
-import { CTAFooter } from '@/components/landing/cta-footer';
-import { MobileCTABar } from '@/components/landing/mobile-cta-bar';
-import { AppHeader } from '@/components/nav/app-header';
-import { getSettings } from '@/lib/settings/server';
-import type { LandingStat, FAQItem } from '@/lib/types/settings';
-import { FeedbackShell } from '@/components/feedback/feedback-shell';
-import { Footer } from '@/components/nav/footer';
+```tsx
+        <SocialProof />
 ```
 
-And the full JSX section order inside `<main>` should be:
+**Step 5: Verify the resulting JSX order**
+
+After removal, the component render order inside `<main>` should be:
 
 ```tsx
         <AppHeader variant="landing" />
@@ -99,14 +79,14 @@ And the full JSX section order inside `<main>` should be:
 
 **Step 6: Run TypeScript check**
 
-Run: `npx tsc --noEmit 2>&1 | head -30`
-Expected: No errors mentioning `HowItWorks` or `SocialProof`. Pre-existing errors in other files are acceptable.
+Run: `npx tsc --noEmit`
+Expected: No errors mentioning `HowItWorks`, `SocialProof`, `how-it-works`, or `social-proof`. Pre-existing errors unrelated to this change are acceptable.
 
 **Step 7: Commit**
 
 ```bash
 git add src/app/page.tsx
-git commit -m "refactor(landing): remove HowItWorks and SocialProof from page"
+git commit -m "refactor: remove HowItWorks and SocialProof from landing page"
 ```
 
 ---
@@ -114,95 +94,70 @@ git commit -m "refactor(landing): remove HowItWorks and SocialProof from page"
 ### Task 2: Delete the component files
 
 **Files:**
-- Delete: `src/components/landing/how-it-works.tsx` (108 lines)
-- Delete: `src/components/landing/social-proof.tsx` (114 lines)
+- Delete: `src/components/landing/how-it-works.tsx`
+- Delete: `src/components/landing/social-proof.tsx`
 
-**Step 1: Delete how-it-works.tsx**
+**Step 1: Verify no other files import these components**
+
+Run: `grep -r "how-it-works\|HowItWorks" src/`
+Expected: No results (only docs/plans/ references should exist, not src/).
+
+Run: `grep -r "social-proof\|SocialProof" src/`
+Expected: No results.
+
+**Step 2: Delete the files**
 
 ```bash
 rm src/components/landing/how-it-works.tsx
-```
-
-**Step 2: Delete social-proof.tsx**
-
-```bash
 rm src/components/landing/social-proof.tsx
 ```
 
-**Step 3: Verify no dangling references in application source code**
+**Step 3: Run TypeScript check**
 
-Run:
-```bash
-grep -r "how-it-works\|HowItWorks\|social-proof\|SocialProof" src/ --include="*.tsx" --include="*.ts"
-```
-
-Expected: **No output** (zero matches). References in `docs/plans/` are historical and can be ignored.
+Run: `npx tsc --noEmit`
+Expected: No new errors. Specifically, no "Cannot find module" errors for the deleted files.
 
 **Step 4: Commit**
 
 ```bash
-git add -u src/components/landing/how-it-works.tsx src/components/landing/social-proof.tsx
+git add src/components/landing/how-it-works.tsx src/components/landing/social-proof.tsx
 git commit -m "chore: delete unused HowItWorks and SocialProof component files"
 ```
 
 ---
 
-### Task 3: Build verification
+### Task 3: Visual smoke test
 
-**Files:** None (verification only)
+**Step 1: Start the dev server (if not already running)**
 
-**Step 1: Run the linter**
+Run: `npm run dev`
 
-```bash
-npm run lint
-```
+**Step 2: Verify the landing page**
 
-Expected: **No new errors.** Existing warnings are acceptable.
+Open `http://localhost:3000` and confirm:
+- The page loads without errors
+- No "How It Works" section appears
+- No "Why Agents Choose AdDrop" section appears
+- The flow is: Hero → PlatformBar → InteractiveDemo → ShowcaseCarousel → FeaturesGrid → WhoItsFor → FAQ → CTAFooter
+- No layout breaks or unexpected spacing gaps between remaining sections
+- Mobile layout is also intact (resize browser or use dev tools)
 
-**Step 2: Run the production build**
+**Step 3: Check the browser console**
 
-```bash
-npm run build
-```
-
-Expected: **Build succeeds** with exit code 0. The landing page route (`/`) should compile without errors. Watch for:
-- `Module not found` errors → missed import removal
-- Type errors → missed reference cleanup
-
-**Step 3: Commit (only if lint/build required auto-fixes)**
-
-If no fixes were needed, skip this step. Otherwise:
-
-```bash
-git add -A
-git commit -m "fix: address lint/build issues from section removal"
-```
+Expected: No new errors or warnings related to the removed components.
 
 ---
 
-## Spacing / Layout Safety Notes
+## Summary
 
-After removal, the adjacent sections flow:
+| Task | Action | Files |
+|------|--------|-------|
+| 1 | Remove imports + JSX from page | `src/app/page.tsx` |
+| 2 | Delete component files | `src/components/landing/how-it-works.tsx`, `src/components/landing/social-proof.tsx` |
+| 3 | Visual smoke test | None (manual verification) |
 
-| # | Section | Spacing | Background |
-|---|---------|---------|------------|
-| 4 | InteractiveDemo | `py-24 px-6` | default |
-| 5 | ShowcaseCarousel | `py-24 px-6` | default |
-| 6 | FeaturesGrid | `py-24 px-6` | dot pattern bg |
-| 7 | WhoItsFor | `py-24 px-6` | default |
+**Total estimated time:** ~5 minutes
 
-Each section uses self-contained `py-24` vertical padding. **No spacing adjustments needed.** The `droplet-shape` CSS class in `globals.css` is used by 10+ other components — do NOT remove it.
-
----
-
-## Summary of Changes
-
-| Action | File | What |
-|--------|------|------|
-| Modify | `src/app/page.tsx` | Remove 2 imports + 2 JSX lines (−4 lines) |
-| Delete | `src/components/landing/how-it-works.tsx` | 108 lines removed |
-| Delete | `src/components/landing/social-proof.tsx` | 114 lines removed |
-
-**Total: 3 files changed, ~226 lines removed, 0 lines added.**
-
-> **Planner** `opus` · 2026-02-26T00:06:20.375Z
+**Risks:**
+- `npx tsc --noEmit` may show pre-existing errors unrelated to this change — only errors mentioning the removed components indicate a problem.
+- Do NOT remove the `LandingStat` type import from `page.tsx` — it is used by the `<Hero>` component.
