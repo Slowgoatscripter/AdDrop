@@ -21,15 +21,15 @@ function buildMockSupabase(overrides: {
     error: selectError,
   });
 
-  const updateChain = {
-    eq: jest.fn().mockReturnThis() as jest.Mock,
-    select: jest.fn().mockReturnThis() as jest.Mock,
-    single: jest.fn().mockResolvedValue({
-      data: selectData,
-      error: updateError,
-    }) as jest.Mock,
+  // Supabase's query builder is thenable — awaiting the chain resolves to { data, error }.
+  // We simulate this by making updateChain implement .then() so `await ...eq().eq()` works.
+  const updateResolved = { data: null, error: updateError ?? null };
+  const updateChain: Record<string, jest.Mock> & {
+    then: (res: (v: typeof updateResolved) => unknown, rej?: (e: unknown) => unknown) => Promise<unknown>;
+  } = {
+    eq: jest.fn(),
+    then: (res, _rej) => Promise.resolve(updateResolved).then(res),
   };
-  // Allow chaining .eq().eq()
   updateChain.eq.mockReturnValue(updateChain);
 
   const update = jest.fn().mockReturnValue(updateChain);
@@ -51,7 +51,7 @@ function buildMockSupabase(overrides: {
 
   const from = jest.fn().mockReturnValue(fromReturnValue);
 
-  return { from, _singleSelect: singleSelect, _update: update, _updateChain: updateChain };
+  return { from, _singleSelect: singleSelect, _update: update };
 }
 
 // ── Tests ──────────────────────────────────────────────────────────────
