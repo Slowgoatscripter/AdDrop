@@ -40,7 +40,7 @@ export function CharacterCount({ platformId, text, element }: CharacterCountProp
                 !isOver && !isWarning && 'text-muted-foreground',
               )}
             >
-              {count.toLocaleString()}/{limit.limit.toLocaleString()}
+              {count.toLocaleString()} / {limit.limit} characters
               {limit.type === 'truncation' && (
                 <span className="text-[10px] ml-1 opacity-70">visible</span>
               )}
