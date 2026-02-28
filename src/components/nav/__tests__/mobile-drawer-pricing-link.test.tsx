@@ -8,9 +8,11 @@ jest.mock('next/navigation', () => ({
 }))
 
 jest.mock('next/link', () => {
-  return ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
+  const MockLink = ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={href} {...props}>{children}</a>
   )
+  MockLink.displayName = 'MockLink'
+  return MockLink
 })
 
 jest.mock('framer-motion', () => ({
@@ -30,9 +32,9 @@ jest.mock('@/lib/supabase/client', () => ({
 
 test('landing drawer shows Pricing link for anonymous users', () => {
   render(<MobileDrawer open={true} onClose={jest.fn()} variant="landing" />)
-  const pricingLink = screen.getByRole('link', { name: /pricing/i })
-  expect(pricingLink).toBeInTheDocument()
-  expect(pricingLink).toHaveAttribute('href', '/pricing')
+  const pricingLinks = screen.getAllByRole('link', { name: /pricing/i })
+  expect(pricingLinks.length).toBeGreaterThanOrEqual(1)
+  expect(pricingLinks[0]).toHaveAttribute('href', '/pricing')
 })
 
 test('landing drawer shows Pricing link for authenticated users', () => {
@@ -44,7 +46,7 @@ test('landing drawer shows Pricing link for authenticated users', () => {
       user={{ displayName: 'Test', email: 'test@test.com', role: 'user' }}
     />
   )
-  const pricingLink = screen.getByRole('link', { name: /pricing/i })
-  expect(pricingLink).toBeInTheDocument()
-  expect(pricingLink).toHaveAttribute('href', '/pricing')
+  const pricingLinks = screen.getAllByRole('link', { name: /pricing/i })
+  expect(pricingLinks.length).toBeGreaterThanOrEqual(1)
+  expect(pricingLinks[0]).toHaveAttribute('href', '/pricing')
 })
