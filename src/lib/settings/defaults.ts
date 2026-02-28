@@ -36,9 +36,7 @@ export const settingsDefaults: Record<string, unknown> = {
   ] as FAQItem[],
   'landing.cta_headline': 'Your Next Listing Deserves Better Marketing',
   'landing.cta_text': 'Create Your First Campaign',
-  'landing.cta_description': 'In the time it takes to write one ad, AdDrop builds your entire campaign.',
-  // Legacy key — DB column is 'landing.cta_beta'; kept for backward compat with existing rows
-  'landing.cta_beta': 'Free to start. 2 campaigns per month. No credit card required.',
+  'landing.cta_description': 'Create a free account and generate your first campaign in minutes.',
   'presets.default': [
     {
       name: 'Flathead Luxury Lakefront',

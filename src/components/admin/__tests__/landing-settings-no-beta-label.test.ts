@@ -17,7 +17,7 @@ describe('Landing settings form — no beta labels', () => {
     expect(source).not.toContain('Beta Notice');
   });
 
-  test('contains renamed CTA subtitle label (not "Beta Notice")', () => {
-    expect(source).toContain('CTA Subtitle');
+  test('contains renamed CTA description label (not "Beta Notice")', () => {
+    expect(source).toContain('CTA Description');
   });
 });
