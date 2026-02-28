@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { requireMFA } from './auth-helpers'
 
 /**
  * Resolve user role from JWT claims (set by custom_access_token_hook)
@@ -88,35 +89,22 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // MFA enforcement for admin routes
-    const { data: aalData } =
-      await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-
-    if (aalData) {
-      const { currentLevel, nextLevel } = aalData
-
-      if (nextLevel === 'aal2' && currentLevel !== 'aal2') {
+    // MFA enforcement for admin routes (uses canonical requireMFA check)
+    const mfa = await requireMFA(supabase)
+    if (!mfa.verified) {
+      if (isApiAdminRoute) {
+        return NextResponse.json({ error: 'MFA required' }, { status: 403 })
+      }
+      const url = request.nextUrl.clone()
+      if (mfa.enrolled) {
         // MFA enrolled but not verified this session -> challenge
-        if (isApiAdminRoute) {
-          return NextResponse.json({ error: 'MFA required' }, { status: 403 })
-        }
-        const url = request.nextUrl.clone()
         url.pathname = '/mfa-challenge'
         url.searchParams.set('next', pathname)
-        return NextResponse.redirect(url)
-      }
-
-      if (nextLevel === 'aal1') {
-        // No MFA enrolled
-        if (isApiAdminRoute) {
-          return NextResponse.json({ error: 'MFA required' }, { status: 403 })
-        }
-        const url = request.nextUrl.clone()
+      } else {
+        // No MFA enrolled -> enrollment page
         url.pathname = '/settings/security'
-        return NextResponse.redirect(url)
       }
-
-      // currentLevel === 'aal2' -> MFA verified, allow through
+      return NextResponse.redirect(url)
     }
   }
 
