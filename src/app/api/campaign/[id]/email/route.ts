@@ -39,10 +39,13 @@ export async function POST(
     if (to.length > 10) {
       return NextResponse.json({ error: 'Maximum 10 recipients per send' }, { status: 400 });
     }
-    for (const email of to) {
-      if (!emailSchema.safeParse(email.trim()).success) {
-        return NextResponse.json({ error: `Invalid email: ${email}` }, { status: 400 });
-      }
+    const invalidEmails = to.filter(email => !emailSchema.safeParse(email.trim()).success);
+    if (invalidEmails.length > 0) {
+      console.warn('Invalid recipient emails:', invalidEmails);
+      return NextResponse.json(
+        { error: 'One or more recipients are invalid' },
+        { status: 400 },
+      );
     }
 
     // Fetch campaign
