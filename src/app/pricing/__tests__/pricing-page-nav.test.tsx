@@ -7,9 +7,17 @@ jest.mock('next/navigation', () => ({
 }))
 
 jest.mock('next/link', () => {
-  return ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
+  const MockLink = ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={href} {...props}>{children}</a>
   )
+  MockLink.displayName = 'MockLink'
+  return MockLink
+})
+
+jest.mock('next/image', () => {
+  const MockImage = (props: Record<string, unknown>) => <img {...props} />
+  MockImage.displayName = 'MockImage'
+  return { __esModule: true, default: MockImage }
 })
 
 jest.mock('framer-motion', () => ({
