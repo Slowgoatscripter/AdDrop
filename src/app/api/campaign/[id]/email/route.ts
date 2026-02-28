@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/supabase/auth-helpers';
 import { Resend } from 'resend';
 import { z } from 'zod';
 import { CampaignKit } from '@/lib/types';
+import { getOrCreateShareToken } from '@/lib/share-token';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const emailSchema = z.string().email();
@@ -51,7 +52,7 @@ export async function POST(
     // Fetch campaign
     const { data: row, error } = await supabase
       .from('campaigns')
-      .select('generated_ads, share_token, share_expires_at')
+      .select('generated_ads')
       .eq('id', id)
       .eq('user_id', user!.id)
       .single();
@@ -62,17 +63,8 @@ export async function POST(
 
     const campaign = row.generated_ads as CampaignKit;
 
-    // Auto-generate share link if needed
-    let shareToken = row.share_token;
-    if (!shareToken || new Date(row.share_expires_at) < new Date()) {
-      const crypto = await import('crypto');
-      shareToken = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-      await supabase
-        .from('campaigns')
-        .update({ share_token: shareToken, share_expires_at: expiresAt })
-        .eq('id', id);
-    }
+    // Reuse existing valid share token, or generate a new one
+    const { shareToken } = await getOrCreateShareToken(supabase, id, user!.id);
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '';
     const shareUrl = `${appUrl}/share/${shareToken}`;
