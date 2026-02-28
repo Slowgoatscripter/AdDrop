@@ -7,7 +7,7 @@ import {
   Image,
   StyleSheet,
 } from '@react-pdf/renderer';
-import { CampaignKit, PrintAd, RadioTimeSlot, RadioScript } from '@/lib/types';
+import { CampaignKit, PrintAd, RadioTimeSlot, RadioTone, RadioScript } from '@/lib/types';
 
 /* ------------------------------------------------------------------ */
 /*  Colour Palette & Styles                                           */
@@ -599,7 +599,7 @@ export function CampaignPdf({ campaign }: CampaignPdfProps) {
                   {RADIO_TIME_SLOT_LABELS[slot]}
                 </Text>
                 {(
-                  Object.entries(campaign.radioAds![slot]) as [string, RadioScript][]
+                  Object.entries(campaign.radioAds![slot]) as [RadioTone, RadioScript][]
                 ).map(([tone, script]) => (
                   <RadioScriptBlock
                     key={tone}
