@@ -4,7 +4,7 @@ import { getCampaignUsage } from '@/lib/usage/campaign-limits'
 import { MlsInputForm } from '@/components/mls-input-form'
 import { AppHeader } from '@/components/nav/app-header'
 import { BackLink } from '@/components/nav/back-link'
-import { PlanLimitReached } from '@/components/create/plan-limit-reached'
+import { LimitReached } from '@/components/create/limit-reached'
 import { FeedbackShell } from '@/components/feedback/feedback-shell'
 import { Footer } from '@/components/nav/footer'
 
@@ -26,7 +26,7 @@ export default async function CreatePage() {
             </div>
 
             {usage.isLimited ? (
-              <PlanLimitReached resetsAt={usage.resetsAt} />
+              <LimitReached resetsAt={usage.resetsAt} />
             ) : (
               <>
                 <div className="text-center mb-8">

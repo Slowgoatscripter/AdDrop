@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { sanitizeAuthError } from '@/lib/auth/sanitize-error'
 import { Captcha } from '@/components/auth/captcha'
-import { SignupBenefitsBanner } from '@/components/auth/signup-benefits-banner'
 import { UserPlus, Mail } from 'lucide-react'
 import { AppHeader } from '@/components/nav/app-header'
 import { Footer } from '@/components/nav/footer'
@@ -119,8 +118,6 @@ function SignupContent() {
           </div>
           <p className="text-sm text-muted-foreground mt-1">Create your account</p>
         </div>
-
-        {next && <SignupBenefitsBanner />}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
