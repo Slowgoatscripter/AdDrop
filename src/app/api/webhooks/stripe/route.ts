@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe/client'
 import { getTierFromPriceId, getBillingCycleFromPriceId } from '@/lib/stripe/config'
+import { sanitizeDbError } from '@/lib/errors/sanitize-db-error'
 
 export const runtime = 'nodejs'
 
@@ -69,7 +70,7 @@ async function handleCheckoutCompleted(
   )
 
   if (subError) {
-    console.error('checkout.session.completed: subscriptions upsert failed', subError)
+    console.error('checkout.session.completed: subscriptions upsert failed', sanitizeDbError(subError))
     throw subError
   }
 
@@ -85,7 +86,7 @@ async function handleCheckoutCompleted(
     .eq('id', userId)
 
   if (profileError) {
-    console.error('checkout.session.completed: profiles update failed', profileError)
+    console.error('checkout.session.completed: profiles update failed', sanitizeDbError(profileError))
     throw profileError
   }
 }
@@ -128,7 +129,7 @@ async function handleSubscriptionUpdated(
     .eq('stripe_subscription_id', subscription.id)
 
   if (subError) {
-    console.error('customer.subscription.updated: subscriptions update failed', subError)
+    console.error('customer.subscription.updated: subscriptions update failed', sanitizeDbError(subError))
     throw subError
   }
 
@@ -140,7 +141,7 @@ async function handleSubscriptionUpdated(
     .single()
 
   if (lookupError || !subRecord) {
-    console.error('customer.subscription.updated: could not find subscription record', lookupError)
+    console.error('customer.subscription.updated: could not find subscription record', sanitizeDbError(lookupError))
     throw lookupError || new Error('Subscription record not found')
   }
 
@@ -155,7 +156,7 @@ async function handleSubscriptionUpdated(
     .eq('id', subRecord.user_id)
 
   if (profileError) {
-    console.error('customer.subscription.updated: profiles update failed', profileError)
+    console.error('customer.subscription.updated: profiles update failed', sanitizeDbError(profileError))
     throw profileError
   }
 }
@@ -177,7 +178,7 @@ async function handleSubscriptionDeleted(
     .single()
 
   if (lookupError || !subRecord) {
-    console.error('customer.subscription.deleted: subscription record not found', lookupError)
+    console.error('customer.subscription.deleted: subscription record not found', sanitizeDbError(lookupError))
     return
   }
 
@@ -191,7 +192,7 @@ async function handleSubscriptionDeleted(
     .eq('stripe_subscription_id', subscription.id)
 
   if (subError) {
-    console.error('customer.subscription.deleted: subscriptions update failed', subError)
+    console.error('customer.subscription.deleted: subscriptions update failed', sanitizeDbError(subError))
     throw subError
   }
 
@@ -205,7 +206,7 @@ async function handleSubscriptionDeleted(
     .eq('id', subRecord.user_id)
 
   if (profileError) {
-    console.error('customer.subscription.deleted: profiles update failed', profileError)
+    console.error('customer.subscription.deleted: profiles update failed', sanitizeDbError(profileError))
     throw profileError
   }
 }
@@ -236,7 +237,7 @@ async function handlePaymentFailed(
     .eq('stripe_subscription_id', subscriptionId)
 
   if (subError) {
-    console.error('invoice.payment_failed: subscriptions update failed', subError)
+    console.error('invoice.payment_failed: subscriptions update failed', sanitizeDbError(subError))
     throw subError
   }
 
@@ -248,7 +249,7 @@ async function handlePaymentFailed(
     .single()
 
   if (lookupError || !subRecord) {
-    console.error('invoice.payment_failed: subscription record not found', lookupError)
+    console.error('invoice.payment_failed: subscription record not found', sanitizeDbError(lookupError))
     return
   }
 
@@ -259,7 +260,7 @@ async function handlePaymentFailed(
     .eq('id', subRecord.user_id)
 
   if (profileError) {
-    console.error('invoice.payment_failed: profiles update failed', profileError)
+    console.error('invoice.payment_failed: profiles update failed', sanitizeDbError(profileError))
     throw profileError
   }
 }
@@ -288,7 +289,7 @@ export async function POST(request: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err) {
-    console.error('Webhook signature verification failed:', err)
+    console.error('Webhook signature verification failed:', sanitizeDbError(err))
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -327,7 +328,7 @@ export async function POST(request: NextRequest) {
       event_type: event.type,
     })
   } catch (err) {
-    console.error('Webhook handler error:', err)
+    console.error('Webhook handler error:', sanitizeDbError(err))
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }
