@@ -7,10 +7,13 @@ import { PlatformSelector } from '../platform-selector';
 // This lets us assert exactly which icon component was rendered for each platform.
 jest.mock('lucide-react', () => {
   const React = require('react');
-  const makeIcon = (name: string) =>
-    React.forwardRef((props: any, ref: any) => (
+  const makeIcon = (name: string) => {
+    const Icon = React.forwardRef((props: any, ref: any) => (
       <span data-testid={`icon-${name}`} ref={ref} {...props} />
     ));
+    Icon.displayName = name;
+    return Icon;
+  };
 
   return {
     __esModule: true,

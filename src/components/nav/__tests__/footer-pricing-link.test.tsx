@@ -3,9 +3,11 @@ import { render, screen } from '@testing-library/react'
 import { Footer } from '../footer'
 
 jest.mock('next/link', () => {
-  return ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
+  const MockLink = ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={href} {...props}>{children}</a>
   )
+  MockLink.displayName = 'MockLink'
+  return MockLink
 })
 
 test('footer contains Pricing link', () => {
