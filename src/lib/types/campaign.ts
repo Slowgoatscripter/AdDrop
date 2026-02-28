@@ -63,7 +63,6 @@ export const ALL_PLATFORMS: PlatformId[] = [
   'magazineFullPage', 'magazineHalfPage', 'postcard',
   'zillow', 'realtorCom', 'homesComTrulia',
   'mlsDescription',
-  'radioAds',
 ];
 
 export interface PlatformOption {

@@ -29,7 +29,8 @@ const ListingSchema = z.object({
   broker: z.string().max(200).optional(),
 });
 
-const VALID_PLATFORMS = new Set<string>(ALL_PLATFORMS);
+// ALL_PLATFORMS = 12 standard platforms. radioAds is a premium platform validated separately.
+const VALID_PLATFORMS = new Set<string>([...ALL_PLATFORMS, 'radioAds']);
 
 function buildCampaignName(listing: ListingData): string {
   const address = listing.address;
