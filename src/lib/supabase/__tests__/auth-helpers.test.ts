@@ -17,7 +17,7 @@ if (typeof global.Request === 'undefined') {
 }
 
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '../auth-helpers'
+import { requireAdmin, requireMFA, requireAdminAction } from '../auth-helpers'
 
 const mockCreateClient = createClient as jest.MockedFunction<typeof createClient>
 
@@ -27,6 +27,7 @@ function buildMockSupabase(overrides: {
   profileRole?: string | null
   profileError?: object | null
   currentLevel?: string | null
+  nextLevel?: string | null
   aalError?: object | null
 } = {}) {
   const {
@@ -35,11 +36,12 @@ function buildMockSupabase(overrides: {
     profileRole = 'admin',
     profileError = null,
     currentLevel = 'aal2',
+    nextLevel = 'aal2',
     aalError = null,
   } = overrides
 
   const mockGetAuthenticatorAssuranceLevel = jest.fn().mockResolvedValue({
-    data: aalError ? null : { currentLevel },
+    data: aalError ? null : { currentLevel, nextLevel },
     error: aalError,
   })
 
@@ -159,5 +161,95 @@ describe('requireAdmin()', () => {
     expect(result).toHaveProperty('user')
     expect(result).toHaveProperty('supabase')
     expect(result).toHaveProperty('error')
+  })
+})
+
+describe('requireMFA()', () => {
+  it('returns verified:true when currentLevel is aal2', async () => {
+    const mockSupabase = buildMockSupabase({ currentLevel: 'aal2', nextLevel: 'aal2' })
+
+    const result = await requireMFA(mockSupabase as any)
+
+    expect(result.verified).toBe(true)
+  })
+
+  it('returns verified:false, enrolled:true when enrolled but not verified this session', async () => {
+    const mockSupabase = buildMockSupabase({ currentLevel: 'aal1', nextLevel: 'aal2' })
+
+    const result = await requireMFA(mockSupabase as any)
+
+    expect(result.verified).toBe(false)
+    expect((result as { verified: false; enrolled: boolean }).enrolled).toBe(true)
+  })
+
+  it('returns verified:false, enrolled:false when no MFA factors enrolled', async () => {
+    const mockSupabase = buildMockSupabase({ currentLevel: 'aal1', nextLevel: 'aal1' })
+
+    const result = await requireMFA(mockSupabase as any)
+
+    expect(result.verified).toBe(false)
+    expect((result as { verified: false; enrolled: boolean }).enrolled).toBe(false)
+  })
+
+  it('returns verified:false when aalData is null (API error — safe default)', async () => {
+    const mockSupabase = buildMockSupabase({ aalError: { message: 'MFA API error' } })
+
+    const result = await requireMFA(mockSupabase as any)
+
+    expect(result.verified).toBe(false)
+    expect((result as { verified: false; enrolled: boolean }).enrolled).toBe(false)
+  })
+})
+
+describe('requireAdminAction()', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('throws Not authenticated when user is null', async () => {
+    const mockSupabase = buildMockSupabase({ user: null })
+    mockCreateClient.mockResolvedValue(mockSupabase as any)
+
+    await expect(requireAdminAction()).rejects.toThrow('Not authenticated')
+  })
+
+  it('throws Not authenticated when auth errors', async () => {
+    const mockSupabase = buildMockSupabase({ authError: { message: 'session expired' } })
+    mockCreateClient.mockResolvedValue(mockSupabase as any)
+
+    await expect(requireAdminAction()).rejects.toThrow('Not authenticated')
+  })
+
+  it('throws Not authorized when user role is not admin', async () => {
+    const mockSupabase = buildMockSupabase({ profileRole: 'user' })
+    mockCreateClient.mockResolvedValue(mockSupabase as any)
+
+    await expect(requireAdminAction()).rejects.toThrow('Not authorized')
+  })
+
+  it('throws MFA required when currentLevel is not aal2', async () => {
+    const mockSupabase = buildMockSupabase({ currentLevel: 'aal1', nextLevel: 'aal2' })
+    mockCreateClient.mockResolvedValue(mockSupabase as any)
+
+    await expect(requireAdminAction()).rejects.toThrow('MFA required')
+  })
+
+  it('throws MFA required when aalData is null (API error)', async () => {
+    const mockSupabase = buildMockSupabase({ aalError: { message: 'MFA error' } })
+    mockCreateClient.mockResolvedValue(mockSupabase as any)
+
+    await expect(requireAdminAction()).rejects.toThrow('MFA required')
+  })
+
+  it('returns user, supabase, profile for valid admin with verified MFA', async () => {
+    const adminUser = { id: 'admin-123', email: 'admin@example.com' }
+    const mockSupabase = buildMockSupabase({ user: adminUser, currentLevel: 'aal2', nextLevel: 'aal2' })
+    mockCreateClient.mockResolvedValue(mockSupabase as any)
+
+    const result = await requireAdminAction()
+
+    expect(result.user).toEqual(adminUser)
+    expect(result.supabase).toBeDefined()
+    expect(result.profile).toBeDefined()
   })
 })
