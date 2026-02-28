@@ -24,7 +24,6 @@ function buildMockSupabase(overrides: {
   // Supabase's query builder is thenable — awaiting the chain resolves to { data, error }.
   // We simulate this by making updateChain implement .then() so `await ...eq().eq()` works.
   const updateResolved = { data: null, error: updateError ?? null };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateChain: any = {
     eq: jest.fn(),
     then: (res: (v: typeof updateResolved) => unknown, _rej?: unknown) =>
