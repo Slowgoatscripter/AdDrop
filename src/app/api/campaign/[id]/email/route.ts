@@ -4,6 +4,7 @@ import { Resend } from 'resend';
 import { z } from 'zod';
 import { CampaignKit } from '@/lib/types';
 import { getOrCreateShareToken } from '@/lib/share-token';
+import { formatExpiry } from '@/lib/format-expiry';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const emailSchema = z.string().email();
@@ -64,7 +65,7 @@ export async function POST(
     const campaign = row.generated_ads as CampaignKit;
 
     // Reuse existing valid share token, or generate a new one
-    const { shareToken } = await getOrCreateShareToken(supabase, id, user!.id);
+    const { shareToken, expiresAt } = await getOrCreateShareToken(supabase, id, user!.id);
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '';
     const shareUrl = `${appUrl}/share/${shareToken}`;
@@ -92,7 +93,7 @@ export async function POST(
               <div style="margin: 24px 0;">
                 <a href="${shareUrl}" style="background: #0f172a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block;">View Campaign</a>
               </div>
-              <p style="font-size: 12px; color: #888;">This link expires in 7 days.</p>
+              <p style="font-size: 12px; color: #888;">This link expires ${formatExpiry(expiresAt)}.</p>
             </div>
           `,
         })
