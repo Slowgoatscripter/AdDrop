@@ -34,6 +34,11 @@ jest.mock('@/lib/supabase/auth-helpers', () => ({
   }),
 }));
 
+jest.mock('@/lib/stripe/gate', () => ({
+  getUserTier: jest.fn().mockResolvedValue('pro'),
+  requireTierFeature: jest.fn().mockReturnValue(null),
+}));
+
 jest.mock('openai', () => {
   return jest.fn().mockImplementation(() => ({
     chat: {
