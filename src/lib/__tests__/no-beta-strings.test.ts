@@ -56,6 +56,7 @@ function findBetaReferences(): Array<{ file: string; lineNumber: number; line: s
     absolute: true,
     ignore: [
       'src/lib/__tests__/no-beta-strings.test.ts',
+      'src/**/__tests__/**',
     ],
   })
 
@@ -88,7 +89,7 @@ describe('no-beta-strings', () => {
       const report = violations
         .map((v) => `  ${v.file}:${v.lineNumber}: ${v.line}`)
         .join('\n')
-      fail(
+      throw new Error(
         `Found ${violations.length} beta reference(s) that should be removed:\n${report}`
       )
     }
