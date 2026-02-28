@@ -9,7 +9,7 @@ describe('page.tsx CTAFooter prop', () => {
 
   it('passes description prop to CTAFooter (not betaNotice)', () => {
     // The CTAFooter call should use `description=` prop
-    expect(pageSource).toContain("description={s['landing.cta_description']");
+    expect(pageSource).toContain("description={(s['landing.cta_description'] as string) || undefined}");
   });
 
   it('does not use betaNotice prop on CTAFooter', () => {
