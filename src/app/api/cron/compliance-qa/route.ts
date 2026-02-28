@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateCampaign } from '@/lib/ai/generate'
 import { getComplianceSettings } from '@/lib/compliance/compliance-settings'
+import { env } from '@/lib/env'
 import type {
   RunSummary,
   PropertyTestResult,
@@ -9,9 +10,15 @@ import type {
 } from '@/lib/types/compliance-qa'
 
 export async function GET(req: NextRequest) {
+  // Defense-in-depth: reject immediately if CRON_SECRET is somehow empty at runtime
+  if (!env.CRON_SECRET) {
+    console.error('Cron: CRON_SECRET is not configured')
+    return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
+  }
+
   // Verify cron secret (Vercel Cron sends this header)
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
