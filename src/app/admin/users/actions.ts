@@ -3,6 +3,7 @@
 import { requireAdminAction } from '@/lib/supabase/auth-helpers'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
+import { clearExemptionCache } from '@/lib/rate-limit'
 
 export async function updateUserRole(userId: string, newRole: 'admin' | 'user') {
   const { user, supabase } = await requireAdminAction()
@@ -30,6 +31,10 @@ export async function toggleRateLimitExempt(userId: string, exempt: boolean) {
     .eq('id', userId)
 
   if (error) throw new Error(error.message)
+
+  // Proactively clear the Redis-cached exemption status so the change takes
+  // effect immediately instead of waiting up to 60 s for TTL expiry.
+  await clearExemptionCache(userId)
 
   revalidatePath('/admin/users')
 }

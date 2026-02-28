@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
-import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { checkRateLimit, getClientIp, getUserIdFromSession, isRateLimitExempt } from '@/lib/rate-limit'
 
 function getRateLimitKey(pathname: string): string | null {
   if (['/login', '/signup', '/forgot-password'].some(p => pathname === p)) return 'auth'
@@ -31,20 +31,27 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Rate limiting
+  // Rate limiting (skip for rate-limit-exempt users)
   const rateLimitKey = getRateLimitKey(request.nextUrl.pathname)
   if (rateLimitKey) {
-    const ip = getClientIp(request)
-    const result = await checkRateLimit(`${rateLimitKey}:${ip}`, rateLimitKey)
+    // Lightweight check: extract userId from session cookie (no network call)
+    // and look up exemption status via Redis cache.
+    const userId = getUserIdFromSession(request)
+    const exempt = userId ? await isRateLimitExempt(userId) : false
 
-    if (result.limited) {
-      return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          'Retry-After': String(result.retryAfter),
-        },
-      })
+    if (!exempt) {
+      const ip = getClientIp(request)
+      const result = await checkRateLimit(`${rateLimitKey}:${ip}`, rateLimitKey)
+
+      if (result.limited) {
+        return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(result.retryAfter),
+          },
+        })
+      }
     }
   }
 
