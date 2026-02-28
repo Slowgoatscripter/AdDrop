@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireAdminAction } from '@/lib/supabase/auth-helpers'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { settingsDefaults } from '@/lib/settings/defaults'
 
@@ -27,19 +28,7 @@ export async function loadSettings() {
 }
 
 export async function saveSettings(entries: Record<string, unknown>) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  // Verify admin
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') throw new Error('Not authorized')
+  const { user, supabase } = await requireAdminAction()
 
   // Batch upsert all entries
   const rows = Object.entries(entries).map(([key, value]) => ({
@@ -62,18 +51,7 @@ export async function saveSettings(entries: Record<string, unknown>) {
 }
 
 export async function resetSettings(keys: string[]) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') throw new Error('Not authorized')
+  const { supabase } = await requireAdminAction()
 
   const { error } = await supabase
     .from('app_settings')
