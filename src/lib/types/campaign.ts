@@ -40,9 +40,12 @@ export interface RadioScript {
   musicSuggestion?: string;
 }
 
-/** Radio ad content keyed by time slot (e.g. '30s', '60s') then by AudioTone */
+export type RadioTimeSlot = '15s' | '30s' | '60s';
+export type RadioTone = 'conversational' | 'authoritative' | 'friendly';
+
+/** Radio ad content keyed by time slot (e.g. '30s', '60s') then by RadioTone */
 export interface RadioAdsContent {
-  [timeSlot: string]: Record<AudioTone, RadioScript>;
+  [timeSlot: string]: Record<RadioTone, RadioScript>;
 }
 
 // --- Platform Selection Types ---
