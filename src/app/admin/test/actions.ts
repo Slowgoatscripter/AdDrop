@@ -1,27 +1,12 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminAction } from '@/lib/supabase/auth-helpers'
 import { revalidatePath } from 'next/cache'
 import { ListingData } from '@/lib/types/listing'
 import { settingsDefaults } from '@/lib/settings/defaults'
 
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') throw new Error('Not authorized')
-  return { user, supabase }
-}
-
 export async function getPresets() {
-  const { supabase } = await requireAdmin()
+  const { supabase } = await requireAdminAction()
 
   const { data, error } = await supabase
     .from('test_presets')
@@ -33,7 +18,7 @@ export async function getPresets() {
 }
 
 export async function createPreset(name: string, listingData: ListingData) {
-  const { user, supabase } = await requireAdmin()
+  const { user, supabase } = await requireAdminAction()
 
   const { error } = await supabase
     .from('test_presets')
@@ -49,7 +34,7 @@ export async function createPreset(name: string, listingData: ListingData) {
 }
 
 export async function updatePreset(id: string, name: string, listingData: ListingData) {
-  const { supabase } = await requireAdmin()
+  const { supabase } = await requireAdminAction()
 
   const { error } = await supabase
     .from('test_presets')
@@ -66,7 +51,7 @@ export async function updatePreset(id: string, name: string, listingData: Listin
 }
 
 export async function deletePreset(id: string) {
-  const { supabase } = await requireAdmin()
+  const { supabase } = await requireAdminAction()
 
   const { error } = await supabase
     .from('test_presets')
@@ -79,7 +64,7 @@ export async function deletePreset(id: string) {
 }
 
 export async function reseedPresets() {
-  const { user, supabase } = await requireAdmin()
+  const { user, supabase } = await requireAdminAction()
 
   // Delete all existing presets for this user
   const { error: deleteError } = await supabase

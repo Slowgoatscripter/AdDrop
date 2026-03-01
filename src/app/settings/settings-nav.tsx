@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Shield } from 'lucide-react'
+import { User, Shield, CreditCard } from 'lucide-react'
 
 const navItems = [
   { href: '/settings/account', label: 'Account', icon: User },
   { href: '/settings/security', label: 'Security', icon: Shield },
+  { href: '/settings/billing', label: 'Billing', icon: CreditCard },
 ]
 
 export function SettingsNav() {
@@ -22,7 +23,7 @@ export function SettingsNav() {
             href={item.href}
             className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
               isActive
-                ? 'bg-gold/10 text-gold'
+                ? 'bg-teal-muted/50 text-gold pl-4 border-l-2 border-l-gold'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted'
             }`}
           >

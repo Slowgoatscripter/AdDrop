@@ -14,6 +14,11 @@ jest.mock('@/lib/export/bundle', () => ({
   generateBundle: jest.fn(),
 }))
 
+jest.mock('@/lib/stripe/gate', () => ({
+  getUserTier: jest.fn().mockResolvedValue('pro'),
+  requireTierFeature: jest.fn().mockReturnValue(null),
+}))
+
 // Polyfill Web APIs for Next.js
 import { TextEncoder, TextDecoder } from 'util'
 Object.assign(global, { TextEncoder, TextDecoder })

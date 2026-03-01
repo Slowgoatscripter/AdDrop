@@ -9,16 +9,18 @@ import { CardEditPanel } from './card-edit-panel';
 import { EditableText } from './editable-text';
 import {
   PlatformComplianceResult,
+  RadioAdsContent,
+  RadioScript,
   RadioTimeSlot,
   RadioTone,
-  RadioScript,
 } from '@/lib/types';
 import type { PlatformQualityResult, QualityIssue } from '@/lib/types/quality';
 import type { ListingData } from '@/lib/types/listing';
 import { Clock, FileText, Lock, Mic, Music, Radio } from 'lucide-react';
 
 // --- LockedPlatformOverlay stub ---
-// Pro-and-up only. Will be replaced by a shared component when tier system is built.
+// Pro-and-up only. Replaced by the shared LockedPlatformOverlay in campaign-tabs.tsx.
+// This stub exists for standalone use; isLocked is NOT passed from campaign-tabs.
 function LockedPlatformOverlay({ children, isLocked }: { children: ReactNode; isLocked?: boolean }) {
   if (!isLocked) return <>{children}</>;
   return (
@@ -52,7 +54,7 @@ const TIME_SLOT_LABELS: Record<RadioTimeSlot, string> = {
 
 // --- Props ---
 interface RadioAdsCardProps {
-  content: Record<RadioTimeSlot, Record<RadioTone, RadioScript>>;
+  content: RadioAdsContent;
   complianceResult?: PlatformComplianceResult;
   qualityResult?: PlatformQualityResult;
   onReplace?: (platform: string, oldTerm: string, newTerm: string) => void;

@@ -2,8 +2,8 @@ import Image from 'next/image';
 import { Check } from 'lucide-react';
 
 const valuePoints = [
-  'Free beta account',
-  '2 campaigns per week',
+  'Free tier available',
+  '2 campaigns per month to start',
   'No credit card required',
   'Compliance-checked',
 ];
@@ -13,22 +13,14 @@ interface CTAFooterProps {
   description?: string;
   ctaText?: string;
   ctaHref?: string;
-  // Legacy prop for backwards compatibility
-  betaNotice?: string;
 }
 
 export function CTAFooter({
   headline = 'Your Next Listing Deserves Better Marketing',
-  description: descriptionProp,
-  betaNotice,
-  ctaText = 'Create Your First Campaign — Free',
+  description = 'In the time it takes to write one ad, AdDrop builds your entire campaign.',
+  ctaText = 'Drop Your First Ad — Free',
   ctaHref = '/create',
 }: CTAFooterProps) {
-  // Support both description (new) and betaNotice (legacy) props
-  const description =
-    descriptionProp ||
-    betaNotice ||
-    'In the time it takes to write one ad, AdDrop builds your entire campaign.';
   return (
     <section className="relative py-32 overflow-hidden">
       {/* Background image */}
@@ -41,10 +33,10 @@ export function CTAFooter({
         alt=""
       />
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-background/85" />
+      {/* Midnight ink gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background/40" />
 
-      {/* Gold gradient overlay */}
+      {/* Subtle gold accent overlay */}
       <div className="absolute inset-0 bg-gradient-to-tr from-gold/[0.04] via-transparent to-gold/[0.06]" />
 
       {/* Content */}
@@ -68,10 +60,10 @@ export function CTAFooter({
           ))}
         </div>
 
-        {/* CTA button */}
+        {/* CTA button — pill-shaped */}
         <a
           href={ctaHref}
-          className="inline-block border-2 border-gold bg-transparent text-gold hover:bg-gold hover:text-background px-14 py-6 text-xl uppercase tracking-wider font-bold transition-all duration-300"
+          className="inline-block border-2 border-gold bg-transparent text-gold hover:bg-gold hover:text-background px-14 py-6 text-xl uppercase tracking-wider font-bold transition-all duration-300 rounded-full"
         >
           {ctaText}
         </a>

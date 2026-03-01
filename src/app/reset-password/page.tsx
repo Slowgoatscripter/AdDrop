@@ -115,9 +115,9 @@ export default function ResetPasswordPage() {
       <div className="min-h-screen flex flex-col">
         <AppHeader variant="auth" />
         <main className="flex-1 flex items-center justify-center p-6 bg-background">
-          <div className="w-full max-w-sm text-center">
-            <div className="flex justify-center mb-4">
-              <Lock className="w-10 h-10 text-gold animate-pulse" />
+          <div className="w-full max-w-sm bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl p-8 text-center">
+            <div className="w-14 h-14 mx-auto mb-4 droplet-shape bg-gold/10 border border-gold/20 flex items-center justify-center">
+              <Lock className="w-6 h-6 text-gold animate-pulse" />
             </div>
             <p className="text-sm text-muted-foreground">Verifying your reset link...</p>
           </div>
@@ -133,9 +133,9 @@ export default function ResetPasswordPage() {
       <div className="min-h-screen flex flex-col">
         <AppHeader variant="auth" />
         <main className="flex-1 flex items-center justify-center p-6 bg-background">
-          <div className="w-full max-w-sm text-center">
-            <div className="flex justify-center mb-4">
-              <Lock className="w-10 h-10 text-destructive" />
+          <div className="w-full max-w-sm bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl p-8 text-center">
+            <div className="w-14 h-14 mx-auto mb-4 droplet-shape bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+              <Lock className="w-6 h-6 text-destructive" />
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Invalid or expired link</h1>
             <p className="text-sm text-muted-foreground mb-6">
@@ -158,10 +158,10 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex flex-col">
       <AppHeader variant="auth" />
       <main className="flex-1 flex items-center justify-center p-6 bg-background">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl p-8">
           <div className="text-center mb-8">
-            <div className="flex justify-center mb-3">
-              <Lock className="w-10 h-10 text-gold" />
+            <div className="w-14 h-14 mx-auto mb-4 droplet-shape bg-gold/10 border border-gold/20 flex items-center justify-center">
+              <Lock className="w-6 h-6 text-gold" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">Set new password</h1>
             <p className="text-sm text-muted-foreground mt-1">

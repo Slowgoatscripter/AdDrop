@@ -29,7 +29,8 @@ const ListingSchema = z.object({
   broker: z.string().max(200).optional(),
 });
 
-const VALID_PLATFORMS = new Set<string>(ALL_PLATFORMS);
+// ALL_PLATFORMS = 12 standard platforms. radioAds is a premium platform validated separately.
+const VALID_PLATFORMS = new Set<string>([...ALL_PLATFORMS, 'radioAds']);
 
 function buildCampaignName(listing: ListingData): string {
   const address = listing.address;
@@ -46,11 +47,11 @@ export async function POST(request: NextRequest) {
     const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
 
-    // Beta rate limit check
+    // Campaign usage limit check
     const usage = await getCampaignUsage(supabase, user!.id);
     if (usage.isLimited) {
       return NextResponse.json({
-        error: 'Beta campaign limit reached',
+        error: 'Campaign limit reached',
         code: 'RATE_LIMITED',
         usage: {
           used: usage.used,
@@ -95,6 +96,16 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Unknown platform(s): ${invalid.join(', ')}` }, { status: 400 });
       }
       platforms = body.platforms as PlatformId[];
+    }
+
+    // Pro subscription gate for radioAds
+    if (platforms?.includes('radioAds') && usage.tier !== 'pro' && usage.tier !== 'enterprise') {
+      return NextResponse.json({
+        error: 'Radio ads require a Pro or Enterprise subscription.',
+        code: 'SUBSCRIPTION_REQUIRED',
+        feature: 'radioAds',
+        currentTier: usage.tier,
+      }, { status: 403 });
     }
 
     const campaign = await generateCampaign(listing, platforms);

@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import { UserMenu } from './user-menu'
 import { MobileDrawer } from './mobile-drawer'
 import { appLinks, adminLinks, adminAppLink, adminSecondaryLinks, type NavLink } from './nav-links'
-import { BetaBadge } from '@/components/ui/beta-badge'
+import { DropletIcon } from '@/components/ui/droplet-icon'
 import { useFeedbackOptional } from '@/components/feedback/feedback-provider'
 
 interface AppHeaderUser {
@@ -86,6 +86,7 @@ export function AppHeader({ variant, user: userProp }: AppHeaderProps) {
         <Link href="/" className="flex items-center min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold rounded-sm">
           <span className="text-xl font-bold text-foreground">Ad</span>
           <span className="text-xl font-bold italic text-gold font-serif">Drop</span>
+          <DropletIcon size={8} className="ml-0.5 -mb-0.5 opacity-80" />
         </Link>
       </header>
     )
@@ -97,7 +98,7 @@ export function AppHeader({ variant, user: userProp }: AppHeaderProps) {
   if (variant === 'landing') {
     headerClasses += ` fixed top-0 left-0 right-0 z-50 h-14 md:h-[72px] transition-all duration-300 ${
       isScrolled
-        ? 'bg-background/80 backdrop-blur-lg border-b border-gold/10'
+        ? 'bg-card/70 backdrop-blur-xl border-b border-teal/10'
         : 'bg-transparent border-b border-transparent'
     }`
   } else if (variant === 'app') {
@@ -132,8 +133,8 @@ export function AppHeader({ variant, user: userProp }: AppHeaderProps) {
         >
           <span className="text-xl font-bold text-foreground">Ad</span>
           <span className="text-xl font-bold italic text-gold font-serif">Drop</span>
+          <DropletIcon size={8} className="ml-0.5 -mb-0.5 opacity-80" />
         </Link>
-        {variant === 'app' && <BetaBadge />}
 
         {/* Center/Right: Desktop nav + actions */}
         <div className="hidden md:flex items-center gap-1">
@@ -174,6 +175,16 @@ export function AppHeader({ variant, user: userProp }: AppHeaderProps) {
                 {link.label}
               </Link>
             ))}
+
+          {/* Landing: Pricing link (always visible) */}
+          {variant === 'landing' && (
+            <Link
+              href="/pricing"
+              className="text-sm text-cream/80 hover:text-gold transition-colors min-h-[44px] flex items-center px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold rounded-sm"
+            >
+              Pricing
+            </Link>
+          )}
 
           {/* Landing anonymous: Log In + Sign Up */}
           {variant === 'landing' && !user && (

@@ -121,9 +121,11 @@ function MfaChallengeContent() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm bg-card/50 backdrop-blur-xl border border-border/30 rounded-2xl p-8">
         <div className="text-center mb-8">
-          <ShieldCheck className="w-10 h-10 text-gold mx-auto mb-3" />
+          <div className="w-14 h-14 mx-auto mb-4 droplet-shape bg-gold/10 border border-gold/20 flex items-center justify-center">
+            <ShieldCheck className="w-6 h-6 text-gold" />
+          </div>
           <h1 className="text-2xl font-bold text-foreground">Two-Factor Authentication</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {useBackupCode

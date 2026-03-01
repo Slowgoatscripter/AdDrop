@@ -1,0 +1,25 @@
+flowchart TD
+    A["🎯 Hero<br/>Value proposition & CTA"] --> B["🎮 Interactive Demo<br/>See it in action"] 
+    B --> C["🎠 Showcase Carousel<br/>See what AdDrop creates"]
+    C --> D["❓ What about the other 8 sections?"]
+    
+    subgraph current ["Current Additional Sections"]
+        E[Platform Bar]
+        F[How It Works]
+        G[Social Proof]
+        H[Features Grid]
+        I[Who It's For]
+        J[Pricing Section]
+        K[FAQ]
+        L[CTA Footer]
+    end
+    
+    D -.-> current
+    
+    classDef core fill:#065f46,stroke:#10b981,color:#ecfdf5,font-weight:bold
+    classDef question fill:#7c2d12,stroke:#ea580c,color:#fed7aa
+    classDef other fill:#374151,stroke:#6b7280,color:#d1d5db
+    
+    class A,B,C core
+    class D question
+    class E,F,G,H,I,J,K,L other

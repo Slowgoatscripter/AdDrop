@@ -1,5 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
-  <text x="2" y="24" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#f5f0e8">A</text>
-  <text x="15" y="24" font-family="Georgia, serif" font-size="20" font-weight="900" font-style="italic" fill="#E6A817">D</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 42" fill="none">
+  <defs>
+    <linearGradient id="g" x1="16" y1="0" x2="16" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f5c842"/>
+      <stop offset="100%" stop-color="#d4a017"/>
+    </linearGradient>
+  </defs>
+  <path d="M16 0C16 0 0 19.2 0 27.2C0 36 7.16 42 16 42C24.84 42 32 36 32 27.2C32 19.2 16 0 16 0Z" fill="url(#g)"/>
+  <ellipse cx="11" cy="24" rx="4" ry="5.5" fill="#f5d470" opacity="0.3"/>
 </svg>

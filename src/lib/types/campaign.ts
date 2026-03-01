@@ -3,6 +3,8 @@ import { CampaignQualityResult } from './quality';
 
 export type AdTone = 'professional' | 'casual' | 'luxury';
 
+export type AudioTone = 'conversational' | 'authoritative' | 'friendly';
+
 export interface AdVariation {
   platform: string;
   tone?: AdTone;
@@ -29,18 +31,21 @@ export interface PrintAd {
   cta: string;
 }
 
-// --- Radio Ad Types ---
+export interface RadioScript {
+  script: string;
+  wordCount: number;
+  estimatedDuration: number;
+  notes?: string;
+  voiceStyle?: string;
+  musicSuggestion?: string;
+}
 
 export type RadioTimeSlot = '15s' | '30s' | '60s';
 export type RadioTone = 'conversational' | 'authoritative' | 'friendly';
 
-export interface RadioScript {
-  script: string;
-  wordCount: number;
-  estimatedDuration: string;
-  notes?: string;
-  voiceStyle?: string;
-  musicSuggestion?: string;
+/** Radio ad content keyed by time slot (e.g. '30s', '60s') then by RadioTone */
+export interface RadioAdsContent {
+  [timeSlot: string]: Record<RadioTone, RadioScript>;
 }
 
 // --- Platform Selection Types ---
@@ -61,7 +66,6 @@ export const ALL_PLATFORMS: PlatformId[] = [
   'magazineFullPage', 'magazineHalfPage', 'postcard',
   'zillow', 'realtorCom', 'homesComTrulia',
   'mlsDescription',
-  'radioAds',
 ];
 
 export interface PlatformOption {
@@ -97,7 +101,7 @@ export interface CampaignKit {
   realtorCom?: string;
   homesComTrulia?: string;
   mlsDescription?: string;
-  radioAds?: Record<RadioTimeSlot, Record<RadioTone, RadioScript>>;
+  radioAds?: RadioAdsContent;
   // Metadata
   complianceResult: ComplianceAgentResult;
   qualityResult?: CampaignQualityResult;
@@ -106,6 +110,8 @@ export interface CampaignKit {
   /** Auto-enforced hard constraints (char limits, disclosures) */
   qualityConstraints?: import('./quality').QualityConstraintViolation[];
   selectedPlatforms?: PlatformId[];
+  /** The subscription tier when this campaign was generated (for grandfathering) */
+  generated_at_tier?: import('../stripe/config').SubscriptionTier;
   stateCode?: string;
   // Strategy fields — always generated
   hashtags: string[];

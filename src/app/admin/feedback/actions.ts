@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminAction } from '@/lib/supabase/auth-helpers'
 import { revalidatePath } from 'next/cache'
 import type { FeedbackStatus, FeedbackType, FeedbackWithUser } from '@/lib/types/feedback'
 
@@ -11,19 +11,7 @@ export async function getFeedback(filters: {
   type?: FeedbackType | 'all'
   page?: number
 }): Promise<{ data: FeedbackWithUser[]; totalCount: number }> {
-  const supabase = await createClient()
-
-  // Verify admin role
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (callerProfile?.role !== 'admin') throw new Error('Not authorized')
+  const { supabase } = await requireAdminAction()
 
   // Build query — no join (feedback.user_id -> auth.users, not profiles)
   let query = supabase
@@ -85,19 +73,7 @@ export async function updateFeedbackStatus(
   status: FeedbackStatus,
   adminNotes?: string
 ) {
-  const supabase = await createClient()
-
-  // Verify admin role
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (callerProfile?.role !== 'admin') throw new Error('Not authorized')
+  const { supabase } = await requireAdminAction()
 
   // Build update payload
   const updateData: Record<string, string> = { status }
@@ -120,18 +96,7 @@ export async function getFeedbackStats(): Promise<{
   newCount: number
   totalCount: number
 }> {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (callerProfile?.role !== 'admin') throw new Error('Not authorized')
+  const { supabase } = await requireAdminAction()
 
   const { count: newCount } = await supabase
     .from('feedback')
@@ -149,18 +114,7 @@ export async function getFeedbackStats(): Promise<{
 }
 
 export async function getRecentFeedback(): Promise<FeedbackWithUser[]> {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (callerProfile?.role !== 'admin') throw new Error('Not authorized')
+  const { supabase } = await requireAdminAction()
 
   const { data, error } = await supabase
     .from('feedback')

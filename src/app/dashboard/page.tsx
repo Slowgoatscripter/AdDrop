@@ -2,12 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Plus,
+  Droplets,
   FileText,
   SlidersHorizontal,
 } from 'lucide-react'
 import { getCampaignUsage } from '@/lib/usage/campaign-limits'
-import { BetaUsageCard } from '@/components/dashboard/beta-usage-card'
+import type { SubscriptionTier } from '@/lib/stripe/config'
+import { TierUsageCard } from '@/components/dashboard/tier-usage-card'
 import { WelcomeCard } from '@/components/dashboard/welcome-card'
 import { StatsBar } from '@/components/dashboard/stats-bar'
 import { Breadcrumbs } from '@/components/nav/breadcrumbs'
@@ -15,6 +16,12 @@ import { CampaignFilters } from '@/components/dashboard/campaign-filters'
 import { CampaignGrid } from '@/components/dashboard/campaign-grid'
 import type { SortOption } from '@/components/dashboard/campaign-filters'
 import type { CampaignKit, ListingData } from '@/lib/types'
+
+const TIER_LABEL: Record<SubscriptionTier, string> = {
+  free: 'Free',
+  pro: 'Pro',
+  enterprise: 'Enterprise',
+}
 
 // ---------------------------------------------------------------------------
 // Filter + sort helpers (server-side, applied after fetch)
@@ -74,7 +81,7 @@ export default async function DashboardPage({
   const [{ data: profile }, { data: rawCampaigns }, usage] = await Promise.all([
     supabase
       .from('profiles')
-      .select('display_name, created_at')
+      .select('display_name, created_at, subscription_tier')
       .eq('id', user.id)
       .single(),
     supabase
@@ -148,8 +155,8 @@ export default async function DashboardPage({
         <p className="text-muted-foreground mt-1">Manage your real estate ad campaigns</p>
       </div>
 
-      {/* Beta usage card */}
-      <BetaUsageCard usage={usage} />
+      {/* Plan usage card */}
+      <TierUsageCard usage={usage} tier={(profile?.subscription_tier as SubscriptionTier) ?? 'free'} />
 
       {isNewUser ? (
         <WelcomeCard />
@@ -165,8 +172,8 @@ export default async function DashboardPage({
             href="/create"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-gold text-background font-medium hover:bg-gold/90 transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            Create New Campaign
+            <Droplets className="w-4 h-4" />
+            Drop a New Campaign
           </Link>
 
           {/* Search and filter bar — only shown when there are campaigns */}
@@ -178,7 +185,7 @@ export default async function DashboardPage({
           {!hasAnyRawCampaigns ? (
             <div className="text-center py-12 border border-border rounded-lg bg-muted/30">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No campaigns yet. Create your first ad!</p>
+              <p className="text-muted-foreground">No campaigns yet. Ready to make your first drop?</p>
             </div>
           ) : campaigns.length === 0 ? (
             /* No results after filtering */
@@ -195,9 +202,9 @@ export default async function DashboardPage({
             <CampaignGrid campaigns={campaigns} />
           )}
 
-          {/* Beta footer */}
+          {/* Plan footer */}
           <p className="text-xs text-muted-foreground text-center pt-4">
-            AdDrop Beta &mdash; 2 campaigns per week, free during beta.
+            AdDrop &mdash; {TIER_LABEL[(profile?.subscription_tier as SubscriptionTier) ?? 'free']} Plan
           </p>
         </>
       )}

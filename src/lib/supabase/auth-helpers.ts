@@ -1,5 +1,30 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+/**
+ * Canonical MFA check — single source of truth for all admin MFA enforcement.
+ * Uses `currentLevel === 'aal2'` as the definitive gate.
+ * Returns `enrolled` flag so callers can distinguish "needs challenge" from "needs enrollment".
+ */
+export type MFAResult =
+  | { verified: true }
+  | { verified: false; enrolled: boolean }
+
+export async function requireMFA(
+  supabase: SupabaseClient
+): Promise<MFAResult> {
+  const { data: aalData } =
+    await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+
+  if (aalData?.currentLevel === 'aal2') {
+    return { verified: true }
+  }
+
+  // enrolled = user has a TOTP factor but hasn't verified this session
+  const enrolled = aalData?.nextLevel === 'aal2'
+  return { verified: false, enrolled }
+}
 
 export async function requireAuth() {
   const supabase = await createClient()
@@ -31,8 +56,8 @@ export async function requireAdmin() {
   }
 
   // Enforce MFA (AAL2) for admin API actions
-  const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-  if (aalData?.currentLevel !== 'aal2') {
+  const mfa = await requireMFA(supabase)
+  if (!mfa.verified) {
     return { user: null, supabase, error: NextResponse.json({ error: 'MFA required' }, { status: 403 }) }
   }
 
@@ -51,5 +76,10 @@ export async function requireAdminAction() {
     .single()
 
   if (profile?.role !== 'admin') throw new Error('Not authorized')
+
+  // Enforce MFA (AAL2) for admin Server Actions
+  const mfa = await requireMFA(supabase)
+  if (!mfa.verified) throw new Error('MFA required')
+
   return { user, supabase, profile }
 }

@@ -8,7 +8,7 @@
  * Usage: import { env } from '@/lib/env' then use env.VARIABLE_NAME
  * instead of process.env.VARIABLE_NAME for required variables.
  *
- * Optional variables (SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET, RESEND_API_KEY,
+ * Optional variables (SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY,
  * RESEND_FROM_EMAIL, NEXT_PUBLIC_APP_URL, NEXT_PUBLIC_TURNSTILE_SITE_KEY,
  * APP_URL) are not listed here because they are guarded at the call site or
  * have safe fallbacks.
@@ -33,4 +33,7 @@ export const env = {
   // Upstash Redis — required for rate limiting
   UPSTASH_REDIS_REST_URL: requireEnv('UPSTASH_REDIS_REST_URL'),
   UPSTASH_REDIS_REST_TOKEN: requireEnv('UPSTASH_REDIS_REST_TOKEN'),
+
+  // Cron authentication — required for Vercel Cron job authorization
+  CRON_SECRET: requireEnv('CRON_SECRET'),
 } as const;

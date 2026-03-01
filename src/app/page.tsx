@@ -1,15 +1,14 @@
 import type { Metadata } from 'next';
 import { Hero } from '@/components/landing/hero';
 import { PlatformBar } from '@/components/landing/platform-bar';
-import { HowItWorks } from '@/components/landing/how-it-works';
 import { ShowcaseCarousel } from '@/components/landing/showcase-carousel';
 import { InteractiveDemo } from '@/components/landing/interactive-demo';
-import { SocialProof } from '@/components/landing/social-proof';
 import { FeaturesGrid } from '@/components/landing/features-grid';
 import { WhoItsFor } from '@/components/landing/who-its-for';
 import { FAQ } from '@/components/landing/faq';
 import { CTAFooter } from '@/components/landing/cta-footer';
 import { MobileCTABar } from '@/components/landing/mobile-cta-bar';
+import { LaunchBanner } from '@/components/landing/launch-banner';
 import { AppHeader } from '@/components/nav/app-header';
 import { getSettings } from '@/lib/settings/server';
 import type { LandingStat, FAQItem } from '@/lib/types/settings';
@@ -19,7 +18,7 @@ import { Footer } from '@/components/nav/footer';
 export const metadata: Metadata = {
   title: 'AI Real Estate Ad Generator — AdDrop',
   description:
-    'AdDrop generates complete real estate ad campaigns in minutes. Enter your property details and get copy for Instagram, Facebook, Google Ads, print, direct mail, and 8+ more platforms. Free during beta.',
+    'AdDrop generates complete real estate ad campaigns in minutes. Enter your property details and get copy for Instagram, Facebook, Google Ads, print, direct mail, and 8+ more platforms. Free tier available.',
   alternates: { canonical: 'https://addrop.app' },
   openGraph: {
     title: 'AI Real Estate Ad Generator — AdDrop',
@@ -60,6 +59,8 @@ export default async function Home() {
       )}
       <main className="min-h-screen">
         <AppHeader variant="landing" />
+        {/* V1 Launch — remove after launch period */}
+        <LaunchBanner />
         <Hero
           titlePrefix={s['landing.hero_title_prefix'] as string}
           titleAccent={s['landing.hero_title_accent'] as string}
@@ -70,16 +71,14 @@ export default async function Home() {
         />
         <PlatformBar />
         <InteractiveDemo />
-        <HowItWorks />
         <ShowcaseCarousel />
-        <SocialProof />
         <FeaturesGrid />
         <WhoItsFor />
         <FAQ faqs={faqs} />
         <CTAFooter
           headline={s['landing.cta_headline'] as string}
           ctaText={s['landing.cta_text'] as string}
-          betaNotice={s['landing.cta_beta'] as string}
+          description={(s['landing.cta_description'] as string) || undefined}
         />
         <MobileCTABar />
       </main>

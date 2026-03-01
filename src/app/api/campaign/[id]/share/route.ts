@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
-import { randomUUID } from 'crypto';
+import { getUserTier, requireTierFeature } from '@/lib/stripe/gate';
+import { getOrCreateShareToken } from '@/lib/share-token';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -18,6 +19,10 @@ export async function PUT(
     const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
 
+    const tier = await getUserTier(supabase, user!.id);
+    const gateError = requireTierFeature(tier, 'share');
+    if (gateError) return gateError;
+
     const { id } = await params;
     if (!uuidRegex.test(id)) {
       return NextResponse.json({ error: 'Invalid campaign ID' }, { status: 400 });
@@ -27,25 +32,19 @@ export async function PUT(
     const expiry = body.expiry || '7d';
     const expiryMs = EXPIRY_MAP[expiry] || EXPIRY_MAP['7d'];
 
-    const shareToken = randomUUID();
-    const shareExpiresAt = new Date(Date.now() + expiryMs).toISOString();
-
-    const { error } = await supabase
-      .from('campaigns')
-      .update({ share_token: shareToken, share_expires_at: shareExpiresAt })
-      .eq('id', id)
-      .eq('user_id', user!.id);
-
-    if (error) {
-      return NextResponse.json({ error: 'Failed to generate share link' }, { status: 500 });
-    }
+    const { shareToken, expiresAt } = await getOrCreateShareToken(
+      supabase,
+      id,
+      user!.id,
+      expiryMs,
+    );
 
     const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || ''}/share/${shareToken}`;
 
     return NextResponse.json({
       shareToken,
       shareUrl,
-      expiresAt: shareExpiresAt,
+      expiresAt,
     });
   } catch (error) {
     console.error('Share link error:', error);
@@ -60,6 +59,10 @@ export async function DELETE(
   try {
     const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
+
+    const tier = await getUserTier(supabase, user!.id);
+    const gateError = requireTierFeature(tier, 'share');
+    if (gateError) return gateError;
 
     const { id } = await params;
     if (!uuidRegex.test(id)) {

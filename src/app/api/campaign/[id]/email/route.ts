@@ -3,6 +3,8 @@ import { requireAuth } from '@/lib/supabase/auth-helpers';
 import { Resend } from 'resend';
 import { z } from 'zod';
 import { CampaignKit } from '@/lib/types';
+import { getOrCreateShareToken } from '@/lib/share-token';
+import { formatExpiry } from '@/lib/format-expiry';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const emailSchema = z.string().email();
@@ -39,16 +41,19 @@ export async function POST(
     if (to.length > 10) {
       return NextResponse.json({ error: 'Maximum 10 recipients per send' }, { status: 400 });
     }
-    for (const email of to) {
-      if (!emailSchema.safeParse(email.trim()).success) {
-        return NextResponse.json({ error: `Invalid email: ${email}` }, { status: 400 });
-      }
+    const invalidEmails = to.filter(email => !emailSchema.safeParse(email.trim()).success);
+    if (invalidEmails.length > 0) {
+      console.warn('Invalid recipient emails:', invalidEmails);
+      return NextResponse.json(
+        { error: 'One or more recipients are invalid' },
+        { status: 400 },
+      );
     }
 
     // Fetch campaign
     const { data: row, error } = await supabase
       .from('campaigns')
-      .select('generated_ads, share_token, share_expires_at')
+      .select('generated_ads')
       .eq('id', id)
       .eq('user_id', user!.id)
       .single();
@@ -59,17 +64,8 @@ export async function POST(
 
     const campaign = row.generated_ads as CampaignKit;
 
-    // Auto-generate share link if needed
-    let shareToken = row.share_token;
-    if (!shareToken || new Date(row.share_expires_at) < new Date()) {
-      const crypto = await import('crypto');
-      shareToken = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-      await supabase
-        .from('campaigns')
-        .update({ share_token: shareToken, share_expires_at: expiresAt })
-        .eq('id', id);
-    }
+    // Reuse existing valid share token, or generate a new one
+    const { shareToken, expiresAt } = await getOrCreateShareToken(supabase, id, user!.id);
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '';
     const shareUrl = `${appUrl}/share/${shareToken}`;
@@ -97,7 +93,7 @@ export async function POST(
               <div style="margin: 24px 0;">
                 <a href="${shareUrl}" style="background: #0f172a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block;">View Campaign</a>
               </div>
-              <p style="font-size: 12px; color: #888;">This link expires in 7 days.</p>
+              <p style="font-size: 12px; color: #888;">This link expires ${formatExpiry(expiresAt)}.</p>
             </div>
           `,
         })

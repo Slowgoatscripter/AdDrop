@@ -11,6 +11,7 @@ import { PlatformComplianceResult, ComplianceViolation } from '@/lib/types';
 import { PlatformQualityResult } from '@/lib/types/quality';
 import type { QualityIssue } from '@/lib/types/quality';
 import { Button } from '@/components/ui/button';
+import { UpgradePrompt } from '@/components/ui/upgrade-prompt';
 import { RefreshCw, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -34,6 +35,10 @@ interface AdCardWrapperProps {
   charCountElement?: string;
   photoUrl?: string;
   photoPlatform?: string;
+  /** When false, the regenerate button is disabled with an upgrade prompt */
+  canRegenerate?: boolean;
+  /** When false, the download photo button is disabled with an upgrade prompt */
+  canExport?: boolean;
 }
 
 export function AdCardWrapper({
@@ -56,6 +61,8 @@ export function AdCardWrapper({
   charCountElement,
   photoUrl,
   photoPlatform,
+  canRegenerate = true,
+  canExport = true,
 }: AdCardWrapperProps) {
   const [showToneSelector, setShowToneSelector] = useState(false);
   const [downloadingPhoto, setDownloadingPhoto] = useState(false);
@@ -104,13 +111,13 @@ export function AdCardWrapper({
                 size="sm"
                 variant="outline"
                 className="text-xs gap-1.5"
-                onClick={() => setShowToneSelector((prev) => !prev)}
-                disabled={isRegenerating}
+                onClick={() => canRegenerate && setShowToneSelector((prev) => !prev)}
+                disabled={isRegenerating || !canRegenerate}
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isRegenerating ? 'animate-spin' : ''}`} />
                 Regenerate
               </Button>
-              {showToneSelector && toneOptions && (
+              {canRegenerate && showToneSelector && toneOptions && (
                 <div className="absolute right-0 top-full mt-1 z-10 bg-popover border rounded-md shadow-md py-1 min-w-[140px]">
                   {toneOptions.map((tone) => (
                     <button
@@ -165,7 +172,7 @@ export function AdCardWrapper({
               size="sm"
               variant="outline"
               className="text-xs gap-1.5"
-              disabled={downloadingPhoto}
+              disabled={downloadingPhoto || !canExport}
               onClick={handleDownloadPhoto}
             >
               <Download className="h-3.5 w-3.5" />
@@ -173,6 +180,11 @@ export function AdCardWrapper({
             </Button>
           )}
         </div>
+
+        {/* Regenerate upgrade prompt */}
+        {onRegenerate && !canRegenerate && (
+          <UpgradePrompt feature="regenerate" />
+        )}
 
         {/* Violation details */}
         {violations && violations.length > 0 && onReplace && (

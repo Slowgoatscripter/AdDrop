@@ -73,10 +73,12 @@ export async function validateUrl(url: string): Promise<{ safe: boolean; error?:
       return { safe: true }
     }
 
-    // Resolve hostname to IP
-    const { address } = await lookup(hostname)
-    if (isPrivateIp(address)) {
-      return { safe: false, error: 'URL resolves to a private/reserved IP address' }
+    // Resolve hostname to ALL IPs (prevents fast-flux SSRF via TOCTOU)
+    const addresses = await lookup(hostname, { all: true })
+    for (const { address } of addresses) {
+      if (isPrivateIp(address)) {
+        return { safe: false, error: 'URL resolves to a private/reserved IP address' }
+      }
     }
 
     return { safe: true }

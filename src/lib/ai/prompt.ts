@@ -49,19 +49,19 @@ const PLATFORM_TEMPLATES: Record<PlatformId, TemplateEntry> = {
     `"mlsDescription": "MLS-compliant description, max ${config.maxDescriptionLength || 2000} chars, professional tone. MUST include required disclosures. MUST NOT use prohibited terms."`,
   radioAds: `"radioAds": {
     "15s": {
-      "conversational": { "script": "15-second script, conversational tone, ~38 words", "wordCount": 38, "estimatedDuration": "15 seconds" },
-      "authoritative": { "script": "15-second script, authoritative tone, ~38 words", "wordCount": 38, "estimatedDuration": "15 seconds" },
-      "friendly": { "script": "15-second script, friendly tone, ~38 words", "wordCount": 38, "estimatedDuration": "15 seconds" }
+      "conversational": { "script": "15-second script, conversational tone, max 35 words", "wordCount": 35, "estimatedDuration": "14-16 seconds" },
+      "authoritative": { "script": "15-second script, authoritative tone, max 35 words", "wordCount": 35, "estimatedDuration": "14-16 seconds" },
+      "friendly": { "script": "15-second script, friendly tone, max 35 words", "wordCount": 35, "estimatedDuration": "14-16 seconds" }
     },
     "30s": {
-      "conversational": { "script": "30-second script, conversational tone, ~75 words", "wordCount": 75, "estimatedDuration": "30 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" },
-      "authoritative": { "script": "30-second script, authoritative tone, ~75 words", "wordCount": 75, "estimatedDuration": "30 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" },
-      "friendly": { "script": "30-second script, friendly tone, ~75 words", "wordCount": 75, "estimatedDuration": "30 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" }
+      "conversational": { "script": "30-second script, conversational tone, max 75 words", "wordCount": 75, "estimatedDuration": "28-32 seconds", "notes": "Production notes" },
+      "authoritative": { "script": "30-second script, authoritative tone, max 75 words", "wordCount": 75, "estimatedDuration": "28-32 seconds", "notes": "Production notes" },
+      "friendly": { "script": "30-second script, friendly tone, max 75 words", "wordCount": 75, "estimatedDuration": "28-32 seconds", "notes": "Production notes" }
     },
     "60s": {
-      "conversational": { "script": "60-second script, conversational tone, ~150 words", "wordCount": 150, "estimatedDuration": "60 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" },
-      "authoritative": { "script": "60-second script, authoritative tone, ~150 words", "wordCount": 150, "estimatedDuration": "60 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" },
-      "friendly": { "script": "60-second script, friendly tone, ~150 words", "wordCount": 150, "estimatedDuration": "60 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" }
+      "conversational": { "script": "60-second script, conversational tone, max 150 words", "wordCount": 150, "estimatedDuration": "55-62 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" },
+      "authoritative": { "script": "60-second script, authoritative tone, max 150 words", "wordCount": 150, "estimatedDuration": "55-62 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" },
+      "friendly": { "script": "60-second script, friendly tone, max 150 words", "wordCount": 150, "estimatedDuration": "55-62 seconds", "voiceStyle": "Voice style recommendation", "musicSuggestion": "Music recommendation", "notes": "Production notes" }
     }
   }`,
 };

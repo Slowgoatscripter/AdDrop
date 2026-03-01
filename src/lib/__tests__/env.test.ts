@@ -39,11 +39,13 @@ describe('env validation module', () => {
     process.env.OPENAI_API_KEY = 'sk-test';
     process.env.UPSTASH_REDIS_REST_URL = 'https://redis.upstash.io';
     process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token';
+    process.env.CRON_SECRET = 'test-cron-secret';
 
     const { env } = require('@/lib/env');
 
     expect(env.NEXT_PUBLIC_SUPABASE_URL).toBe('https://test.supabase.co');
     expect(env.NEXT_PUBLIC_SUPABASE_ANON_KEY).toBe('test-anon-key');
+    expect(env.CRON_SECRET).toBe('test-cron-secret');
   });
 
   it('throws an informative error message that names the missing variable', () => {
@@ -54,5 +56,18 @@ describe('env validation module', () => {
     expect(() => {
       require('@/lib/env');
     }).toThrow('Missing required environment variable: OPENAI_API_KEY');
+  });
+
+  it('throws an error when CRON_SECRET is missing', () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
+    process.env.OPENAI_API_KEY = 'sk-test';
+    process.env.UPSTASH_REDIS_REST_URL = 'https://redis.upstash.io';
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token';
+    delete process.env.CRON_SECRET;
+
+    expect(() => {
+      require('@/lib/env');
+    }).toThrow('Missing required environment variable: CRON_SECRET');
   });
 });

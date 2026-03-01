@@ -46,7 +46,7 @@ export function MobileCTABar() {
       : 'Dashboard'
     : 'Log In';
   const rightHref = isAuthenticated ? '/create' : '/signup?next=/create';
-  const rightLabel = isAuthenticated ? 'Create Campaign' : 'Sign Up Free';
+  const rightLabel = isAuthenticated ? 'Create Campaign' : 'Drop Your First Ad';
 
   return (
     <div
@@ -63,7 +63,7 @@ export function MobileCTABar() {
         </Link>
         <Link
           href={rightHref}
-          className="flex items-center justify-center gap-2 flex-1 border-2 border-gold bg-transparent text-gold uppercase tracking-wider text-xs font-bold py-3 rounded-lg hover:bg-gold hover:text-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+          className="flex items-center justify-center gap-2 flex-1 border-2 border-gold bg-transparent text-gold uppercase tracking-wider text-xs font-bold py-3 rounded-full hover:bg-gold hover:text-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
         >
           {rightLabel}
           <ArrowRight className="w-4 h-4" />

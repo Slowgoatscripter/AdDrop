@@ -26,17 +26,17 @@ export const settingsDefaults: Record<string, unknown> = {
     { value: 'Minutes', label: 'Not Hours' },
   ] as LandingStat[],
   'landing.faq': [
-    { question: 'Is AdDrop really free?', answer: 'Yes — AdDrop is completely free during beta. Create a free account, get 2 campaigns per week, and never see a credit card form.' },
+    { question: 'Is AdDrop really free?', answer: 'Yes — AdDrop has a generous free tier. Create a free account, get 2 campaigns per month across 5 platforms, and never see a credit card form. Need more? Pro and Enterprise plans unlock all 12+ platforms and higher limits.' },
     { question: 'Why do I need an account?', answer: 'Your account lets us save your campaigns, track your usage, and give you a dashboard to manage everything. Sign up with email and password. No credit card, no commitments.' },
     { question: 'What information do I need to get started?', answer: 'Just your property address, a few photos, and basic details like beds, baths, and price. AdDrop handles the rest.' },
     { question: 'How does the AI know what to write?', answer: "AdDrop's AI is designed for real estate marketing workflows. It understands platform best practices, character limits, tone variations, and fair housing compliance. It writes ads designed to sound polished and professional." },
     { question: 'Is the ad copy compliant with fair housing laws?', answer: 'AdDrop includes built-in compliance checking that helps identify and suggests corrections for problematic language. Currently supports Montana and Ohio MLS requirements, with more states planned.' },
     { question: 'Can I edit the generated ads?', answer: 'Absolutely. Every ad is fully editable. Use the AI output as a starting point and customize it to match your voice and brand.' },
-    { question: 'What platforms are supported?', answer: "Instagram, Facebook, Google Ads, Twitter/X, Zillow, Realtor.com, print ads, direct mail postcards, magazine ads, and more. We're adding new platforms regularly." },
+    { question: 'What platforms are supported?', answer: "Instagram, Facebook, Google Ads, Twitter/X, Zillow, Realtor.com, print ads, direct mail postcards, magazine ads, and more. Free accounts get 5 platforms; Pro and Enterprise unlock all 12+." },
   ] as FAQItem[],
   'landing.cta_headline': 'Your Next Listing Deserves Better Marketing',
   'landing.cta_text': 'Create Your First Campaign',
-  'landing.cta_beta': 'Free during beta. 2 campaigns per week. No credit card required.',
+  'landing.cta_description': 'Create a free account and generate your first campaign in minutes.',
   'presets.default': [
     {
       name: 'Flathead Luxury Lakefront',

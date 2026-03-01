@@ -1,6 +1,6 @@
 # Account Tiers & Payment Processing Design
 
-**Status:** Approved
+**Status:** Approved with Changes (review applied)
 **Date:** 2026-02-24
 **Payment Provider:** Stripe
 
@@ -16,11 +16,13 @@
 | Shareable Campaign Links | No | Yes | Yes |
 | Campaign Regeneration | No | Yes | Yes |
 | Photo Uploads | Yes | Yes | Yes |
-| Team Seats | No | No | Yes |
+| Team Seats | No | No | Phase 2 |
+
+Campaign limits reset on the **1st of each calendar month** for predictability.
 
 Annual billing saves 2 months (pay for 10, get 12).
 
-**Future add-on (not built now):** Credit packs for users who exceed their campaign cap.
+**Future add-ons (not built now):** Credit packs for users who exceed their campaign cap. Team seats (Enterprise) — deferred to Phase 2 with its own design doc.
 
 ---
 
@@ -44,13 +46,26 @@ Users manage their subscription through **Stripe Customer Portal** (hosted by St
 
 ### Webhook Sync
 
-Stripe sends events to `/api/webhooks/stripe`. We handle:
+Stripe sends events to `/api/webhooks/stripe`. This route must use `export const runtime = 'nodejs'` (not edge) to access the raw request body for signature verification.
+
+**Security requirements:**
+- Verify webhook signatures using `STRIPE_WEBHOOK_SECRET` via `stripe.webhooks.constructEvent()`
+- Store processed `event.id` values to prevent duplicate processing (idempotency)
+- Handle out-of-order events by checking `event.created` timestamps against current state
+
+**Events handled:**
 - `checkout.session.completed` — Create subscription record, update user tier
 - `customer.subscription.updated` — Plan changes (upgrades/downgrades)
 - `customer.subscription.deleted` — Cancellation, downgrade to Free
-- `invoice.payment_failed` — Mark subscription as past due; after final retry failure, downgrade to Free
+- `invoice.payment_failed` — Mark subscription as `past_due`; maintain full access during Stripe's retry period (~3 weeks). Only downgrade to Free on `customer.subscription.deleted` after all retries exhaust.
 
 **Key principle:** Stripe is the source of truth for billing state. Our database mirrors it via webhooks. Feature gating checks happen server-side only.
+
+**Environment variables required:**
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_PRICE_PRO_MONTHLY`, `STRIPE_PRICE_PRO_ANNUAL`, `STRIPE_PRICE_ENTERPRISE_MONTHLY`, `STRIPE_PRICE_ENTERPRISE_ANNUAL`
 
 ### Data Flow
 
@@ -82,22 +97,17 @@ User clicks Upgrade → Stripe Checkout → Payment succeeds
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
-### New `team_members` table (Enterprise)
+### `team_members` table — DEFERRED TO PHASE 2
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid (PK) | |
-| team_owner_id | uuid (FK → profiles) | Enterprise account owner |
-| member_id | uuid (FK → profiles) | Invited team member |
-| role | enum ('member', 'admin') | Role within the team |
-| invited_at | timestamptz | |
-| accepted_at | timestamptz | |
+The team members system (Enterprise seats) requires its own design doc covering: invitation flow, acceptance flow, member limits, ownership transfer, shared campaign pool mechanics, and multi-team rules. Not in scope for Phase 1.
 
-Team members inherit the owner's tier for feature access. Their campaigns count against the team's shared pool (75/month).
+### `campaigns` table changes
+
+Add column: `generated_at_tier` (enum: 'free', 'pro', 'enterprise', default 'free'). Recorded at campaign creation time. When a user downgrades, campaigns generated while on a paid tier retain full platform visibility and export access. Only new campaigns are gated by the current tier.
 
 ### `profiles` table changes
 
-Add column: `tier` (enum: 'free', 'pro', 'enterprise', default 'free'). This is a denormalized cache of the subscription tier for fast lookups. Updated by webhooks.
+Add column: `tier` (enum: 'free', 'pro', 'enterprise', default 'free'). This is a denormalized cache of the subscription tier for fast lookups. Updated by webhooks only — must NOT be added to the authenticated user `GRANT UPDATE` list (same protection pattern as `role` column).
 
 ---
 
@@ -114,7 +124,7 @@ All gating is enforced at the API level. The client shows upgrade prompts but ne
 | PDF/Zip export | `/api/export/*` | Check tier. Free users get 403 + upgrade prompt. |
 | Share links | `/api/campaign/[id]/share` | Check tier. Free users get 403 + upgrade prompt. |
 | Regeneration | `/api/regenerate-platform` | Check tier. Free users get 403 + upgrade prompt. |
-| Team seats | Team management UI + API | Only Enterprise tier can invite/manage team members. |
+| Team seats | Deferred to Phase 2 | Not in scope for this phase. |
 
 ### Client-Side UX
 
@@ -145,6 +155,7 @@ Free users see locked features with "Upgrade to Pro" badges. Locked platforms sh
 - Campaign usage bar (e.g., "8 of 15 campaigns used this month")
 - "Manage Subscription" → Stripe Customer Portal
 - "Change Plan" → Pricing page
+- **Past-due state:** Warning banner when subscription is `past_due` with "Update Payment Method" CTA linking to Stripe Customer Portal. User retains full access during Stripe's retry period.
 
 ---
 
@@ -171,14 +182,26 @@ All existing users start on the **Free** tier. The current beta usage cap system
 
 ---
 
-## 8. What's NOT In Scope
+## 8. Downgrade Behavior
+
+When a user downgrades (cancellation or payment failure after retries):
+- **Existing campaigns** generated while on a paid tier retain full platform visibility and export access (tracked via `generated_at_tier` on campaigns table)
+- **Existing share links** continue working until their `share_expires_at` expiry
+- **New campaigns** and actions are gated by the current (Free) tier
+- Downgrade only occurs on `customer.subscription.deleted` — NOT on `invoice.payment_failed`
+
+---
+
+## 9. What's NOT In Scope
 
 - Credit/top-up packs (future add-on)
+- Team seats / Enterprise team management (Phase 2 — separate design doc)
 - White-label / custom branding
 - API access for Enterprise
 - Usage-based billing
-- Promo codes / coupons (can add via Stripe dashboard later without code changes)
+- Promo codes / coupons (can add via Stripe dashboard later — `allow_promotion_codes: true` is one line)
 - Free trial period for Pro/Enterprise (users already have a permanent Free tier)
+- In-app payment failure notifications (Stripe sends email; in-app can be Phase 2)
 
 ---
 

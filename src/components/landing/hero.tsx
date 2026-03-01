@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AdCardMockup } from './ad-card-mockup';
 import type { LandingStat } from '@/lib/types/settings';
+import { RippleButton } from '@/components/ui/ripple-button';
 
 interface HeroProps {
   titlePrefix?: string;
@@ -31,7 +32,7 @@ export function Hero({
   titleAccent = 'Drop',
   tagline = 'Your Listing. 12 Platforms. Minimal Effort.',
   description = 'Create a free account, enter your property details, and get a complete ad campaign — Instagram, Facebook, Google, print, direct mail — typically ready in a few minutes.',
-  ctaText = 'Start Creating — Free',
+  ctaText = 'Drop Your First Ad',
   ctaHref = '/create',
   stats,
 }: HeroProps) {
@@ -65,13 +66,31 @@ export function Hero({
       />
 
       {/* Content grid */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 lg:py-0">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-28 pb-20 lg:pt-0 lg:pb-0">
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] items-center gap-12 lg:gap-8">
           {/* ── Left column ── */}
           <div className="text-center lg:text-left">
             {/* Title — 300ms clip reveal */}
             {/* SEO H1 — keyword-rich, visible to crawlers */}
             <h1 className="sr-only">AI Real Estate Ad Generator — AdDrop</h1>
+
+            {/* V1 Launch Badge — remove after launch */}
+            <motion.div
+              className="inline-flex items-center justify-center lg:justify-start mb-4"
+              initial={a ? { opacity: 0, y: 10 } : undefined}
+              animate={a ? { opacity: 1, y: 0 } : undefined}
+              transition={a ? { delay: 0.2, duration: 0.4, ease } : undefined}
+            >
+              <span
+                className="inline-flex items-center gap-1.5 border border-gold/30 bg-gold/8
+                           text-gold text-xs uppercase tracking-widest px-3 py-1 rounded-full
+                           bg-[length:200%_100%] bg-gradient-to-r from-transparent via-gold/10 to-transparent
+                           animate-shimmer-gold"
+              >
+                <span className="text-gold/70">✦</span>
+                V1 Now Live
+              </span>
+            </motion.div>
 
             {/* Visual brand display */}
             <div
@@ -122,11 +141,14 @@ export function Hero({
               animate={a ? { opacity: 1, scale: 1 } : undefined}
               transition={a ? { delay: 1.2, type: 'spring', stiffness: 300, damping: 20 } : undefined}
             >
-              <Link
-                href={ctaHref}
-                className="inline-block border-2 border-gold bg-transparent text-gold uppercase tracking-wider text-sm font-bold px-10 py-4 transition-all duration-300 hover:bg-gold hover:text-background"
-              >
-                {ctaText}
+              <Link href={ctaHref}>
+                <RippleButton
+                  className="border-2 border-gold bg-transparent text-gold uppercase tracking-wider text-sm font-bold px-10 py-4 hover:bg-gold hover:text-background rounded-full"
+                  variant="ghost"
+                  size="lg"
+                >
+                  {ctaText}
+                </RippleButton>
               </Link>
             </motion.div>
 

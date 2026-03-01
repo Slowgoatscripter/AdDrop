@@ -185,7 +185,7 @@ function GridCard({ campaign }: { campaign: Campaign }) {
     <div className="relative group">
       <Link
         href={`/campaign/${campaign.id}`}
-        className="block border border-border rounded-lg bg-muted/30 hover:border-gold/50 transition-colors cursor-pointer overflow-hidden"
+        className="block border border-border rounded-2xl bg-muted/30 hover:border-teal/20 hover:shadow-lg hover:shadow-teal/5 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer overflow-hidden"
       >
         {/* Photo header */}
         {photoUrl ? (

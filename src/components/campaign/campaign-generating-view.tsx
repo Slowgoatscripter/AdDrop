@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { PenLine, ShieldCheck, Star, Check, MapPin, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DropletSpinner } from '@/components/ui/droplet-spinner';
 
 interface CampaignGeneratingViewProps {
   propertyAddress?: string;
@@ -93,7 +94,7 @@ export default function CampaignGeneratingView({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-foreground">Generating Campaign Kit</h1>
+            <h1 className="text-2xl font-bold text-foreground">Brewing Your Drop</h1>
             {propertyAddress && (
               <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <MapPin className="w-3.5 h-3.5 shrink-0" />
@@ -142,8 +143,8 @@ export default function CampaignGeneratingView({
                           <Check className="w-4 h-4 text-primary-foreground" />
                         </span>
                       ) : isActive ? (
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-primary/10">
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-gold bg-gold/10">
+                          <DropletSpinner size="sm" />
                         </span>
                       ) : (
                         <span className="flex h-8 w-8 items-center justify-center rounded-full border bg-muted/50">
@@ -225,8 +226,8 @@ export default function CampaignGeneratingView({
 
         {/* Bottom status bar */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-          <span>AI is working &mdash; this page will update automatically when ready</span>
+          <span className="h-2 w-2 droplet-shape bg-gold animate-pulse" />
+          <span>Your drop is forming &mdash; this page will update automatically when ready</span>
         </div>
       </div>
     </div>

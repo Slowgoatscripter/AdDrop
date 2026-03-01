@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CampaignKit } from '@/lib/types';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
+import { getUserTier, requireTierFeature } from '@/lib/stripe/gate';
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -8,6 +9,10 @@ export async function POST(request: NextRequest) {
   try {
     const { user, supabase, error: authError } = await requireAuth();
     if (authError) return authError;
+
+    const tier = await getUserTier(supabase, user!.id);
+    const gateError = requireTierFeature(tier, 'export');
+    if (gateError) return gateError;
 
     const body = await request.json();
     const { campaignId, format } = body as { campaignId: string; format: 'pdf' | 'csv' | 'json' };

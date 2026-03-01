@@ -217,6 +217,19 @@ export function MobileDrawer({ open, onClose, variant, user, onFeedbackClick }: 
 
             {/* Navigation links */}
             <div className="flex-1 py-2">
+              {/* Landing: Pricing link (always visible) */}
+              {variant === 'landing' && (
+                <div className="px-4 py-1">
+                  <Link
+                    href="/pricing"
+                    onClick={onClose}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-cream/80 hover:text-cream hover:bg-surface transition-colors min-h-[44px]"
+                  >
+                    Pricing
+                  </Link>
+                </div>
+              )}
+
               {/* Landing anonymous: CTA + auth links */}
               {variant === 'landing' && !user && (
                 <>
@@ -230,6 +243,13 @@ export function MobileDrawer({ open, onClose, variant, user, onFeedbackClick }: 
                     </Link>
                   </div>
                   <div className="border-t border-border mt-2 pt-2">
+                    <Link
+                      href="/pricing"
+                      onClick={onClose}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-cream/80 hover:text-cream hover:bg-surface transition-colors min-h-[44px]"
+                    >
+                      Pricing
+                    </Link>
                     <Link
                       href="/login"
                       onClick={onClose}
@@ -258,6 +278,15 @@ export function MobileDrawer({ open, onClose, variant, user, onFeedbackClick }: 
                       className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium border border-gold/60 text-gold hover:bg-gold hover:text-background rounded-full transition-all min-h-[44px]"
                     >
                       {isAdmin ? 'Admin Panel' : 'Dashboard'}
+                    </Link>
+                  </div>
+                  <div className="border-t border-border mt-2 pt-2">
+                    <Link
+                      href="/pricing"
+                      onClick={onClose}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-cream/80 hover:text-cream hover:bg-surface transition-colors min-h-[44px]"
+                    >
+                      Pricing
                     </Link>
                   </div>
                 </>

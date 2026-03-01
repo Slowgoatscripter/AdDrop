@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/auth-helpers';
 import { createClient } from '@/lib/supabase/server';
+import { getUserTier, requireTierFeature } from '@/lib/stripe/gate';
 import { CampaignKit } from '@/lib/types';
 import { generateBundle } from '@/lib/export/bundle';
 
@@ -33,6 +34,11 @@ export async function POST(request: NextRequest) {
     } else {
       const { user, supabase, error: authError } = await requireAuth();
       if (authError) return authError;
+
+      const tier = await getUserTier(supabase, user!.id);
+      const gateError = requireTierFeature(tier, 'export');
+      if (gateError) return gateError;
+
       const { data: row, error } = await supabase
         .from('campaigns')
         .select('generated_ads')
