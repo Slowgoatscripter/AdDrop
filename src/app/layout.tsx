@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'AdDrop', url: 'https://addrop.app' }],
   creator: 'AdDrop',
   publisher: 'AdDrop',
-  alternates: { canonical: 'https://addrop.app' },
+  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: 'en_US',

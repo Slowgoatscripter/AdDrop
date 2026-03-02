@@ -8,9 +8,31 @@ import { Footer } from '@/components/nav/footer'
 import type { SubscriptionTier } from '@/lib/stripe/config'
 
 export const metadata: Metadata = {
-  title: 'Pricing - AdDrop',
+  title: 'Pricing — AI Real Estate Ad Generator',
   description:
-    'Simple, transparent pricing for AdDrop. Start free, upgrade when you need more platforms, campaigns, and premium features.',
+    'Simple, transparent pricing for AdDrop. Start free, upgrade when you need more platforms, campaigns, and premium features for your real estate ads.',
+  alternates: { canonical: '/pricing' },
+  openGraph: {
+    title: 'Pricing — AdDrop AI Real Estate Ad Generator',
+    description:
+      'Start free with 2 campaigns/month. Pro from $9/mo for 15 campaigns and all 12+ platforms. Simple, transparent pricing for real estate agents.',
+    url: '/pricing',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'AdDrop Pricing — AI Real Estate Ad Generator',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pricing — AdDrop AI Real Estate Ad Generator',
+    description:
+      'Start free with 2 campaigns/month. Pro from $9/mo for 15 campaigns and all 12+ platforms.',
+    images: ['/opengraph-image.png'],
+  },
 }
 
 const trustPoints = [
