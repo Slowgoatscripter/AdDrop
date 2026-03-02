@@ -202,7 +202,7 @@ export default function PrivacyPolicyPage() {
       </ul>
       <p>
         To exercise these rights, contact us at{' '}
-        <a href="mailto:support@addrop.com">support@addrop.com</a>. We will respond within 30 days.
+        <a href="mailto:share@addrop.app">share@addrop.app</a>. We will respond within 30 days.
       </p>
 
       <h2>8. Do Not Track</h2>
@@ -217,7 +217,7 @@ export default function PrivacyPolicyPage() {
         AdDrop is not directed to children under 13. We do not knowingly collect personal information
         from children under 13. If we learn we have collected such information, we will delete it
         promptly. If you believe a child under 13 has provided us with personal information, please
-        contact us at <a href="mailto:support@addrop.com">support@addrop.com</a>.
+        contact us at <a href="mailto:share@addrop.app">share@addrop.app</a>.
       </p>
 
       <h2>10. Third-Party Links</h2>
@@ -238,7 +238,7 @@ export default function PrivacyPolicyPage() {
       <h2>12. Contact Us</h2>
       <p>If you have questions about this Privacy Policy, contact us at:</p>
       <p>
-        Email: <a href="mailto:support@addrop.com">support@addrop.com</a>
+        Email: <a href="mailto:share@addrop.app">share@addrop.app</a>
       </p>
     </>
   )

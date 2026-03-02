@@ -144,7 +144,7 @@ export default function DisclaimerPage() {
         If you have questions about this Disclaimer, contact us at:
       </p>
       <p>
-        Email: <a href="mailto:support@addrop.com">support@addrop.com</a>
+        Email: <a href="mailto:share@addrop.app">share@addrop.app</a>
       </p>
     </>
   )

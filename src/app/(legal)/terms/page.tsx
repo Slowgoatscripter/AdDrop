@@ -182,7 +182,7 @@ export default function TermsPage() {
       <h2>10. Termination</h2>
       <p>
         <strong>By You:</strong> You may close your account at any time by contacting us
-        at support@addrop.com.
+        at share@addrop.app.
       </p>
       <p>
         <strong>By Us:</strong> We may suspend or terminate your account at any time for
@@ -205,7 +205,7 @@ export default function TermsPage() {
       </p>
       <p>
         <strong>Informal Resolution:</strong> Before filing any formal proceeding, you agree
-        to contact us at support@addrop.com and attempt to resolve the dispute informally
+        to contact us at share@addrop.app and attempt to resolve the dispute informally
         for at least 30 days.
       </p>
       <p>
@@ -239,7 +239,7 @@ export default function TermsPage() {
         If you have questions about these Terms of Service, contact us at:
       </p>
       <p>
-        Email: <a href="mailto:support@addrop.com">support@addrop.com</a>
+        Email: <a href="mailto:share@addrop.app">share@addrop.app</a>
       </p>
     </>
   )

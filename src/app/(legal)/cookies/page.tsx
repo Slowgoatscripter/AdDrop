@@ -154,7 +154,7 @@ export default function CookiePolicyPage() {
       <p>
         If you have questions about this Cookie Policy, please see our{' '}
         <Link href="/privacy">Privacy Policy</Link> for broader data practices or contact us
-        at <a href="mailto:support@addrop.com">support@addrop.com</a>.
+        at <a href="mailto:share@addrop.app">share@addrop.app</a>.
       </p>
     </>
   )
