@@ -91,6 +91,14 @@ export default function PrivacyPolicyPage() {
           <strong>Unsplash:</strong> Landing page images may be loaded from Unsplash servers.
           Unsplash may collect IP addresses and browser data when images are served.
         </li>
+        <li>
+          <strong>Google:</strong> We use Google Ads conversion tracking (gtag.js) to measure the
+          effectiveness of our advertising campaigns. Google may collect device identifiers, IP address,
+          and browsing data. Data is processed according to{' '}
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+            Google&apos;s Privacy Policy
+          </a>.
+        </li>
       </ul>
 
       <p>We do not sell your personal information.</p>
@@ -107,7 +115,7 @@ export default function PrivacyPolicyPage() {
 
       <h2>4. Cookies and Tracking Technologies</h2>
       <p>
-        We use a limited number of cookies, all essential for the service to function:
+        We use cookies and similar technologies for essential functionality and advertising measurement:
       </p>
       <ul>
         <li>
@@ -117,10 +125,17 @@ export default function PrivacyPolicyPage() {
           <strong>Cloudflare Turnstile cookies:</strong> Verify you are human during signup/login
           (essential, session-based)
         </li>
+        <li>
+          <strong>Google Ads (gtag.js):</strong> Measures ad performance, tracks conversions, and helps
+          us understand how visitors arrive at our site through Google Ads campaigns. Google may collect
+          IP address, browser data, and browsing activity. See{' '}
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+            Google&apos;s Privacy Policy
+          </a>.
+        </li>
       </ul>
       <p>
-        We do not use analytics cookies, advertising cookies, or tracking pixels. For full details,
-        see our <Link href="/cookies">Cookie Policy</Link>.
+        For full details on the cookies we use, see our <Link href="/cookies">Cookie Policy</Link>.
       </p>
 
       <h2>5. Data Retention</h2>

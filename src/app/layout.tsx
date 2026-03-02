@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Fraunces, Space_Grotesk, Playfair_Display } from 'next/font/google';
+import Script from 'next/script';
 import { Toaster } from 'sonner';
 import './globals.css';
 
@@ -92,6 +93,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17986239004"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-17986239004');
+          `}
+        </Script>
+      </head>
       <body className={`${fraunces.variable} ${spaceGrotesk.variable} ${playfairDisplay.variable} font-sans noise-overlay bg-background text-foreground`}>
         <script
           type="application/ld+json"

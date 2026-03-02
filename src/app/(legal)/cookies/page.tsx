@@ -65,11 +65,43 @@ export default function CookiePolicyPage() {
         </tbody>
       </table>
 
-      <h3>Analytics Cookies</h3>
-      <p>We do not currently use any analytics cookies.</p>
-
-      <h3>Marketing / Advertising Cookies</h3>
-      <p>We do not use any marketing or advertising cookies.</p>
+      <h3>Advertising / Measurement Cookies</h3>
+      <p>
+        We use Google Ads conversion tracking to measure the performance of our advertising campaigns.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Cookie</th>
+            <th>Purpose</th>
+            <th>Duration</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>_gcl_au</td>
+            <td>Google Ads conversion linker — connects ad clicks to site activity</td>
+            <td>90 days</td>
+            <td>First-party (set by Google)</td>
+          </tr>
+          <tr>
+            <td>_gac_*</td>
+            <td>Stores campaign information for Google Ads conversion measurement</td>
+            <td>90 days</td>
+            <td>First-party (set by Google)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Google may also set additional cookies for ad measurement purposes. For details, see{' '}
+        <a href="https://policies.google.com/technologies/cookies" target="_blank" rel="noopener noreferrer">
+          Google&apos;s cookie policy
+        </a>. You can opt out of Google ad personalization at{' '}
+        <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">
+          Google Ads Settings
+        </a>.
+      </p>
 
       <h2>3. Third-Party Cookies</h2>
       <p>
